@@ -2647,15 +2647,10 @@ async function sairDoSistema() {
     async function carregarListaBackups() {
       const tabela = document.getElementById('tabelaBackups');
       const status = document.getElementById('statusBackups');
-      if (!tabela) return;
+       if (!tabela) return;
 
-      if (!estaNoAppsScript()) {
-        tabela.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-gray-400">A listagem está disponível apenas no Google Apps Script.</td></tr>';
-        return;
-      }
-
-      if (status) status.textContent = 'Carregando backups...';
-      tabela.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-gray-400">Carregando...</td></tr>';
+       if (status) status.textContent = 'Carregando backups...';
+       tabela.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-gray-400">Carregando...</td></tr>';
 
       try {
         const resultado = await executarAppsScript('listarBackups',tokenSessao);
@@ -2694,7 +2689,6 @@ async function sairDoSistema() {
     }
 
     async function criarBackupManualInterface() {
-      if (!estaNoAppsScript()) return alert('O backup manual está disponível apenas no Google Apps Script.');
       if (!confirm('Criar um backup manual do estado atual do sistema?')) return;
 
       try {
@@ -2709,7 +2703,6 @@ async function sairDoSistema() {
     }
 
     async function restaurarBackupInterface(botao) {
-      if (!estaNoAppsScript()) return alert('A restauração está disponível apenas no Google Apps Script.');
       if (versaoServidor === null || !Number.isFinite(Number(versaoServidor))) {
         return alert('Não foi possível confirmar a versão atual. Atualize a página e tente novamente.');
       }
@@ -2748,7 +2741,6 @@ async function sairDoSistema() {
     }
 
     async function excluirBackupInterface(botao) {
-      if (!estaNoAppsScript()) return alert('A exclusão está disponível apenas no Google Apps Script.');
       if (versaoServidor === null || !Number.isFinite(Number(versaoServidor))) {
         return alert('Não foi possível confirmar a versão atual. Atualize a página e tente novamente.');
       }
