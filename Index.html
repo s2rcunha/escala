@@ -187,6 +187,30 @@
     id="sistemaPrincipal"
     class="hidden mx-auto max-w-[1600px] p-4 md:p-6"
   >
+  <!-- AVISO PERSISTENTE DE CONFLITO DE VERSÃO -->
+<div
+  id="bannerConflitoServidor"
+  class="hidden mb-4 items-center justify-between gap-4 rounded-lg border border-red-300 bg-red-50 p-4 shadow-sm"
+>
+  <div>
+    <p class="font-bold text-red-800">
+      ⚠ Dados desatualizados
+    </p>
+
+    <p class="mt-1 text-sm text-red-700">
+      Os dados foram alterados por outro usuário.
+      Recarregue a página para continuar trabalhando com a versão mais recente.
+    </p>
+  </div>
+
+  <button
+    type="button"
+    onclick="location.reload()"
+    class="shrink-0 rounded bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700"
+  >
+    Recarregar agora
+  </button>
+</div>
     <header class="mb-6 flex flex-col justify-between gap-4 rounded border-b bg-white p-4 pb-4 shadow-sm md:flex-row md:items-center xl:flex-nowrap xl:gap-3">
       <div class="shrink-0">
         <h1 class="text-xl font-bold text-red-700 xl:whitespace-nowrap">Sistema de Escala de Serviço - CCI</h1>
@@ -825,6 +849,15 @@
 </div>
 
   <script>
+    function mostrarBannerConflitoServidor() {
+  const banner =
+    document.getElementById('bannerConflitoServidor');
+
+  if (!banner) return;
+
+  banner.classList.remove('hidden');
+  banner.classList.add('flex');
+}
     function mostrarProcessamento(mensagem = 'Processando, aguarde...') {
   const overlay = document.getElementById('overlayProcessamento');
   const texto = document.getElementById('mensagemProcessamento');
@@ -1131,11 +1164,14 @@ async function salvarEstadoNoServidor(
 
       if (resultado.conflito) {
 
-        // A partir daqui sabemos que o estado desta página
-        // está desatualizado.
-        conflitoServidor = true;
+  // A partir daqui sabemos que o estado desta página
+  // está desatualizado.
+  conflitoServidor = true;
 
-        alert(
+  // Mantém um aviso visível até que a página seja recarregada.
+  mostrarBannerConflitoServidor();
+
+  alert(
           'ATENÇÃO!\n\n' +
           'Os dados foram alterados por outro usuário ' +
           'desde que você abriu o sistema.\n\n' +
@@ -1190,11 +1226,17 @@ async function salvarEstadoNoServidor(
 
     } catch (erro) {
 
-      // ==========================================
-      // FALHA DE COMUNICAÇÃO / REDE
-      // ==========================================
+  // Conflito de versão já foi tratado acima.
+  // Não deve ser interpretado como falha de comunicação.
+  if (erro?.tipo === 'conflito') {
+    throw erro;
+  }
 
-      const mensagemErro = String(erro?.message || erro || '');
+  // ==========================================
+  // FALHA DE COMUNICAÇÃO / REDE
+  // ==========================================
+
+  const mensagemErro = String(erro?.message || erro || '');
       const falhaLogica = /sessão|sessao|permiss|autoriz|estado\.json|json inválido|estrutura/i.test(mensagemErro);
       falhaSalvamentoServidor = !falhaLogica;
 
@@ -2881,18 +2923,14 @@ async function sairDoSistema() {
   const escalasComMilitar = [];
 
   Object.entries(estado.escalas || {}).forEach(([mesAno, escala]) => {
-    let encontrado = false;
+  const encontrado = Object.values(escala?.dados || {}).some(vagas =>
+    Object.values(vagas || {}).some(militarId => militarId === id)
+  );
 
-    Object.values(escala?.dias || {}).forEach(dia => {
-      Object.values(dia || {}).forEach(militarId => {
-        if (militarId === id) encontrado = true;
-      });
-    });
-
-    if (encontrado) {
-      escalasComMilitar.push(mesAno);
-    }
-  });
+  if (encontrado) {
+    escalasComMilitar.push(mesAno);
+  }
+});
 
   if (escalasComMilitar.length > 0) {
     alert(
@@ -3587,20 +3625,22 @@ async function confirmarImportacaoIndisponibilidades() {
       ...novasIndisponibilidades
     );
 
-    try {
+    // Um único salvamento para toda a importação.
+const salvou = await salvarEstado();
 
-      // Um único salvamento para toda a importação.
-      await salvarEstado();
+if (!salvou) {
 
-    } catch (erroSalvamento) {
+  // O servidor não confirmou o salvamento.
+  // Restaura o estado em memória.
+  estado.indisponibilidades =
+    indisponibilidadesAnteriores;
 
-      // Se o servidor rejeitar o salvamento,
-      // desfazemos a alteração feita em memória.
-      estado.indisponibilidades =
-        indisponibilidadesAnteriores;
+  renderizarIndisponibilidades();
 
-      throw erroSalvamento;
-    }
+  throw new Error(
+    'A importação não foi salva no servidor.'
+  );
+}
 
     // Atualiza a tabela normal de indisponibilidades.
     renderizarIndisponibilidades();
@@ -3727,7 +3767,10 @@ async function importarIndisponibilidadesCSV(evento) {
 
     const registros = [];
 
-    for (let i = 1; i < linhas.length; i++) {
+// Controla duplicidades dentro do próprio arquivo CSV.
+const chavesVistas = new Set();
+
+for (let i = 1; i < linhas.length; i++) {
       const numeroLinha = i + 1;
 
       const campos =
@@ -3841,33 +3884,60 @@ async function importarIndisponibilidadesCSV(evento) {
         }
       }
 
-      // Verifica duplicidade somente se conseguimos
-      // identificar o militar e validar as datas.
-      let duplicado = false;
+      // Verifica duplicidade contra os registros já cadastrados
+// e também dentro do próprio arquivo CSV.
+let duplicado = false;
 
-      if (
-        militar &&
-        inicio &&
-        fim
-      ) {
-        duplicado =
-          estado.indisponibilidades.some(
-            indisponibilidade =>
-              indisponibilidade.militarId === militar.id &&
-              indisponibilidade.inicio === inicio &&
-              indisponibilidade.fim === fim &&
-              String(indisponibilidade.motivo || '')
-                .trim()
-                .toUpperCase() ===
-                motivo.toUpperCase()
-          );
+if (
+  militar &&
+  inicio &&
+  fim &&
+  motivo
+) {
 
-        if (duplicado) {
-          avisos.push(
-            'Indisponibilidade já cadastrada'
-          );
-        }
-      }
+  const motivoNormalizado =
+    motivo.trim().toUpperCase();
+
+  const chaveDuplicidade = [
+    militar.id,
+    inicio,
+    fim,
+    motivoNormalizado
+  ].join('|');
+
+  const jaCadastrado =
+    estado.indisponibilidades.some(
+      indisponibilidade =>
+        indisponibilidade.militarId === militar.id &&
+        indisponibilidade.inicio === inicio &&
+        indisponibilidade.fim === fim &&
+        String(indisponibilidade.motivo || '')
+          .trim()
+          .toUpperCase() ===
+          motivoNormalizado
+    );
+
+  const repetidoNoCSV =
+    chavesVistas.has(chaveDuplicidade);
+
+  duplicado =
+    jaCadastrado ||
+    repetidoNoCSV;
+
+  if (jaCadastrado) {
+    avisos.push(
+      'Indisponibilidade já cadastrada'
+    );
+  } else if (repetidoNoCSV) {
+    avisos.push(
+      'Registro duplicado no próprio arquivo CSV'
+    );
+  }
+
+  // Só registramos a chave depois de analisar a linha atual.
+  // Assim, a primeira ocorrência permanece válida.
+  chavesVistas.add(chaveDuplicidade);
+}
 
       registros.push({
         linha: numeroLinha,
