@@ -4791,7 +4791,7 @@ try {
               explicacao.push(`Militares pulados por ja terem cumprido esta vez antecipadamente: ${militaresPuladosPorAdiantamento.map(obterNomeMilitar).join(', ')}.`);
             }
             if (militaresPuladosPorIndisponibilidade.length > 0) {
-              explicacao.push(`Militares pulados por indisponibilidade, restricao semanal ou inicio de indisponibilidade no dia seguinte, sem gerar pendencia ou servico atrasado: ${militaresPuladosPorIndisponibilidade.map(obterNomeMilitar).join(', ')}.`);
+              explicacao.push(`Militares pulados por indisponibilidade, restricao semanal ou inicio de indisponibilidade no dia seguinte. Essas situacoes nao geram pendencia explicita de rotacao; eventual diferenca no acumulado dos quadrinhos sera considerada nas escolhas posteriores: ${militaresPuladosPorIndisponibilidade.map(obterNomeMilitar).join(', ')}.`);
             }
             if (militaresComLastroPorIndisponibilidade.length > 0) {
               explicacao.push(`Lastro computado por indisponibilidade de 30 dias consecutivos ou mais, incluindo registros consecutivos ou sobrepostos quando existirem: ${militaresComLastroPorIndisponibilidade.map(obterNomeMilitar).join(', ')} recebeu contagem virtual de 1 servico ${servicoVermelho ? 'vermelho' : 'preto'} nesta vaga.`);
@@ -4818,7 +4818,7 @@ try {
               if (motivosProximo.length) {
                 explicacao.push(`O proximo da rotacao nao foi escalado porque ${motivosProximo.join('; ')}.`);
                 if (motivosProximo.includes('estava indisponivel nesta data')) {
-                  explicacao.push('Indisponibilidade cadastrada nao gera pendencia nem servico atrasado para compensar depois.');
+                  explicacao.push('A indisponibilidade nao gera pendencia explicita de rotacao. Quando nao houver lastro, eventual diferenca no acumulado dos quadrinhos sera considerada nas escolhas posteriores.');
                 }
                 explicacao.push(tipoFuncao === 'semanaFimSemana'
                   ? `Por isso, o sistema escolheu o candidato valido com menor acumulado de servico ${servicoVermelho ? 'vermelho' : 'preto'}; em empate, usou a sequencia da rotacao.`
