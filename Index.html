@@ -286,7 +286,7 @@
           <div id="listaTiposEscala" class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"></div>
         </details>
         <div class="somente-edicao mt-4 flex justify-end">
-          <button onclick="gerarEscalaAutomatica()" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded font-bold shadow">Gerar Escala Automática</button>
+          <button onclick="abrirModalGeracaoEscala()" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded font-bold shadow">Gerar Escala Automática</button>
         </div>
       </div>
 
@@ -827,6 +827,41 @@
       </div>
     </div>
   </div>
+  <!-- MODAL DE GERAÇÃO DA ESCALA -->
+  <div id="modalGeracaoEscala" class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50 p-4">
+    <form class="w-full max-w-lg rounded bg-white shadow-xl" onsubmit="confirmarGeracaoEscala(event)">
+      <div class="flex items-center justify-between border-b px-5 py-4">
+        <h3 class="text-lg font-bold text-gray-800">Gerar Escala Automática</h3>
+        <button type="button" onclick="fecharModalGeracaoEscala()" class="rounded bg-gray-100 px-3 py-1 text-lg font-bold text-gray-600 hover:bg-gray-200">x</button>
+      </div>
+      <div class="space-y-4 px-5 py-4">
+        <label class="block text-sm font-semibold text-gray-700">
+          Função
+          <select id="funcaoGeracaoEscala" class="mt-1 w-full rounded border p-2 text-sm font-normal"></select>
+        </label>
+        <label class="flex items-center gap-2 text-sm font-semibold text-gray-700">
+          <input id="mesInteiroGeracaoEscala" type="checkbox" checked onchange="atualizarPeriodoModalGeracao()">
+          Recriar o mês inteiro
+        </label>
+        <div id="periodoGeracaoEscala" class="grid grid-cols-2 gap-3 opacity-50">
+          <label class="block text-sm font-semibold text-gray-700">
+            Dia inicial
+            <input id="diaInicioGeracaoEscala" type="number" min="1" disabled class="mt-1 w-full rounded border p-2 text-sm font-normal">
+          </label>
+          <label class="block text-sm font-semibold text-gray-700">
+            Dia final
+            <input id="diaFimGeracaoEscala" type="number" min="1" disabled class="mt-1 w-full rounded border p-2 text-sm font-normal">
+          </label>
+        </div>
+        <p class="rounded bg-amber-50 p-3 text-xs text-amber-800">Somente a função e o período selecionados serão recriados. As demais funções e os dias fora do período serão preservados.</p>
+      </div>
+      <div class="flex justify-end gap-2 border-t px-5 py-3">
+        <button type="button" onclick="fecharModalGeracaoEscala()" class="rounded bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300">Cancelar</button>
+        <button type="submit" class="rounded bg-green-600 px-4 py-2 text-sm font-bold text-white hover:bg-green-700">Gerar escala</button>
+      </div>
+    </form>
+  </div>
+
   <!-- OVERLAY DE PROCESSAMENTO -->
 <div
   id="overlayProcessamento"
@@ -4232,7 +4267,102 @@ if (
       return ultimosTipos;
     }
 
-    async function gerarEscalaAutomatica() {
+    function abrirModalGeracaoEscala() {
+      const mesAno = document.getElementById('mesAnoEscala').value;
+      if (!mesAno) return alert('Selecione o mês e ano!');
+
+      const select = document.getElementById('funcaoGeracaoEscala');
+
+select.innerHTML = `
+  <option value="">Todas as funções</option>
+  ${estado.funcoes
+    .filter(funcao => (estado.vagas[funcao] || 0) > 0)
+    .map(funcao => `<option value="${funcao}">${funcao}</option>`)
+    .join('')}
+`;
+
+      const [ano, mes] = mesAno.split('-').map(Number);
+      const diasNoMes = new Date(ano, mes, 0).getDate();
+      const inicio = document.getElementById('diaInicioGeracaoEscala');
+      const fim = document.getElementById('diaFimGeracaoEscala');
+      inicio.max = diasNoMes;
+      fim.max = diasNoMes;
+      inicio.value = 1;
+      fim.value = diasNoMes;
+      document.getElementById('mesInteiroGeracaoEscala').checked = true;
+      atualizarPeriodoModalGeracao();
+
+      const modal = document.getElementById('modalGeracaoEscala');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function fecharModalGeracaoEscala() {
+      const modal = document.getElementById('modalGeracaoEscala');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function atualizarPeriodoModalGeracao() {
+      const mesInteiro = document.getElementById('mesInteiroGeracaoEscala').checked;
+      const inicio = document.getElementById('diaInicioGeracaoEscala');
+      const fim = document.getElementById('diaFimGeracaoEscala');
+      const area = document.getElementById('periodoGeracaoEscala');
+      inicio.disabled = mesInteiro;
+      fim.disabled = mesInteiro;
+      area.classList.toggle('opacity-50', mesInteiro);
+    }
+
+    async function confirmarGeracaoEscala(evento) {
+      evento.preventDefault();
+      const mesAno = document.getElementById('mesAnoEscala').value;
+      const funcao = document.getElementById('funcaoGeracaoEscala').value;
+if (!mesAno) return;
+
+      const [ano, mes] = mesAno.split('-').map(Number);
+      const diasNoMes = new Date(ano, mes, 0).getDate();
+      const mesInteiro = document.getElementById('mesInteiroGeracaoEscala').checked;
+      const diaInicio = mesInteiro ? 1 : Number(document.getElementById('diaInicioGeracaoEscala').value);
+      const diaFim = mesInteiro ? diasNoMes : Number(document.getElementById('diaFimGeracaoEscala').value);
+
+      if (!Number.isInteger(diaInicio) || !Number.isInteger(diaFim) || diaInicio < 1 || diaFim > diasNoMes || diaInicio > diaFim) {
+        return alert(`Informe um período válido entre os dias 1 e ${diasNoMes}.`);
+      }
+
+      const existeEscala = !!estado.escalas[mesAno]?.dados;
+      if (!mesInteiro && !existeEscala && diaInicio > 1) {
+        return alert('Para gerar apenas parte do mês, primeiro deve existir uma escala salva para este mês.');
+      }
+
+      const descricaoPeriodo = mesInteiro
+  ? 'o mês inteiro'
+  : `os dias ${diaInicio} a ${diaFim}`;
+
+const descricaoFuncao = funcao
+  ? `a função "${funcao}"`
+  : 'todas as funções';
+
+let mensagemConfirmacao =
+  `Recriar ${descricaoFuncao} em ${descricaoPeriodo}?`;
+
+if (funcao) {
+  mensagemConfirmacao +=
+    '\n\nAs demais funções e os dias fora desse período serão preservados.';
+} else if (!mesInteiro) {
+  mensagemConfirmacao +=
+    '\n\nOs dias fora desse período serão preservados.';
+} else {
+  mensagemConfirmacao +=
+    '\n\nA escala completa do mês será recriada.';
+}
+
+if (existeEscala && !confirm(mensagemConfirmacao)) return;
+
+      fecharModalGeracaoEscala();
+      await gerarEscalaAutomatica({ funcao, diaInicio, diaFim });
+    }
+
+    async function gerarEscalaAutomatica(configuracao = null) {
       const mesAno = document.getElementById('mesAnoEscala').value;
       if (!mesAno) return alert('Selecione o mês e ano!');
       const tiposEscala = obterTiposEscalaSelecionados();
@@ -4246,6 +4376,12 @@ try {
 
       const [ano, mes] = mesAno.split('-').map(Number);
       const diasNoMes = new Date(ano, mes, 0).getDate();
+      const escalaExistenteAntesGeracao = estado.escalas[mesAno]
+        ? structuredClone(estado.escalas[mesAno])
+        : null;
+      const funcaoGeracao = configuracao?.funcao || null;
+      const diaInicioGeracao = configuracao?.diaInicio || 1;
+      const diaFimGeracao = configuracao?.diaFim || diasNoMes;
 
       let novaEscala = {};
       let substituicoes = {};
@@ -4253,6 +4389,7 @@ try {
       let tiposUsadosPorDia = {};
       let ordemTrocaManual = {};
       let lastrosIndisponibilidade = {};
+      let alteracoesManuais = {};
       const estruturaGerada = { funcoes: [...estado.funcoes], vagas: { ...estado.vagas } };
       const diasVermelhos = [];
       let historicoServicos = {}; 
@@ -4360,7 +4497,13 @@ try {
         }
       });
 
-      for (let dia = 1; dia <= diasNoMes; dia++) {
+      // Em regeneracao parcial de uma escala existente, nao ha motivo para
+      // calcular dias posteriores ao fim solicitado, pois seriam descartados.
+      const ultimoDiaProcessamento = escalaExistenteAntesGeracao && configuracao
+        ? diaFimGeracao
+        : diasNoMes;
+
+      for (let dia = 1; dia <= ultimoDiaProcessamento; dia++) {
         const dataStr = `${ano}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
         const dataObj = new Date(ano, mes - 1, dia);
         const diaSemana = dataObj.getDay(); 
@@ -4376,12 +4519,21 @@ try {
         lastrosIndisponibilidade[dia] = [];
 
         colunasVagas.forEach(col => {
+          // Em regeneracao parcial, o periodo anterior ao inicio escolhido e
+          // historico fechado: ele deve reproduzir a escala salva sem ser
+          // reinterpretado por indisponibilidades cadastradas posteriormente.
+          const reproduzirPrefixo = (!funcaoGeracao || funcaoGeracao === col.funcao)
+            && dia < diaInicioGeracao
+            && escalaExistenteAntesGeracao?.dados;
           const tipoFuncaoConfigurado = tiposEscala[col.funcao] || 'corrida';
           const militarEstaIndisponivel = militarId =>
-            estado.indisponibilidades.some(i => i.militarId === militarId && dataStr >= i.inicio && dataStr <= i.fim);
+            !reproduzirPrefixo
+            && estado.indisponibilidades.some(i => i.militarId === militarId && dataStr >= i.inicio && dataStr <= i.fim);
           const militarTemIndisponibilidadeSemanal = militarId =>
-            estado.indisponibilidadesSemana.some(i => i.militarId === militarId && Number(i.diaSemana) === diaSemana);
+            !reproduzirPrefixo
+            && estado.indisponibilidadesSemana.some(i => i.militarId === militarId && Number(i.diaSemana) === diaSemana);
           const militarIniciaIndisponibilidadeNoDiaSeguinte = militarId => {
+            if (reproduzirPrefixo) return false;
             const dataSeguinte = new Date(dataObj);
             dataSeguinte.setDate(dataSeguinte.getDate() + 1);
             const dataSeguinteStr = `${dataSeguinte.getFullYear()}-${String(dataSeguinte.getMonth() + 1).padStart(2, '0')}-${String(dataSeguinte.getDate()).padStart(2, '0')}`;
@@ -4404,7 +4556,10 @@ try {
             ultimoMilitarPorRotacao[`${col.funcao}:fimSemana`] = ultimoMilitarPorFuncaoECor[`${col.funcao}:vermelho`] || null;
           }
           diferenciadaTemporariaAtivaPorFuncao[col.funcao] = usarDiferenciadaTemporaria;
-          const tipoFuncao = usarDiferenciadaTemporaria ? 'semanaFimSemana' : tipoFuncaoConfigurado;
+          const tipoFuncaoHistorico = escalaExistenteAntesGeracao?.tiposUsadosPorDia?.[dia]?.[col.funcao];
+          const tipoFuncao = reproduzirPrefixo
+            ? (tipoFuncaoHistorico || tipoFuncaoConfigurado)
+            : (usarDiferenciadaTemporaria ? 'semanaFimSemana' : tipoFuncaoConfigurado);
           tiposUsadosPorDia[dia][col.funcao] = tipoFuncao;
           const aplicarRegraVermelha = tipoFuncao === 'semanaFimSemana' && servicoVermelho;
           const chaveRotacao = tipoFuncao === 'semanaFimSemana'
@@ -4428,6 +4583,26 @@ try {
           const militaresPuladosPorAdiantamento = [];
           const militaresPuladosPorIndisponibilidade = [];
           const militaresComLastroPorIndisponibilidade = [];
+
+          // Lastros anteriores tambem fazem parte do historico fechado.
+          // Reaplica somente os lastros da propria celula para que a contagem
+          // acumulada no primeiro dia regenerado seja a mesma da escala salva.
+          if (reproduzirPrefixo) {
+            const lastrosHistoricos = (escalaExistenteAntesGeracao.lastrosIndisponibilidade?.[dia] || [])
+              .filter(lastro => lastro.chave === col.chave);
+            lastrosHistoricos.forEach(lastro => {
+              lastrosIndisponibilidade[dia].push(structuredClone(lastro));
+              const militarLastro = estado.militares.find(m => m.id === lastro.militarId);
+              if (!militarLastro) return;
+              if (!contagemAnoGeracao[militarLastro.id][col.funcao]) {
+                contagemAnoGeracao[militarLastro.id][col.funcao] = { preto: 0, vermelho: 0 };
+              }
+              const corLastro = lastro.cor === 'vermelho' ? 'vermelho' : 'preto';
+              contagemAnoGeracao[militarLastro.id][col.funcao][corLastro]++;
+              militaresComLastroPorIndisponibilidade.push(militarLastro.id);
+            });
+          }
+
           const registrarLastroIndisponibilidade = militar => {
             const indisponibilidadeLonga = obterIndisponibilidadeLongaNaData(militar.id, dataStr);
             if (!indisponibilidadeLonga) return false;
@@ -4684,7 +4859,13 @@ try {
             pendenciasRotacao[chaveRotacao] = proximoMilitarDaRotacao.id;
           }
 
-          if (candidatos.length === 0) {
+          if (reproduzirPrefixo) {
+            const militarPrefixoId = escalaExistenteAntesGeracao.dados?.[dia]?.[col.chave] || '';
+            const militarPrefixo = estado.militares.find(m => m.id === militarPrefixoId);
+            candidatos = militarPrefixo ? [militarPrefixo] : [];
+          }
+
+          if (candidatos.length === 0 && !reproduzirPrefixo) {
             let candidatosComIntervaloReduzido = obterMilitaresParaEscala(col.funcao).filter(m => {
               if (!podeSerEscalado(m, true, aplicarRegraVermelha)) return false;
               const ultimosServicos = historicoServicos[m.id];
@@ -4922,12 +5103,102 @@ try {
           pendente: pendenciasRotacao[chave] || null
         };
       });
+      // Resultado completo calculado pelo gerador. Quando a solicitação
+      // é parcial, somente a função/período escolhidos serão aplicados.
+      const geracaoParcial = diaInicioGeracao > 1 || diaFimGeracao < diasNoMes;
+      const deveMesclarComEscalaExistente = !!escalaExistenteAntesGeracao
+        && (funcaoGeracao || geracaoParcial);
+
+      if (deveMesclarComEscalaExistente) {
+        const escalaBase = structuredClone(escalaExistenteAntesGeracao);
+        const funcoesGeradas = funcaoGeracao
+          ? [funcaoGeracao]
+          : estado.funcoes.filter(funcao => (estado.vagas[funcao] || 0) > 0);
+        const chavesGeradas = colunasVagas
+          .filter(col => funcoesGeradas.includes(col.funcao))
+          .map(col => col.chave);
+
+        escalaBase.dados ||= {};
+        escalaBase.substituicoes ||= {};
+        escalaBase.justificativas ||= {};
+        escalaBase.ordemTrocaManual ||= {};
+        escalaBase.tiposUsadosPorDia ||= {};
+        escalaBase.lastrosIndisponibilidade ||= {};
+        escalaBase.alteracoesManuais ||= {};
+        escalaBase.tipos ||= {};
+
+        funcoesGeradas.forEach(funcao => {
+          escalaBase.tipos[funcao] = tiposEscala[funcao] || 'corrida';
+        });
+
+        for (let dia = diaInicioGeracao; dia <= diaFimGeracao; dia++) {
+          escalaBase.dados[dia] ||= {};
+escalaBase.substituicoes[dia] ||= {};
+escalaBase.justificativas[dia] ||= {};
+escalaBase.ordemTrocaManual[dia] ||= {};
+escalaBase.tiposUsadosPorDia[dia] ||= {};
+escalaBase.alteracoesManuais[dia] ||= {};
+
+          chavesGeradas.forEach(chave => {
+            escalaBase.dados[dia][chave] = novaEscala[dia]?.[chave] || '';
+
+            if (substituicoes[dia]?.[chave]) escalaBase.substituicoes[dia][chave] = true;
+            else delete escalaBase.substituicoes[dia][chave];
+
+            if (justificativas[dia]?.[chave]) escalaBase.justificativas[dia][chave] = justificativas[dia][chave];
+            else delete escalaBase.justificativas[dia][chave];
+
+            if (ordemTrocaManual[dia]?.[chave]) escalaBase.ordemTrocaManual[dia][chave] = ordemTrocaManual[dia][chave];
+            else delete escalaBase.ordemTrocaManual[dia][chave];
+
+            // A célula está sendo recriada automaticamente.
+// Portanto, uma alteração manual antiga desta própria célula
+// não deve continuar marcada.
+delete escalaBase.alteracoesManuais[dia][chave];
+          });
+
+          funcoesGeradas.forEach(funcao => {
+            escalaBase.tiposUsadosPorDia[dia][funcao] =
+              tiposUsadosPorDia[dia]?.[funcao] || tiposEscala[funcao] || 'corrida';
+          });
+
+          const lastrosOutrasFuncoes = (escalaBase.lastrosIndisponibilidade[dia] || [])
+            .filter(lastro => !funcoesGeradas.includes(lastro.funcao));
+          const lastrosNovasFuncoes = (lastrosIndisponibilidade[dia] || [])
+            .filter(lastro => funcoesGeradas.includes(lastro.funcao));
+          escalaBase.lastrosIndisponibilidade[dia] = [
+            ...lastrosOutrasFuncoes,
+            ...lastrosNovasFuncoes
+          ];
+        }
+
+        escalaBase.estrutura ||= { funcoes: [...estado.funcoes], vagas: { ...estado.vagas } };
+        escalaBase.estrutura.funcoes = Array.from(new Set([
+          ...(escalaBase.estrutura.funcoes || []),
+          ...funcoesGeradas
+        ]));
+        escalaBase.estrutura.vagas ||= {};
+        funcoesGeradas.forEach(funcao => {
+          escalaBase.estrutura.vagas[funcao] = estado.vagas[funcao] || 0;
+        });
+        escalaBase.diasVermelhos = diasVermelhos;
+
+        novaEscala = escalaBase.dados;
+        substituicoes = escalaBase.substituicoes;
+        justificativas = escalaBase.justificativas;
+        ordemTrocaManual = escalaBase.ordemTrocaManual;
+        tiposUsadosPorDia = escalaBase.tiposUsadosPorDia;
+        lastrosIndisponibilidade = escalaBase.lastrosIndisponibilidade;
+        alteracoesManuais = escalaBase.alteracoesManuais;
+      }
+
       estado.escala = {
   mesAno,
   tipos: tiposEscala,
   tiposUsadosPorDia,
   ordemTrocaManual,
   lastrosIndisponibilidade,
+  alteracoesManuais,
   estrutura: estruturaGerada,
   diasVermelhos,
   dados: novaEscala,
@@ -4935,6 +5206,36 @@ try {
   justificativas,
   compensacoesRotacao
 };
+
+if (deveMesclarComEscalaExistente) {
+  const funcoesGeradas = funcaoGeracao
+    ? [funcaoGeracao]
+    : estado.funcoes.filter(funcao => (estado.vagas[funcao] || 0) > 0);
+
+  estado.escala.tipos = {
+    ...(escalaExistenteAntesGeracao.tipos || {})
+  };
+  funcoesGeradas.forEach(funcao => {
+    estado.escala.tipos[funcao] = tiposEscala[funcao] || 'corrida';
+  });
+
+  estado.escala.estrutura = structuredClone(escalaExistenteAntesGeracao.estrutura || estruturaGerada);
+  estado.escala.estrutura.funcoes ||= [...estado.funcoes];
+  estado.escala.estrutura.funcoes = Array.from(new Set([
+    ...estado.escala.estrutura.funcoes,
+    ...funcoesGeradas
+  ]));
+  estado.escala.estrutura.vagas ||= {};
+  funcoesGeradas.forEach(funcao => {
+    estado.escala.estrutura.vagas[funcao] = estado.vagas[funcao] || 0;
+  });
+}
+
+// As compensações precisam representar a escala final já mesclada,
+// e não a escala temporária completa calculada internamente.
+if (deveMesclarComEscalaExistente) {
+  estado.escala.compensacoesRotacao = recalcularCompensacoesRotacaoDaEscala(estado.escala);
+}
 
 estado.escalas[mesAno] = estado.escala;
 
@@ -5309,11 +5610,11 @@ if (salvou) {
       });
 
       // Cabeçalho Dinâmico
-      cabecalho.innerHTML = `
-        <th class="border border-gray-300 p-2 w-12 text-center bg-gray-800 text-white">Dia</th>
-        <th class="border border-gray-300 p-2 w-14 text-center bg-gray-800 text-white">Sem.</th>
-        ${colunasVagas.map(c => `<th class="border border-gray-300 p-2 text-center bg-gray-700 text-white">${c.chave}</th>`).join('')}
-      `;
+cabecalho.innerHTML = `
+  <th class="border border-gray-300 p-2 w-12 text-center bg-gray-800 text-white">Dia</th>
+  <th class="border border-gray-300 p-2 w-14 text-center bg-gray-800 text-white">Sem.</th>
+  ${colunasVagas.map(c => `<th class="border border-gray-300 p-2 text-center bg-gray-700 text-white">${c.funcao}</th>`).join('')}
+`;
 
       // Linhas dos Dias
       let htmlCorpo = '';
