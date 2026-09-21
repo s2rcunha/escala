@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#b91c1c">
+  <title>Escala de Serviço - CCI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .tabela-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { min-width: max-content; }
+    th, td { white-space: nowrap; }
+    .celula-militar { min-width: 150px; white-space: normal; }
+  </style>
+</head>
+<body class="bg-gray-100 font-sans text-gray-800">
+  <main class="mx-auto max-w-[1600px] p-3 md:p-6">
+    <header class="mb-4 rounded-lg bg-white p-4 shadow-sm">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 class="text-xl font-bold text-red-700">Escala de Serviço - CCI</h1>
+          <p id="mesPublicacao" class="mt-1 text-sm font-semibold text-gray-700">Carregando escala...</p>
+          <p id="ultimaAtualizacao" class="mt-1 text-xs text-gray-500"></p>
+        </div>
+        <button type="button" onclick="carregarEscalaPublicada()" class="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700">Atualizar</button>
+      </div>
+      <div id="legendaCores" class="mt-3 flex flex-wrap gap-2 text-xs"></div>
+    </header>
+
+    <section class="rounded-lg bg-white p-3 shadow-sm md:p-5">
+      <div id="mensagem" class="py-10 text-center text-gray-500">Carregando...</div>
+      <div id="areaTabela" class="tabela-wrap hidden">
+        <table class="w-full border-collapse border border-gray-300 text-xs">
+          <thead><tr id="cabecalho" class="bg-gray-800 text-white"></tr></thead>
+          <tbody id="corpo"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="py-5 text-center text-xs text-gray-500">Consulta da escala publicada pelo CCI</footer>
+  </main>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwX4H9ATieL04h7vZJ6taBdNbgDzB8CoPaHahRj7rAXyArRod3GKlAGoyHmq06KEqGaeA/exec';
+
+function escaparHTML(valor) {
+  return String(valor ?? '').replace(/[&<>'"]/g, caractere => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+  })[caractere]);
+}
+
+function formatarMesAno(mesAno) {
+  if (!/^\d{4}-\d{2}$/.test(String(mesAno || ''))) return '';
+  const [ano, mes] = mesAno.split('-').map(Number);
+  return new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' })
+    .format(new Date(ano, mes - 1, 1))
+    .replace(/^./, letra => letra.toUpperCase());
+}
+
+function ehDiaVermelho(publicacao, ano, mes, dia) {
+  const dataISO = `${ano}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+  if (Array.isArray(publicacao.diasVermelhos)) return publicacao.diasVermelhos.includes(dataISO);
+  const semana = new Date(ano, mes - 1, dia).getDay();
+  return semana === 0 || semana === 6;
+}
+
+function renderizarLegenda(publicacao) {
+  const mapa = new Map();
+  Object.values(publicacao.cores || {}).forEach(dia => {
+    Object.values(dia || {}).forEach(item => {
+      if (item?.cor && item?.legenda) mapa.set(`${item.cor}|${item.legenda}`, item);
+    });
+  });
+  document.getElementById('legendaCores').innerHTML = [...mapa.values()].map(item =>
+    `<span class="inline-flex items-center gap-1 rounded border bg-white px-2 py-1"><span class="inline-block h-3 w-3 rounded border" style="background:${escaparHTML(item.cor)}"></span>${escaparHTML(item.legenda)}</span>`
+  ).join('');
+}
+
+function renderizarEscala(publicacao) {
+  const [ano, mes] = publicacao.mesAno.split('-').map(Number);
+  const diasNoMes = new Date(ano, mes, 0).getDate();
+  const estrutura = publicacao.estrutura || { funcoes: [], vagas: {} };
+  const colunas = [];
+  (estrutura.funcoes || []).forEach(funcao => {
+    const qtd = Number(estrutura.vagas?.[funcao] || 0);
+    for (let i = 0; i < qtd; i++) colunas.push({ funcao, chave: `${funcao} #${i + 1}` });
+  });
+
+  document.getElementById('cabecalho').innerHTML =
+    '<th class="border border-gray-300 p-2">Dia</th><th class="border border-gray-300 p-2">Sem.</th>' +
+    colunas.map(col => `<th class="border border-gray-300 p-2">${escaparHTML(col.funcao)}</th>`).join('');
+
+  const nomesDias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  let html = '';
+  for (let dia = 1; dia <= diasNoMes; dia++) {
+    const vermelho = ehDiaVermelho(publicacao, ano, mes, dia);
+    html += `<tr class="${vermelho ? 'bg-amber-50' : ''}">`;
+    html += `<td class="border p-2 text-center font-bold">${dia}</td>`;
+    html += `<td class="border p-2 text-center font-semibold ${vermelho ? 'text-red-600' : 'text-gray-600'}">${nomesDias[new Date(ano, mes - 1, dia).getDay()]}</td>`;
+    colunas.forEach(col => {
+      const nome = publicacao.dados?.[dia]?.[col.chave] || '';
+      const cor = publicacao.cores?.[dia]?.[col.chave]?.cor || '';
+      const estilo = cor ? ` style="background-color:${escaparHTML(cor)}"` : '';
+      html += `<td class="celula-militar border p-2 text-center font-semibold"${estilo}>${escaparHTML(nome)}</td>`;
+    });
+    html += '</tr>';
+  }
+  document.getElementById('corpo').innerHTML = html;
+  renderizarLegenda(publicacao);
+}
+
+async function carregarEscalaPublicada() {
+  const mensagem = document.getElementById('mensagem');
+  const area = document.getElementById('areaTabela');
+  mensagem.classList.remove('hidden');
+  mensagem.textContent = 'Carregando escala...';
+  area.classList.add('hidden');
+  try {
+    const resposta = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ funcao: 'carregarEscalaPublicada', params: {} })
+    });
+    if (!resposta.ok) throw new Error('HTTP ' + resposta.status);
+    const envelope = await resposta.json();
+    if (!envelope.sucesso) throw new Error(envelope.erro || 'Erro ao consultar a escala.');
+    const publicacao = envelope.dados;
+    if (!publicacao?.publicada) {
+      mensagem.textContent = 'Nenhuma escala foi publicada até o momento.';
+      document.getElementById('mesPublicacao').textContent = 'Escala ainda não publicada';
+      document.getElementById('ultimaAtualizacao').textContent = '';
+      return;
+    }
+    document.getElementById('mesPublicacao').textContent = formatarMesAno(publicacao.mesAno);
+    document.getElementById('ultimaAtualizacao').textContent = 'Última publicação: ' + new Date(publicacao.publicadoEm).toLocaleString('pt-BR');
+    renderizarEscala(publicacao);
+    mensagem.classList.add('hidden');
+    area.classList.remove('hidden');
+  } catch (erro) {
+    console.error(erro);
+    mensagem.textContent = 'Não foi possível carregar a escala publicada. Tente novamente.';
+  }
+}
+
+window.addEventListener('load', carregarEscalaPublicada);
+</script>
+</body>
+</html>

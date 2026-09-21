@@ -256,11 +256,13 @@
         <div class="flex gap-2">
           <button onclick="exportarPDF()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold">📄 Exportar PDF</button>
           <button onclick="exportarXLS()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-sm font-semibold">Exportar XLS</button>
+          <button id="botaoPublicarEscala" onclick="publicarEscalaAtual()" class="somente-edicao bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded text-sm font-semibold">📢 Publicar escala</button>
           <button onclick="exportarBancoDados()" class="somente-administrador bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm font-semibold">⬇️ Exportar Dados</button>
           <button onclick="document.getElementById('arquivoImportacao').click()" class="somente-administrador bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded text-sm font-semibold">⬆️ Importar Dados</button>
           <input type="file" id="arquivoImportacao" accept="application/json,.json" onchange="importarBancoDados(event)" class="hidden">
           <button onclick="limparEscala()" class="somente-edicao bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm font-semibold">Limpar</button>
         </div>
+        <div id="statusPublicacaoEscala" class="w-full text-xs text-gray-500"></div>
       </div>
 
       <div class="bg-white p-4 rounded shadow-sm">
@@ -1769,6 +1771,8 @@ async function inicializar() {
       redefinirSenhaUsuario: ['usuarioId', 'novaSenha', 'token'],
       excluirUsuario: ['usuarioId', 'token'],
       listarAuditoria: ['token', 'limite'],
+      publicarEscala: ['publicacao', 'token'],
+      carregarEscalaPublicada: [],
       inicializarBanco_: [],
       inicializarUsuarios_: ['nome', 'saram', 'senha']
     };
@@ -5643,6 +5647,73 @@ if (salvou) {
         };
       });
       return compensacoesRotacao;
+    }
+
+    function montarPublicacaoEscala(mesAno, escala) {
+      const estrutura = obterEstruturaDaEscala(escala);
+      const militaresPorId = Object.fromEntries(
+        estado.militares.map(m => [String(m.id), { nome: String(m.nome || '') }])
+      );
+      const dadosPublicos = {};
+      Object.entries(escala.dados || {}).forEach(([dia, vagasDia]) => {
+        dadosPublicos[dia] = {};
+        Object.entries(vagasDia || {}).forEach(([chave, militarId]) => {
+          const militar = militaresPorId[String(militarId)];
+          dadosPublicos[dia][chave] = militar ? militar.nome : '';
+        });
+      });
+      const cores = {};
+      Object.entries(escala.observacoes || {}).forEach(([dia, obsDia]) => {
+        Object.entries(obsDia || {}).forEach(([chave, obs]) => {
+          if (!obs?.cor) return;
+          cores[dia] ||= {};
+          cores[dia][chave] = { cor: obs.cor, legenda: String(obs.legenda || '') };
+        });
+      });
+      Object.entries(escala.alteracoesManuais || {}).forEach(([dia, alteracoesDia]) => {
+        Object.entries(alteracoesDia || {}).forEach(([chave, alteracao]) => {
+          if (cores[dia]?.[chave]?.cor) return;
+          const cor = alteracao?.tipo === 'troca' ? '#ccff00' : (alteracao?.tipo === 'puxado' ? '#fee2e2' : '');
+          if (!cor) return;
+          cores[dia] ||= {};
+          cores[dia][chave] = { cor, legenda: alteracao.tipo === 'troca' ? 'Troca de serviço' : 'Militar puxado' };
+        });
+      });
+      return {
+        mesAno,
+        titulo: 'Escala de Serviço - Célula Contraincêndio',
+        estrutura: structuredClone(estrutura),
+        diasVermelhos: Array.isArray(escala.diasVermelhos) ? [...escala.diasVermelhos] : [],
+        dados: dadosPublicos,
+        cores
+      };
+    }
+
+    async function publicarEscalaAtual() {
+      const mesAno = document.getElementById('mesAnoEscala')?.value || '';
+      const escala = estado.escalas?.[mesAno];
+      if (!mesAno || !escala?.dados) {
+        alert('Não há escala gerada para o mês selecionado.');
+        return;
+      }
+      if (!confirm(`Publicar a escala de ${formatarMesAno(mesAno)}?\n\nA página pública passará a exibir esta versão.`)) return;
+      const botao = document.getElementById('botaoPublicarEscala');
+      const status = document.getElementById('statusPublicacaoEscala');
+      if (botao) botao.disabled = true;
+      if (status) status.textContent = 'Publicando escala...';
+      try {
+        const publicacao = montarPublicacaoEscala(mesAno, escala);
+        const resultado = await executarAppsScript('publicarEscala', publicacao, tokenSessao);
+        const dataHora = resultado?.publicadoEm ? new Date(resultado.publicadoEm) : new Date();
+        if (status) status.textContent = `✓ ${formatarMesAno(mesAno)} publicada em ${dataHora.toLocaleString('pt-BR')}.`;
+        alert('Escala publicada com sucesso.');
+      } catch (erro) {
+        console.error('Erro ao publicar escala:', erro);
+        if (status) status.textContent = 'Não foi possível publicar a escala.';
+        alert('Não foi possível publicar a escala.\n\n' + (erro?.message || erro));
+      } finally {
+        if (botao) botao.disabled = false;
+      }
     }
 
     function renderizarTabelaEscala() {
