@@ -5106,11 +5106,31 @@ try {
       // Resultado completo calculado pelo gerador. Quando a solicitação
       // é parcial, somente a função/período escolhidos serão aplicados.
       const geracaoParcial = diaInicioGeracao > 1 || diaFimGeracao < diasNoMes;
-      const deveMesclarComEscalaExistente = !!escalaExistenteAntesGeracao
-        && (funcaoGeracao || geracaoParcial);
 
-      if (deveMesclarComEscalaExistente) {
-        const escalaBase = structuredClone(escalaExistenteAntesGeracao);
+      // Quando uma função específica é solicitada, a geração deve ser seletiva
+      // mesmo se o mês ainda não possuir escala. Nesse caso criamos uma base
+      // mensal vazia e aplicamos somente a função escolhida, deixando as demais
+      // funções sem militares até que sejam geradas posteriormente.
+      const deveMesclarResultado = !!funcaoGeracao
+        || (!!escalaExistenteAntesGeracao && geracaoParcial);
+
+      if (deveMesclarResultado) {
+        const escalaBase = escalaExistenteAntesGeracao
+          ? structuredClone(escalaExistenteAntesGeracao)
+          : {
+              mesAno,
+              tipos: {},
+              tiposUsadosPorDia: {},
+              ordemTrocaManual: {},
+              lastrosIndisponibilidade: {},
+              alteracoesManuais: {},
+              estrutura: structuredClone(estruturaGerada),
+              diasVermelhos: [...diasVermelhos],
+              dados: {},
+              substituicoes: {},
+              justificativas: {},
+              compensacoesRotacao: {}
+            };
         const funcoesGeradas = funcaoGeracao
           ? [funcaoGeracao]
           : estado.funcoes.filter(funcao => (estado.vagas[funcao] || 0) > 0);
@@ -5207,19 +5227,19 @@ delete escalaBase.alteracoesManuais[dia][chave];
   compensacoesRotacao
 };
 
-if (deveMesclarComEscalaExistente) {
+if (deveMesclarResultado) {
   const funcoesGeradas = funcaoGeracao
     ? [funcaoGeracao]
     : estado.funcoes.filter(funcao => (estado.vagas[funcao] || 0) > 0);
 
   estado.escala.tipos = {
-    ...(escalaExistenteAntesGeracao.tipos || {})
+    ...(escalaExistenteAntesGeracao?.tipos || {})
   };
   funcoesGeradas.forEach(funcao => {
     estado.escala.tipos[funcao] = tiposEscala[funcao] || 'corrida';
   });
 
-  estado.escala.estrutura = structuredClone(escalaExistenteAntesGeracao.estrutura || estruturaGerada);
+  estado.escala.estrutura = structuredClone(escalaExistenteAntesGeracao?.estrutura || estruturaGerada);
   estado.escala.estrutura.funcoes ||= [...estado.funcoes];
   estado.escala.estrutura.funcoes = Array.from(new Set([
     ...estado.escala.estrutura.funcoes,
@@ -5233,7 +5253,7 @@ if (deveMesclarComEscalaExistente) {
 
 // As compensações precisam representar a escala final já mesclada,
 // e não a escala temporária completa calculada internamente.
-if (deveMesclarComEscalaExistente) {
+if (deveMesclarResultado) {
   estado.escala.compensacoesRotacao = recalcularCompensacoesRotacaoDaEscala(estado.escala);
 }
 
