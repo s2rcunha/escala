@@ -11,6 +11,8 @@
     table { min-width: max-content; }
     th, td { white-space: nowrap; }
     .celula-militar { min-width: 150px; white-space: normal; }
+    .militar-nome { display: block; font-weight: 600; }
+    .militar-saram { display: block; margin-top: 2px; font-size: 0.9em; font-weight: 400; color: #4b5563; }
   </style>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800">
@@ -98,10 +100,16 @@ function renderizarEscala(publicacao) {
     html += `<td class="border p-2 text-center font-bold">${dia}</td>`;
     html += `<td class="border p-2 text-center font-semibold ${vermelho ? 'text-red-600' : 'text-gray-600'}">${nomesDias[new Date(ano, mes - 1, dia).getDay()]}</td>`;
     colunas.forEach(col => {
-      const nome = publicacao.dados?.[dia]?.[col.chave] || '';
+      const militarPublicado = publicacao.dados?.[dia]?.[col.chave] || '';
+      // Compatibilidade com publicações antigas, que armazenavam apenas o nome.
+      const nome = typeof militarPublicado === 'object' ? (militarPublicado.nome || '') : militarPublicado;
+      const saram = typeof militarPublicado === 'object' ? (militarPublicado.saram || '') : '';
       const cor = publicacao.cores?.[dia]?.[col.chave]?.cor || '';
       const estilo = cor ? ` style="background-color:${escaparHTML(cor)}"` : '';
-      html += `<td class="celula-militar border p-2 text-center font-semibold"${estilo}>${escaparHTML(nome)}</td>`;
+      const identificacao = nome
+        ? `<span class="militar-nome">${escaparHTML(nome)}</span>${saram ? `<span class="militar-saram">SARAM: ${escaparHTML(saram)}</span>` : ''}`
+        : '';
+      html += `<td class="celula-militar border p-2 text-center"${estilo}>${identificacao}</td>`;
     });
     html += '</tr>';
   }

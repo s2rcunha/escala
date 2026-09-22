@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -5652,14 +5652,19 @@ if (salvou) {
     function montarPublicacaoEscala(mesAno, escala) {
       const estrutura = obterEstruturaDaEscala(escala);
       const militaresPorId = Object.fromEntries(
-        estado.militares.map(m => [String(m.id), { nome: String(m.nome || '') }])
+        estado.militares.map(m => [String(m.id), {
+          nome: String(m.nome || ''),
+          saram: String(m.saram || '')
+        }])
       );
       const dadosPublicos = {};
       Object.entries(escala.dados || {}).forEach(([dia, vagasDia]) => {
         dadosPublicos[dia] = {};
         Object.entries(vagasDia || {}).forEach(([chave, militarId]) => {
           const militar = militaresPorId[String(militarId)];
-          dadosPublicos[dia][chave] = militar ? militar.nome : '';
+          dadosPublicos[dia][chave] = militar
+            ? { nome: militar.nome, saram: militar.saram }
+            : { nome: '', saram: '' };
         });
       });
       const cores = {};
@@ -7028,3 +7033,4 @@ if (salvou) {
 </script>
 </body>
 </html>
+
