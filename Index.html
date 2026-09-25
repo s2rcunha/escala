@@ -1,5 +1,4 @@
-﻿
-<html lang="pt-BR">
+﻿<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1052,22 +1051,27 @@ if (location.protocol === 'http:' || location.protocol === 'https:') {
     document.addEventListener('click', evento => {
       const botao = evento.target.closest('button, input[type="button"]');
       if (!botao || botao.disabled) return;
+
+      // Botões submit NÃO podem ser desabilitados no evento click.
+      // Se isso acontecer antes do envio, alguns navegadores cancelam o submit
+      // e a função onsubmit (inclusive o login) nem chega a executar.
+      const tipo = String(botao.getAttribute('type') || '').toLowerCase();
+      const pertenceAFormulario = !!botao.closest('form');
+      const ehSubmit = tipo === 'submit' || (botao.tagName === 'BUTTON' && !tipo && pertenceAFormulario);
+      if (ehSubmit) return;
+
       registrarBotaoAcao(botao);
     }, true);
 
     document.addEventListener('submit', evento => {
       const botao = evento.submitter || evento.target.querySelector('button[type="submit"], input[type="submit"]');
-      if (!botao || botao.disabled) return;
+      if (!botao) return;
 
-      // Executa depois do handler onsubmit do formulário.
-      // Isso evita que o botão seja desabilitado antes de funções como
-      // realizarLogin(event) iniciarem a própria operação.
-      setTimeout(() => {
-        if (!botao.disabled && botaoAcaoAtual !== botao) {
-          registrarBotaoAcao(botao);
-        }
-      }, 0);
-    }, false);
+      // Apenas associa o botão à operação. Não o desabilita aqui.
+      // A chamada real ao servidor, em executarAppsScript(), inicia o spinner
+      // sem impedir a execução do onsubmit.
+      botaoAcaoAtual = botao;
+    }, true);
 
     function mostrarBannerConflitoServidor() {
   const banner =
