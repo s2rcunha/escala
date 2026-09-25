@@ -1,4 +1,5 @@
-﻿<html lang="pt-BR">
+﻿
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -143,6 +144,12 @@ if (location.protocol === 'http:' || location.protocol === 'https:') {
     @keyframes girar-spinner-botao {
       to { transform: rotate(360deg); }
     }
+
+    /* Status dos meses no seletor da Escala Mensal:
+       vermelho = sem escala; azul = escala gerada; verde = escala publicada */
+    #mesEscala option[data-status="sem-escala"] { color: #dc2626; font-weight: 600; }
+    #mesEscala option[data-status="gerada"] { color: #2563eb; font-weight: 600; }
+    #mesEscala option[data-status="publicada"] { color: #16a34a; font-weight: 700; }
 </style>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800">
@@ -326,6 +333,11 @@ if (location.protocol === 'http:' || location.protocol === 'https:') {
             </select>
             <select id="anoEscala" onchange="atualizarMesAnoEscala()" class="border p-2 rounded text-sm" aria-label="Ano da escala"></select>
             <input type="hidden" id="mesAnoEscala">
+              <div class="w-full text-[11px] text-gray-500 mt-1">
+                <span class="font-semibold text-red-600">Vermelho:</span> sem escala ·
+                <span class="font-semibold text-blue-600">Azul:</span> escala gerada ·
+                <span class="font-semibold text-green-600">Verde:</span> publicada
+              </div>
           </div>
         </div>
         <h3 class="font-bold text-sm mb-3">Classificação dos dias</h3>
@@ -355,10 +367,7 @@ if (location.protocol === 'http:' || location.protocol === 'https:') {
         </form>
         <p class="mb-2 text-xs text-gray-500">Você também pode clicar diretamente no número de um dia da escala já gerada para escolher entre Automático, Preto ou Vermelho. A classificação gravada no mês é preservada no histórico.</p>
         <div id="listaDiasEspeciais" class="flex flex-wrap gap-2 text-sm"></div>
-        <details class="somente-edicao mt-4">
-          <summary class="cursor-pointer text-sm font-semibold text-gray-700">Editar tipos de escala por função</summary>
-          <div id="listaTiposEscala" class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"></div>
-        </details>
+        
         <div class="somente-edicao mt-4 flex justify-end">
           <button onclick="abrirModalGeracaoEscala()" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded font-bold shadow">Gerar Escala Automática</button>
         </div>
@@ -1081,6 +1090,18 @@ if (location.protocol === 'http:' || location.protocol === 'https:') {
 
   banner.classList.remove('hidden');
   banner.classList.add('flex');
+
+      const bannerRecuperacao=document.querySelector('#bannerConflitoServidor, [data-banner-conflito], .banner-conflito-servidor');
+      if(bannerRecuperacao && !bannerRecuperacao.querySelector('[data-acoes-recuperacao-conflito]')){
+        const acoes=document.createElement('span');
+        acoes.setAttribute('data-acoes-recuperacao-conflito','1');
+        acoes.style.cssText='display:inline-flex;gap:.5rem;margin-left:.75rem;flex-wrap:wrap';
+        const baixar=document.createElement('button');
+        baixar.type='button'; baixar.textContent='Baixar alterações locais'; baixar.onclick=baixarSnapshotLocalConflito;
+        const recarregar=document.createElement('button');
+        recarregar.type='button'; recarregar.textContent='Recarregar dados do servidor'; recarregar.onclick=recarregarAposConflito;
+        acoes.append(baixar,recarregar); bannerRecuperacao.appendChild(acoes);
+      }
 }
     function mostrarProcessamento(mensagem = 'Processando, aguarde...') {
   const overlay = document.getElementById('overlayProcessamento');
@@ -1175,6 +1196,33 @@ escala: {},
     let versaoServidor = null;
     let filaSalvamento = Promise.resolve();
     let conflitoServidor = false;
+    const CHAVE_RECUPERACAO_CONFLITO = 'cci_recuperacao_conflito_v1';
+    function salvarSnapshotLocalConflito(contexto='') {
+      try {
+        const pacote={versao:1,salvoEm:new Date().toISOString(),contexto:String(contexto||''),
+          versaoServidorConhecida:typeof versaoServidor!=='undefined'?versaoServidor:null,
+          estado:JSON.parse(JSON.stringify(estado))};
+        localStorage.setItem(CHAVE_RECUPERACAO_CONFLITO,JSON.stringify(pacote));
+        return pacote;
+      } catch(erro){console.error('Erro ao preservar trabalho local:',erro);return null;}
+    }
+    function obterSnapshotLocalConflito(){
+      try{const bruto=localStorage.getItem(CHAVE_RECUPERACAO_CONFLITO);return bruto?JSON.parse(bruto):null;}
+      catch(erro){console.error('Snapshot de conflito inválido:',erro);return null;}
+    }
+    function baixarSnapshotLocalConflito(){
+      const pacote=obterSnapshotLocalConflito()||salvarSnapshotLocalConflito('exportacao_manual');
+      if(!pacote){alert('Não foi possível preparar a cópia local.');return;}
+      const blob=new Blob([JSON.stringify(pacote,null,2)],{type:'application/json;charset=utf-8'});
+      const url=URL.createObjectURL(blob), link=document.createElement('a');
+      link.href=url; link.download=`recuperacao-conflito-cci-${Date.now()}.json`;
+      document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+    }
+    function recarregarAposConflito(){
+      salvarSnapshotLocalConflito('antes_de_recarregar');
+      window.location.reload();
+    }
+
     let falhaSalvamentoServidor = false;
 
     window.addEventListener('beforeunload', function(evento) {
@@ -1293,7 +1341,45 @@ estado.escala = {};
             if (!Number.isInteger(militar.ordem)) militar.ordem = indice;
           });
       });
-    }
+    
+      // Migração idempotente do modelo legado de dias especiais.
+      // Não sobrescreve exceções já cadastradas no modelo novo.
+      if (estado.diasEspeciais && typeof estado.diasEspeciais === 'object') {
+        if (!estado.excecoesClassificacaoDias || typeof estado.excecoesClassificacaoDias !== 'object') {
+          estado.excecoesClassificacaoDias = {};
+        }
+
+        Object.entries(estado.diasEspeciais).forEach(([dataStr, valorLegado]) => {
+          if (!dataStr || Object.prototype.hasOwnProperty.call(estado.excecoesClassificacaoDias, dataStr)) {
+            return;
+          }
+
+          let classificacao = null;
+
+          if (typeof valorLegado === 'string') {
+            const valor = valorLegado.trim().toLowerCase();
+            if (valor === 'preto' || valor === 'vermelho') classificacao = valor;
+          } else if (valorLegado && typeof valorLegado === 'object') {
+            const valor = String(
+              valorLegado.cor ??
+              valorLegado.classificacao ??
+              valorLegado.tipo ??
+              ''
+            ).trim().toLowerCase();
+            if (valor === 'preto' || valor === 'vermelho') classificacao = valor;
+          } else if (valorLegado === true) {
+            classificacao = 'vermelho';
+          }
+
+          if (classificacao) {
+            estado.excecoesClassificacaoDias[dataStr] = {
+              cor: classificacao,
+              motivo: 'Migrado de diasEspeciais'
+            };
+          }
+        });
+      }
+}
 
     async function carregarEstado() {
     try {
@@ -1311,6 +1397,8 @@ estado.escala = {};
       console.error('Erro ao carregar dados do servidor:', erro);
       alert('Não foi possível carregar os dados do servidor.\n\nVerifique sua conexão com a internet.');
       throw erro;
+
+
     }
   }
 
@@ -1404,6 +1492,7 @@ async function salvarEstadoNoServidor(
   // A partir daqui sabemos que o estado desta página
   // está desatualizado.
   conflitoServidor = true;
+      salvarSnapshotLocalConflito('conflito_de_versao');
 
   // Mantém um aviso visível até que a página seja recarregada.
   mostrarBannerConflitoServidor();
@@ -1768,13 +1857,7 @@ async function salvarEstadoNoServidor(
 
       const tipos = tiposSalvos || obterTiposEscalaSelecionados();
       container.innerHTML = estado.funcoes.map((funcao, indice) => `
-        <label class="flex flex-col gap-1 border rounded p-3 bg-gray-50">
-          <span class="text-xs font-semibold text-gray-700">${funcao}</span>
-          <select id="tipoEscala-${indice}" data-funcao="${funcao}" onchange="validarTipoEscalaManual(this)" class="border p-2 rounded text-sm bg-white">
-            <option value="corrida" ${(tipos[funcao] || obterTipoPadraoFuncao(funcao)) === 'corrida' ? 'selected' : ''}>Corrida</option>
-            <option value="semanaFimSemana" ${(tipos[funcao] || obterTipoPadraoFuncao(funcao)) === 'semanaFimSemana' ? 'selected' : ''}>Diferenciar dias uteis e vermelhos</option>
-          </select>
-        </label>
+        
       `).join('');
     }
 
@@ -1818,13 +1901,6 @@ async function salvarEstadoNoServidor(
         escala.lastrosIndisponibilidade ||= {};
         escala.diasVermelhos ||= [];
       });
-    }
-
-    function obterClassificacaoHistoricaDia(escala, data, diaNumero) {
-      if (escala?.diasVermelhos) {
-        return escalaTemDiaVermelho(escala, data, diaNumero) ? 'vermelho' : 'preto';
-      }
-      return obterClassificacaoDia(data).cor;
     }
 
     function obterResumoContagemMilitarFuncao(militarId, funcao, mesReferencia = '') {
@@ -1877,54 +1953,55 @@ async function salvarEstadoNoServidor(
         return `
           <details class="rounded border bg-gray-50 p-3">
             <summary class="cursor-pointer font-semibold text-sm">${funcao}</summary>
+            <p class="mt-2 text-[11px] text-gray-500">Passe o mouse sobre qualquer opção para ver uma explicação rápida da regra.</p>
             <div class="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
               <label class="text-xs font-semibold text-gray-700">Distribuição
-                <select data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="distribuicao" class="mt-1 w-full rounded border bg-white p-2 text-sm">
-                  <option value="semanaFimSemana" ${r.distribuicao === 'semanaFimSemana' ? 'selected' : ''}>Separar preto/vermelho</option>
-                  <option value="corrida" ${r.distribuicao === 'corrida' ? 'selected' : ''}>Corrida</option>
+                <select data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="distribuicao" title="Separar preto/vermelho mantém controles e rotações distintos conforme a classificação do dia. Corrida usa uma única sequência para todos os dias." class="mt-1 w-full rounded border bg-white p-2 text-sm">
+                  <option title="Usa a classificação dos dias para controlar e distribuir serviços pretos e vermelhos separadamente." value="semanaFimSemana" ${r.distribuicao === 'semanaFimSemana' ? 'selected' : ''}>Separar preto/vermelho</option>
+                  <option title="Usa uma única sequência de rotação para os serviços, sem separar a distribuição por preto e vermelho." value="corrida" ${r.distribuicao === 'corrida' ? 'selected' : ''}>Corrida</option>
                 </select>
               </label>
               <label class="text-xs font-semibold text-gray-700">Folgas antes
-                <input type="number" min="0" max="30" value="${r.descanso.folgasAntes}" data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="folgasAntes" class="mt-1 w-full rounded border p-2 text-sm">
+                <input type="number" min="0" max="30" value="${r.descanso.folgasAntes}" data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="folgasAntes" title="Quantidade de dias de folga exigida antes deste serviço para o militar ser considerado em condição normal." class="mt-1 w-full rounded border p-2 text-sm">
               </label>
               <label class="text-xs font-semibold text-gray-700">Folgas depois
-                <input type="number" min="0" max="30" value="${r.descanso.folgasDepois}" data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="folgasDepois" class="mt-1 w-full rounded border p-2 text-sm">
+                <input type="number" min="0" max="30" value="${r.descanso.folgasDepois}" data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="folgasDepois" title="Quantidade de dias de folga exigida depois deste serviço para o militar ser considerado em condição normal." class="mt-1 w-full rounded border p-2 text-sm">
               </label>
               <label class="flex items-center gap-2 text-xs font-semibold text-gray-700">
-                <input type="checkbox" ${r.descanso.reduzido.permitido ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="reduzidoPermitido">
+                <input type="checkbox" ${r.descanso.reduzido.permitido ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="reduzidoPermitido" title="Marcado: permite usar candidatos com descanso abaixo do normal, desde que atinjam os mínimos reduzidos. Desmarcado: esses candidatos ficam impedidos.">
                 Permitir descanso reduzido
               </label>
               <label class="text-xs font-semibold text-gray-700">Folgas mínimas antes (reduzido)
-                <input type="number" min="0" max="30" value="${r.descanso.reduzido.folgasAntes}" data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="reduzidoFolgasAntes" class="mt-1 w-full rounded border p-2 text-sm">
+                <input type="number" min="0" max="30" value="${r.descanso.reduzido.folgasAntes}" data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="reduzidoFolgasAntes" title="Mínimo de folgas antes do serviço aceito quando o descanso reduzido estiver habilitado." class="mt-1 w-full rounded border p-2 text-sm">
               </label>
               <label class="text-xs font-semibold text-gray-700">Folgas mínimas depois (reduzido)
-                <input type="number" min="0" max="30" value="${r.descanso.reduzido.folgasDepois}" data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="reduzidoFolgasDepois" class="mt-1 w-full rounded border p-2 text-sm">
+                <input type="number" min="0" max="30" value="${r.descanso.reduzido.folgasDepois}" data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="reduzidoFolgasDepois" title="Mínimo de folgas depois do serviço aceito quando o descanso reduzido estiver habilitado." class="mt-1 w-full rounded border p-2 text-sm">
               </label>
               <label class="flex items-center gap-2 text-xs font-semibold text-gray-700">
-                <input type="checkbox" ${r.vermelho.permitirConsecutivos ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="vermelhosConsecutivos">
+                <input type="checkbox" ${r.vermelho.permitirConsecutivos ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="vermelhosConsecutivos" title="Marcado: permite ao mesmo militar tirar serviços vermelhos consecutivos dentro das demais regras. Desmarcado: o sistema procura evitar essa sequência.">
                 Permitir vermelhos consecutivos
               </label>
               <label class="flex items-center gap-2 text-xs font-semibold text-gray-700">
-                <input type="checkbox" ${r.lastro.habilitado ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="lastroHabilitado">
+                <input type="checkbox" ${r.lastro.habilitado ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="lastroHabilitado" title="Marcado: indisponibilidades longas podem gerar crédito virtual de lastro. Desmarcado: nenhuma indisponibilidade gera lastro para esta função.">
                 Utilizar lastro
               </label>
               <label class="text-xs font-semibold text-gray-700">Mínimo para lastro (dias)
-                <input type="number" min="1" max="365" value="${r.lastro.minimoDiasIndisponibilidade}" data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="lastroMinimo" class="mt-1 w-full rounded border p-2 text-sm">
+                <input type="number" min="1" max="365" value="${r.lastro.minimoDiasIndisponibilidade}" data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="lastroMinimo" title="Número mínimo de dias de indisponibilidade para que o período possa gerar lastro." class="mt-1 w-full rounded border p-2 text-sm">
               </label>
               <label class="flex items-center gap-2 text-xs font-semibold text-gray-700">
-                <input type="checkbox" ${r.descanso.reduzido.exigirConfirmacao !== false ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="reduzidoConfirmacao">
+                <input type="checkbox" ${r.descanso.reduzido.exigirConfirmacao !== false ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="reduzidoConfirmacao" title="Marcado: o sistema solicita confirmação antes de utilizar descanso reduzido. Desmarcado: pode utilizá-lo automaticamente quando necessário e permitido.">
                 Confirmar antes de usar descanso reduzido
               </label>
               <label class="flex items-center gap-2 text-xs font-semibold text-gray-700">
-                <input type="checkbox" ${r.justica.considerarTotal !== false ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="justicaConsiderarTotal">
+                <input type="checkbox" ${r.justica.considerarTotal !== false ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="justicaConsiderarTotal" title="Marcado: a comparação de justiça considera Quadrinho + Lastro. Desmarcado: o lastro não entra nessa comparação.">
                 Justiça considera Quadrinho + Lastro
               </label>
               <label class="flex items-center gap-2 text-xs font-semibold text-gray-700">
-                <input type="checkbox" ${r.justica.separarPretoVermelho !== false ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="justicaSepararCores">
+                <input type="checkbox" ${r.justica.separarPretoVermelho !== false ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="justicaSepararCores" title="Marcado: serviços pretos e vermelhos são equilibrados separadamente. Desmarcado: a justiça não separa o acumulado por cor.">
                 Equalizar preto e vermelho separadamente
               </label>
               <label class="flex items-center gap-2 text-xs font-semibold text-gray-700">
-                <input type="checkbox" ${r.justica.usarRotacaoDesempate !== false ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="justicaRotacao">
+                <input type="checkbox" ${r.justica.usarRotacaoDesempate !== false ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="justicaRotacao" title="Marcado: quando candidatos ficam empatados pelos critérios anteriores, a posição na rotação decide a prioridade. Desmarcado: a rotação não é usada como critério de desempate.">
                 Usar rotação como desempate
               </label>
             </div>
@@ -2188,11 +2265,41 @@ async function salvarEstadoNoServidor(
       selectAno.value = String(anoSelecionado);
     }
 
+    function atualizarCoresMesesEscala() {
+      const selectMes = document.getElementById('mesEscala');
+      const ano = document.getElementById('anoEscala')?.value || '';
+      if (!selectMes || !ano) return;
+
+      [...selectMes.options].forEach(option => {
+        const mesAno = `${ano}-${option.value}`;
+        const escala = estado.escalas?.[mesAno];
+        const temEscala = !!(escala?.dados && Object.keys(escala.dados).length);
+        const publicada = temEscala && !!escala.publicadaEm;
+
+        const status = publicada ? 'publicada' : (temEscala ? 'gerada' : 'sem-escala');
+        option.dataset.status = status;
+
+        // Estilo inline melhora a compatibilidade dos <option> nos navegadores desktop.
+        option.style.color = publicada ? '#16a34a' : (temEscala ? '#2563eb' : '#dc2626');
+        option.style.fontWeight = publicada ? '700' : '600';
+        option.title = publicada
+          ? 'Escala gerada e publicada'
+          : (temEscala ? 'Escala gerada' : 'Sem escala gerada');
+      });
+
+      const selecionada = selectMes.selectedOptions?.[0];
+      if (selecionada) {
+        selectMes.style.color = selecionada.style.color || '';
+        selectMes.style.fontWeight = selecionada.style.fontWeight || '';
+      }
+    }
+
     function atualizarMesAnoEscala() {
       const mes = document.getElementById('mesEscala')?.value || '';
       const ano = document.getElementById('anoEscala')?.value || '';
       const campo = document.getElementById('mesAnoEscala');
       if (campo) campo.value = (ano && mes) ? `${ano}-${mes}` : '';
+      atualizarCoresMesesEscala();
       renderizarDiasEspeciais();
       renderizarTabelaEscala();
     }
@@ -2207,6 +2314,7 @@ async function salvarEstadoNoServidor(
       if (selectAno) selectAno.value = ano;
       const campo = document.getElementById('mesAnoEscala');
       if (campo) campo.value = valor;
+      atualizarCoresMesesEscala();
     }
 
     function inicializarInterface(definirMesAtual = false) {
@@ -3343,6 +3451,8 @@ async function sairDoSistema() {
 
     function alertarConflitoBackup(mensagem) {
       conflitoServidor = true;
+      salvarSnapshotLocalConflito('conflito_de_versao');
+      mostrarBannerConflitoServidor();
       alert(
         'ATENÇÃO!\n\n' +
         (mensagem || 'Os dados foram alterados por outro usuário.') + '\n\n' +
@@ -6238,12 +6348,6 @@ if (salvou) {
       const ultimoDia = Math.max(diasNoMes, ...diasOrdenados);
 
 
-      Object.values(estado.escalas)
-        .filter(escala => escala.mesAno && escala.mesAno < mesAno)
-        .forEach(escala => {
-          estado.funcoes.forEach(funcao => obterContagemSeparadaEscala(escala, contagemSeparadaGeracao, funcao));
-        });
-
       for (let dia = 1; dia <= ultimoDia; dia++) {
         const dataStr = `${ano}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
         const dataObj = new Date(ano, mes - 1, dia);
@@ -6269,22 +6373,15 @@ if (salvou) {
           if (tipoFuncao === 'semanaFimSemana') {
             let seguranca = 0;
             while (proximoMilitarDaRotacao
-              && (
-                militaresAdiantadosRotacao[chaveRotacao]?.has(proximoMilitarDaRotacao.id)
-                || militarEstaIndisponivelNaData(proximoMilitarDaRotacao.id, dataStr)
-                || militarTemIndisponibilidadeSemanalNaData(proximoMilitarDaRotacao.id, diaSemana)
-                || militarIniciaIndisponibilidadeNoDiaSeguinteDaData(proximoMilitarDaRotacao.id, dataObj)
-              )
+              && militaresAdiantadosRotacao[chaveRotacao]?.has(proximoMilitarDaRotacao.id)
               && seguranca < militaresDaRotacao.length) {
               const militarPulando = proximoMilitarDaRotacao;
-              if (!militarEstaIndisponivelNaData(militarPulando.id, dataStr)
-                && !militarTemIndisponibilidadeSemanalNaData(militarPulando.id, diaSemana)
-                && !militarIniciaIndisponibilidadeNoDiaSeguinteDaData(militarPulando.id, dataObj)) {
-                militaresAdiantadosRotacao[chaveRotacao].delete(militarPulando.id);
-                if (bloqueiosRotacao[chaveRotacao]) {
-                  delete bloqueiosRotacao[chaveRotacao][militarPulando.id];
-                }
+
+              militaresAdiantadosRotacao[chaveRotacao].delete(militarPulando.id);
+              if (bloqueiosRotacao[chaveRotacao]) {
+                delete bloqueiosRotacao[chaveRotacao][militarPulando.id];
               }
+
               ultimoMilitarPorRotacao[chaveRotacao] = militarPulando.id;
               ultimoMilitar = militarPulando.id;
               ultimoIndice = militaresDaRotacao.findIndex(militar => militar.id === ultimoMilitar);
@@ -6295,30 +6392,92 @@ if (salvou) {
           }
 
           const aplicarRegraVermelha = tipoFuncao === 'semanaFimSemana' && servicoVermelho;
-          const podeSerEscaladoNoRecalculo = militar => {
-            if (!militar || militar.funcao !== col.funcao) return false;
-            if (militarEstaIndisponivelNaData(militar.id, dataStr)) return false;
-            if (militarTemIndisponibilidadeSemanalNaData(militar.id, diaSemana)) return false;
-            if (militarIniciaIndisponibilidadeNoDiaSeguinteDaData(militar.id, dataObj)) return false;
-            const ultimaDataServico = ultimaDataServicoPorMilitar[militar.id];
-            const intervaloCalendario = ultimaDataServico === undefined
-              ? Infinity
-              : Math.round((dataObj.getTime() - ultimaDataServico) / 86400000);
-            if (intervaloCalendario < 4) return false;
+          const classificarElegibilidadeNoRecalculo = militar => {
+            if (!militar || militar.funcao !== col.funcao) {
+              return { elegivel: false, nivel: 'impedido' };
+            }
+
             const ultimoEvento = ultimoEventoPorMilitar[`${militar.id}:${chaveRotacao}`];
-            if (ultimoEvento !== undefined && eventoRotacao - ultimoEvento < 2) return false;
-            if (aplicarRegraVermelha && ultimoServicoFoiVermelhoPorMilitar[militar.id]) return false;
-            return !Object.values(escalaParcial[dia]).includes(militar.id);
+            if (ultimoEvento !== undefined && eventoRotacao - ultimoEvento < 2) {
+              return { elegivel: false, nivel: 'impedido', motivo: 'rotacao' };
+            }
+
+            const ultimaDataServico = ultimaDataServicoPorMilitar[militar.id];
+            const servicosParaMotor = [];
+            if (ultimaDataServico !== undefined) {
+              servicosParaMotor.push({
+                tempo: ultimaDataServico,
+                vermelho: ultimoServicoFoiVermelhoPorMilitar[militar.id] === true
+              });
+            }
+
+            const avaliacao = avaliarElegibilidadeServico({
+              militar,
+              funcao: col.funcao,
+              data: dataObj,
+              escala,
+              tipoFuncao,
+              servicosMilitar: servicosParaMotor,
+              idsJaEscaladosNoDia: Object.values(escalaParcial[dia]).filter(Boolean),
+              verificarVermelhoConsecutivo: aplicarRegraVermelha,
+              ultimoServicoFoiVermelho: ultimoServicoFoiVermelhoPorMilitar[militar.id] === true
+            });
+
+            if (!avaliacao.elegivel) {
+              return { elegivel: false, nivel: 'impedido', avaliacao };
+            }
+
+            const usaDescansoReduzido =
+              avaliacao.nivel === 'reduzido';
+
+            return {
+              elegivel: true,
+              nivel: usaDescansoReduzido ? 'reduzido' : 'normal',
+              avaliacao
+            };
           };
+
+          const podeSerEscaladoNoRecalculo = militar =>
+            classificarElegibilidadeNoRecalculo(militar).elegivel;
 
           if (tipoFuncao === 'semanaFimSemana'
             && proximoMilitarDaRotacao
-            && !pendenciasRotacao[chaveRotacao]
-            && !militarEstaIndisponivelNaData(proximoMilitarDaRotacao.id, dataStr)
-            && !militarTemIndisponibilidadeSemanalNaData(proximoMilitarDaRotacao.id, diaSemana)
-            && !militarIniciaIndisponibilidadeNoDiaSeguinteDaData(proximoMilitarDaRotacao.id, dataObj)
-            && !podeSerEscaladoNoRecalculo(proximoMilitarDaRotacao)) {
-            pendenciasRotacao[chaveRotacao] = proximoMilitarDaRotacao.id;
+            && !pendenciasRotacao[chaveRotacao]) {
+            const classificacaoProximo =
+              classificarElegibilidadeNoRecalculo(proximoMilitarDaRotacao);
+
+            let proximoPodeAtenderRotacao =
+              classificacaoProximo.nivel === 'normal';
+
+            if (classificacaoProximo.nivel === 'reduzido') {
+              const existeNormalDisponivel = militaresDaRotacao.some(militar =>
+                militar.id !== proximoMilitarDaRotacao.id
+                && classificarElegibilidadeNoRecalculo(militar).nivel === 'normal'
+              );
+
+              // Descanso reduzido é fallback: só atende a rotação
+              // quando nenhum candidato normal está disponível.
+              proximoPodeAtenderRotacao = !existeNormalDisponivel;
+            }
+
+            if (!proximoPodeAtenderRotacao) {
+              // Indisponibilidade não cria pendência explícita de rotação.
+              // Diferenças de acumulado são recuperadas pelas escolhas futuras;
+              // indisponibilidades longas seguem tratadas pelo mecanismo de lastro.
+              const indisponivelNaData =
+                militarEstaIndisponivelNaData(proximoMilitarDaRotacao.id, dataStr);
+              const indisponivelSemanal =
+                militarTemIndisponibilidadeSemanalNaData(proximoMilitarDaRotacao.id, diaSemana);
+              const iniciaIndisponibilidadeAmanha =
+                militarIniciaIndisponibilidadeNoDiaSeguinteDaData(
+                  proximoMilitarDaRotacao.id,
+                  dataObj
+                );
+
+              if (!indisponivelNaData && !indisponivelSemanal && !iniciaIndisponibilidadeAmanha) {
+                pendenciasRotacao[chaveRotacao] = proximoMilitarDaRotacao.id;
+              }
+            }
           }
 
           const escolhidoId = escala.dados?.[dia]?.[col.chave] || '';
@@ -6445,6 +6604,13 @@ if (salvou) {
         const publicacao = montarPublicacaoEscala(mesAno, escala);
         const resultado = await executarAppsScript('publicarEscala', publicacao, tokenSessao);
         const dataHora = resultado?.publicadoEm ? new Date(resultado.publicadoEm) : new Date();
+
+        // Mantém no estado do sistema o status visual de publicação do mês.
+        // Isso permite que o seletor continue verde após recarregar o sistema.
+        escala.publicadaEm = dataHora.toISOString();
+        atualizarCoresMesesEscala();
+        await salvarEstado('marcar_escala_publicada');
+
         if (status) status.textContent = `✓ ${formatarMesAno(mesAno)} publicada em ${dataHora.toLocaleString('pt-BR')}.`;
         alert('Escala publicada com sucesso.');
       } catch (erro) {
@@ -6456,36 +6622,33 @@ if (salvou) {
       }
     }
 
-    function renderizarResumoRegrasMes() {
-      const box = document.getElementById('resumoRegrasMes');
-      if (!box) return;
-      const escala = estado.escala;
-      if (!escala?.mesAno) {
-        box.classList.add('hidden');
-        box.innerHTML = '';
-        return;
-      }
-
-      const snapshot = escala.regrasEscalaSnapshot || {};
-      const itens = Object.entries(snapshot).map(([funcao, r]) => {
-        const descanso = r.descanso || {};
-        const lastro = r.lastro || {};
-        const justica = r.justica || {};
-        return `<div class="mb-1"><strong>${funcao}:</strong> `
-          + `${r.distribuicao === 'corrida' ? 'Corrida' : 'Preto/Vermelho'}; `
-          + `descanso ${descanso.folgasAntes ?? 0} antes / ${descanso.folgasDepois ?? 0} depois; `
-          + `${descanso.reduzidoPermitido ? `reduzido ${descanso.reduzidoFolgasAntes ?? 0}/${descanso.reduzidoFolgasDepois ?? 0}` : 'sem reduzido'}; `
-          + `${r.vermelho?.permitirConsecutivos ? 'vermelhos consecutivos permitidos' : 'vermelhos consecutivos bloqueados'}; `
-          + `${lastro.habilitado ? `lastro ≥ ${lastro.minimoDiasIndisponibilidade ?? 30} dias` : 'lastro desativado'}; `
-          + `justiça ${justica.considerarTotal !== false ? 'por Total' : 'por Quadrinho'}${justica.separarPretoVermelho !== false ? ' separado por cor' : ' conjunto'}.</div>`;
-      });
-
-      box.innerHTML = `<div class="font-semibold mb-1">Regras registradas para ${escala.mesAno}</div>`
-        + (itens.length ? itens.join('') : '<div>Escala histórica sem snapshot detalhado.</div>');
-      box.classList.remove('hidden');
-    }
-
     function renderizarTabelaEscala() {
+      // Cache válido somente durante este render.
+      // Evita repetir a análise completa do histórico para a mesma combinação.
+      const cacheAnalisesTrocaManual = new Map();
+      const analisarViolacoesAlteracaoManualMemo = (dia, chave, militarId) => {
+        const chaveCache = `${dia}|${chave}|${militarId}`;
+        if (!cacheAnalisesTrocaManual.has(chaveCache)) {
+          cacheAnalisesTrocaManual.set(
+            chaveCache,
+            analisarViolacoesAlteracaoManual(dia, chave, militarId)
+          );
+        }
+        return cacheAnalisesTrocaManual.get(chaveCache);
+      };
+
+      const cacheClassificacaoTrocaManual = new Map();
+      const classificarCandidatoTrocaManualMemo = (dia, chave, militarId) => {
+        const chaveCache = `${dia}|${chave}|${militarId}`;
+        if (!cacheClassificacaoTrocaManual.has(chaveCache)) {
+          cacheClassificacaoTrocaManual.set(
+            chaveCache,
+            classificarCandidatoTrocaManual(dia, chave, militarId)
+          );
+        }
+        return cacheClassificacaoTrocaManual.get(chaveCache);
+      };
+
       const mesAno = document.getElementById('mesAnoEscala').value;
       const cabecalho = document.getElementById('cabecalhoTabelaEscala');
       const corpo = document.getElementById('corpoTabelaEscala');
@@ -6627,7 +6790,7 @@ const classificacoesTroca = new Map();
 militaresNaOrdemBase.forEach((militar, indiceOrdemBase) => {
   if (militar.id === militarIdEscalado) return;
 
-  const classificacao = classificarCandidatoTrocaManual(dia, col.chave, militar.id);
+  const classificacao = classificarCandidatoTrocaManualMemo(dia, col.chave, militar.id);
   classificacoesTroca.set(militar.id, classificacao);
 
   // Impedimentos absolutos não aparecem como opção de substituição.
@@ -6937,11 +7100,33 @@ const opcoes = militaresOrdenadosTroca
 
       const registrarDescanso = (resultado, lado, servicoRef) => {
         if (!servicoRef || resultado.nivel === 'normal') return;
+
         const dataRef = new Date(servicoRef.tempo).toLocaleDateString('pt-BR');
+        const diferencaDias = Math.round(
+          Math.abs(new Date(data).setHours(0, 0, 0, 0) - new Date(servicoRef.tempo).setHours(0, 0, 0, 0))
+          / 86400000
+        );
+
+        // Terminologia operacional nas justificativas:
+        // diferença de 1 dia = dobraria serviço;
+        // diferença de 2 dias = ficaria na 24.
+        let motivoOperacional = '';
+        if (diferencaDias === 1) {
+          motivoOperacional = `dobraria serviço ${lado}: serviço de referência em ${dataRef}`;
+        } else if (diferencaDias === 2) {
+          motivoOperacional = `ficaria na 24 ${lado}: serviço de referência em ${dataRef}`;
+        }
+
         if (resultado.nivel === 'reduzido') {
-          alertas.push(`descanso reduzido ${lado}: ${resultado.folgas} folga(s), referência ${dataRef}`);
+          alertas.push(
+            motivoOperacional ||
+            `descanso reduzido ${lado}: ${resultado.folgas} folga(s), referência ${dataRef}`
+          );
         } else {
-          impedimentos.push(`descanso insuficiente ${lado}: ${resultado.folgas} folga(s), referência ${dataRef}`);
+          impedimentos.push(
+            motivoOperacional ||
+            `descanso insuficiente ${lado}: ${resultado.folgas} folga(s), referência ${dataRef}`
+          );
         }
       };
 
@@ -6988,6 +7173,9 @@ const opcoes = militaresOrdenadosTroca
         tem('dia da semana') ||
         tem('inicia indisponibilidade') ||
         tem('descanso insuficiente') ||
+        tem('ficaria na 24') ||
+        tem('dobraria serviço') ||
+        tem('dobraria servico') ||
         tem('vermelho seguido') ||
         tem('outra funcao');
 
@@ -7667,9 +7855,7 @@ const opcoes = militaresOrdenadosTroca
       const militar = estado.militares.find(m => m.id === militarId);
       const funcaoAuditoria = decodeURIComponent(funcaoCodificada);
       const mesAuditoria = document.getElementById('mesAnoEscala')?.value || '';
-      const resumoQLT = obterResumoContagemMilitarFuncao(militarId, funcaoAuditoria, mesAuditoria);
-
-      if (!militar) return;
+if (!militar) return;
 
       const auditorias = (militar.auditoriaAjustesAcumulado || [])
         .filter(registro => registro.funcao === funcao)
@@ -7963,40 +8149,6 @@ async function exportarPDF() {
       }
     }
 
-    function adicionarResumoQuadrinhoLastroWorkbook(workbook) {
-      if (typeof XLSX === 'undefined' || !workbook) return;
-      const mesSelecionado = document.getElementById('mesAnoEscala')?.value || '';
-      const linhas = [[
-        'Militar', 'SARAM', 'Função',
-        'Quadrinho Preto', 'Lastro Preto', 'Total Preto',
-        'Quadrinho Vermelho', 'Lastro Vermelho', 'Total Vermelho', 'Total Geral'
-      ]];
-
-      estado.militares.forEach(militar => {
-        const funcoes = estado.funcoes.filter(funcao =>
-          militar.funcao === funcao ||
-          Object.values(estado.escalas || {}).some(escala =>
-            Object.values(escala?.dados || {}).some(vagas =>
-              Object.entries(vagas || {}).some(([chave, id]) =>
-                id === militar.id && obterFuncaoDaChave(chave) === funcao
-              )
-            )
-          )
-        );
-        (funcoes.length ? funcoes : [militar.funcao]).forEach(funcao => {
-          const t = obterResumoContagemMilitarFuncao(militar.id, funcao, mesSelecionado);
-          linhas.push([
-            militar.nome, militar.saram, funcao,
-            t.quadrinhosPreto, t.lastrosPreto, t.totalPreto,
-            t.quadrinhosVermelho, t.lastrosVermelho, t.totalVermelho, t.totalGeral
-          ]);
-        });
-      });
-
-      const wsResumo = XLSX.utils.aoa_to_sheet(linhas);
-      XLSX.utils.book_append_sheet(workbook, wsResumo, 'Quadrinhos_Lastros');
-    }
-
     function exportarXLS() {
       const elemento = document.getElementById('areaEscalaPDF');
       const copia = elemento.cloneNode(true);
@@ -8083,6 +8235,3 @@ async function exportarPDF() {
 </script>
 </body>
 </html>
-
-
-
