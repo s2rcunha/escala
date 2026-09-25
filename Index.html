@@ -1,4 +1,5 @@
 ﻿
+
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -121,6 +122,28 @@ if (location.protocol === 'http:' || location.protocol === 'https:') {
       background: #fff;
       cursor: pointer;
       outline: none;
+    }
+
+    .botao-processando {
+      cursor: wait !important;
+      opacity: .78;
+      pointer-events: none;
+    }
+
+    .spinner-botao {
+      display: inline-block;
+      width: 1rem;
+      height: 1rem;
+      margin-right: .45rem;
+      vertical-align: -0.15rem;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      border-radius: 9999px;
+      animation: girar-spinner-botao .65s linear infinite;
+    }
+
+    @keyframes girar-spinner-botao {
+      to { transform: rotate(360deg); }
     }
 </style>
 </head>
@@ -952,6 +975,93 @@ if (location.protocol === 'http:' || location.protocol === 'https:') {
 </div>
 
   <script>
+    let botaoAcaoAtual = null;
+    let requisicoesBotaoPendentes = 0;
+    let temporizadorBotaoAcao = null;
+
+    function textoProcessamentoBotao(botao) {
+      const texto = String(botao?.textContent || '').trim().toLowerCase();
+
+      if (
+        texto.includes('salvar') ||
+        texto.includes('registrar') ||
+        texto.includes('cadastrar') ||
+        texto.includes('confirmar') ||
+        texto.includes('publicar') ||
+        texto.includes('ajustar')
+      ) {
+        return 'Salvando...';
+      }
+
+      if (texto.includes('exportar')) return 'Exportando...';
+      if (texto.includes('importar')) return 'Importando...';
+      if (texto.includes('excluir') || texto.includes('remover') || texto.includes('limpar')) return 'Processando...';
+      if (texto.includes('gerar')) return 'Gerando...';
+      if (texto.includes('atualizar') || texto.includes('recarregar')) return 'Atualizando...';
+
+      return 'Processando...';
+    }
+
+    function iniciarSpinnerBotao(botao, texto = '') {
+      if (!botao || botao.dataset.spinnerAtivo === '1') return;
+
+      botao.dataset.spinnerAtivo = '1';
+      botao.dataset.htmlOriginal = botao.innerHTML;
+      botao.dataset.disabledOriginal = botao.disabled ? '1' : '0';
+      botao.classList.add('botao-processando');
+      botao.disabled = true;
+      botao.innerHTML = `<span class="spinner-botao" aria-hidden="true"></span>${texto || textoProcessamentoBotao(botao)}`;
+    }
+
+    function finalizarSpinnerBotao(botao) {
+      if (!botao || botao.dataset.spinnerAtivo !== '1') return;
+
+      if (botao.dataset.htmlOriginal !== undefined) {
+        botao.innerHTML = botao.dataset.htmlOriginal;
+      }
+
+      botao.disabled = botao.dataset.disabledOriginal === '1';
+      botao.classList.remove('botao-processando');
+      delete botao.dataset.spinnerAtivo;
+      delete botao.dataset.htmlOriginal;
+      delete botao.dataset.disabledOriginal;
+    }
+
+    function registrarBotaoAcao(botao) {
+      if (!botao || !botao.matches('button, input[type="button"], input[type="submit"]')) return;
+
+      if (temporizadorBotaoAcao) clearTimeout(temporizadorBotaoAcao);
+
+      if (botaoAcaoAtual && botaoAcaoAtual !== botao && requisicoesBotaoPendentes === 0) {
+        finalizarSpinnerBotao(botaoAcaoAtual);
+      }
+
+      botaoAcaoAtual = botao;
+      iniciarSpinnerBotao(botao);
+
+      // Ações puramente locais (abrir modal, trocar aba etc.) também exibem
+      // feedback curto. Se houver chamada ao servidor, executarAppsScript()
+      // mantém o spinner até a conclusão real da operação.
+      temporizadorBotaoAcao = setTimeout(() => {
+        if (requisicoesBotaoPendentes === 0) {
+          finalizarSpinnerBotao(botao);
+          if (botaoAcaoAtual === botao) botaoAcaoAtual = null;
+        }
+      }, 650);
+    }
+
+    document.addEventListener('click', evento => {
+      const botao = evento.target.closest('button, input[type="button"]');
+      if (!botao || botao.disabled) return;
+      registrarBotaoAcao(botao);
+    }, true);
+
+    document.addEventListener('submit', evento => {
+      const botao = evento.submitter || evento.target.querySelector('button[type="submit"], input[type="submit"]');
+      if (!botao || botao.disabled) return;
+      registrarBotaoAcao(botao);
+    }, true);
+
     function mostrarBannerConflitoServidor() {
   const banner =
     document.getElementById('bannerConflitoServidor');
@@ -2197,36 +2307,60 @@ async function inicializar() {
     };
 
     async function executarAppsScript(nomeFuncao, ...args) {
-      if (estaNoAppsScript()) {
-        return new Promise((resolve, reject) => {
-          google.script.run
-            .withSuccessHandler(resolve)
-            .withFailureHandler(reject)[nomeFuncao](...args);
+      const botaoDaOperacao = botaoAcaoAtual;
+
+      if (botaoDaOperacao) {
+        requisicoesBotaoPendentes++;
+        iniciarSpinnerBotao(botaoDaOperacao);
+      }
+
+      try {
+        if (estaNoAppsScript()) {
+          return await new Promise((resolve, reject) => {
+            google.script.run
+              .withSuccessHandler(resolve)
+              .withFailureHandler(reject)[nomeFuncao](...args);
+          });
+        }
+
+        const chaves = PARAMETROS_API[nomeFuncao] || [];
+        const params = {};
+        chaves.forEach((chave, indice) => {
+          params[chave] = args[indice];
         });
+
+        const resposta = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8'
+          },
+          body: JSON.stringify({
+            funcao: nomeFuncao,
+            params: params
+          })
+        });
+
+        if (!resposta.ok) {
+          throw new Error('HTTP ' + resposta.status);
+        }
+
+        const dados = await resposta.json();
+
+        if (!dados.sucesso) {
+          throw new Error(dados.erro || 'Erro desconhecido');
+        }
+
+        return dados.dados;
+      } finally {
+        if (botaoDaOperacao) {
+          requisicoesBotaoPendentes = Math.max(0, requisicoesBotaoPendentes - 1);
+
+          if (requisicoesBotaoPendentes === 0) {
+            finalizarSpinnerBotao(botaoDaOperacao);
+            if (botaoAcaoAtual === botaoDaOperacao) botaoAcaoAtual = null;
+          }
+        }
       }
-      const chaves = PARAMETROS_API[nomeFuncao] || [];
-      const params = {};
-      chaves.forEach((chave, indice) => {
-        params[chave] = args[indice];
-      });
-      const resposta = await fetch(SCRIPT_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'text/plain;charset=utf-8'
-        },
-        body: JSON.stringify({
-          funcao: nomeFuncao,
-          params: params
-        })
-      });
-      if (!resposta.ok) {
-        throw new Error('HTTP ' + resposta.status);
-      }
-      const dados = await resposta.json();
-      if (!dados.sucesso) {
-        throw new Error(dados.erro || 'Erro desconhecido');
-      }
-      return dados.dados;
     }
     // =========================================================
 // INTERFACE DE AUTENTICAÇÃO
@@ -4611,7 +4745,20 @@ if (
       }
 
       renderizarIndisponibilidades();
-      carregarDiasSemanaisDoMilitar();
+
+      // Limpa o formulário somente depois que o registro foi salvo com sucesso.
+      const formulario = document.getElementById('formIndisponibilidadeSemanal');
+      if (formulario) formulario.reset();
+
+      const seletorMilitar = document.getElementById('indispSemanalMilitar');
+      if (seletorMilitar) {
+        seletorMilitar.innerHTML = '<option value="">Selecione o Militar</option>';
+        seletorMilitar.disabled = true;
+      }
+
+      obterCheckboxesDiasSemanais().forEach(checkbox => {
+        checkbox.checked = false;
+      });
     }
 
     function removerIndisponibilidade(id) {
