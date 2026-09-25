@@ -10,7 +10,14 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Escala CCI">
 
-  <link rel="manifest" href="./manifest.json">
+  <script>
+if (location.protocol === 'http:' || location.protocol === 'https:') {
+  const manifestLink = document.createElement('link');
+  manifestLink.rel = 'manifest';
+  manifestLink.href = './manifest.json';
+  document.head.appendChild(manifestLink);
+}
+</script>
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
 
   <title>Sistema de Escala Automática - CCI</title>
@@ -94,7 +101,28 @@
     body:not(.perfil-administrador) .somente-administrador {
       display: none !important;
     }
-  </style>
+  
+    .dropdown-cor-dia {
+      position: fixed;
+      z-index: 99999;
+      min-width: 150px;
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0,0,0,.18);
+      padding: 6px;
+    }
+    .dropdown-cor-dia select {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 7px 9px;
+      font-size: 13px;
+      background: #fff;
+      cursor: pointer;
+      outline: none;
+    }
+</style>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800">
 
@@ -279,18 +307,32 @@
             <input type="hidden" id="mesAnoEscala">
           </div>
         </div>
-        <h3 class="font-bold text-sm mb-3">Feriados e dias sem expediente do mês</h3>
+        <h3 class="font-bold text-sm mb-3">Classificação dos dias</h3>
+        <div class="somente-edicao mb-4 rounded border bg-gray-50 p-3">
+          <p class="mb-2 text-xs font-semibold text-gray-700">Regra semanal</p>
+          <p class="mb-3 text-xs text-gray-500">Defina a classificação padrão de cada dia da semana. Uma exceção cadastrada para uma data específica sempre prevalece.</p>
+          <div id="classificacaoSemanalDias" class="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7"></div>
+        </div>
         <form onsubmit="salvarDiaEspecial(event)" class="somente-edicao flex flex-wrap gap-3 items-end mb-3">
           <div>
             <label class="block text-xs font-semibold text-gray-600 mb-1">Data</label>
             <input type="date" id="dataDiaEspecial" class="border p-2 rounded text-sm">
           </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Classificação</label>
+            <select id="corDiaEspecial" class="border p-2 rounded text-sm bg-white">
+              <option value="vermelho">Vermelho</option>
+              <option value="preto">Preto</option>
+              <option value="automatico">Automático</option>
+            </select>
+          </div>
           <div class="flex-1 min-w-48">
             <label class="block text-xs font-semibold text-gray-600 mb-1">Motivo</label>
-            <input type="text" id="motivoDiaEspecial" placeholder="Feriado, ponto facultativo, sem expediente..." class="border p-2 rounded text-sm w-full">
+            <input type="text" id="motivoDiaEspecial" placeholder="Feriado, expediente excepcional, sem expediente..." class="border p-2 rounded text-sm w-full">
           </div>
-          <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-semibold">Adicionar</button>
+          <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-semibold">Salvar classificação</button>
         </form>
+        <p class="mb-2 text-xs text-gray-500">Você também pode clicar diretamente no número de um dia da escala já gerada para escolher entre Automático, Preto ou Vermelho. A classificação gravada no mês é preservada no histórico.</p>
         <div id="listaDiasEspeciais" class="flex flex-wrap gap-2 text-sm"></div>
         <details class="somente-edicao mt-4">
           <summary class="cursor-pointer text-sm font-semibold text-gray-700">Editar tipos de escala por função</summary>
@@ -325,7 +367,7 @@
 
       <div class="bg-white p-4 rounded shadow-sm overflow-x-auto">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-          <h3 class="font-bold text-lg">Resumo de serviços por militar</h3>
+          <h3 class="font-bold text-lg">Quadrinhos, Lastros e Totais acumulados até o mês selecionado</h3>
           <div class="flex flex-wrap items-center gap-3">
             <label class="flex items-center gap-2 text-sm font-semibold text-gray-600">
               <span>Filtrar por função:</span>
@@ -333,7 +375,7 @@
                 <option value="">Todas as funções</option>
               </select>
             </label>
-            <p class="text-xs text-gray-500">Preto: dias úteis | Vermelho: fins de semana e feriados</p>
+            <p class="text-xs text-gray-500">Q = Quadrinho (serviço efetivamente tirado) | L = Lastro | Total = Quadrinho + Lastro. A classificação preto/vermelho segue as regras do mês.</p>
           </div>
         </div>
         <table class="w-full border-collapse text-sm">
@@ -341,12 +383,13 @@
             <tr class="bg-gray-100 border-b">
               <th class="p-2 text-left">Militar</th>
               <th class="p-2 text-left">Função</th>
-              <th class="p-2 text-center text-gray-800">Mês preto</th>
-              <th class="p-2 text-center text-red-600">Mês vermelho</th>
-              <th class="p-2 text-center font-bold">Mês total</th>
-              <th class="p-2 text-center text-gray-800">Acum. preto</th>
-              <th class="p-2 text-center text-red-600">Acum. vermelho</th>
-              <th class="p-2 text-center font-bold">Acum. total</th>
+              <th class="p-2 text-center text-gray-800">Q. Preto</th>
+              <th class="p-2 text-center text-gray-600">L. Preto</th>
+              <th class="p-2 text-center font-bold text-gray-900">Total Preto</th>
+              <th class="p-2 text-center text-red-600">Q. Vermelho</th>
+              <th class="p-2 text-center text-red-400">L. Vermelho</th>
+              <th class="p-2 text-center font-bold text-red-700">Total Vermelho</th>
+              <th class="p-2 text-center font-bold">Total Geral</th>
               <th class="p-2 text-right">Ações</th>
             </tr>
           </thead>
@@ -424,6 +467,11 @@
         <p class="text-sm text-gray-600 mb-4">Aumente ou diminua a quantidade de vagas necessárias por dia de serviço para cada função.</p>
         <div id="listaVagas" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
       </div>
+      <div class="bg-white p-4 rounded shadow-sm">
+        <h3 class="font-bold text-lg mb-2">Regras das Escalas</h3>
+        <p class="text-sm text-gray-600 mb-4">Configurações preparadas para o novo motor de escalas. Nesta etapa elas são armazenadas com segurança, mantendo o comportamento atual do gerador.</p>
+        <div id="listaRegrasEscala" class="space-y-3"></div>
+      </div>
     </section>
 
     <!-- ABA 4: INDISPONIBILIDADES -->
@@ -446,25 +494,34 @@
 
       <div class="bg-white p-4 rounded shadow-sm">
         <h3 class="font-bold text-lg mb-3">Cadastrar Indisponibilidade por Dia da Semana</h3>
-        <form id="formIndisponibilidadeSemanal" onsubmit="salvarIndisponibilidadeSemanal(event)" class="grid grid-cols-1 md:grid-cols-5 gap-3">
-          <select id="indispSemanalFuncao" required onchange="renderizarMilitaresIndisponibilidadeSemanal()" class="border p-2 rounded text-sm">
-            <option value="">Selecione a Funcao</option>
-          </select>
-          <select id="indispSemanalMilitar" required class="border p-2 rounded text-sm">
-            <option value="">Selecione o Militar</option>
-          </select>
-          <select id="indispSemanalDia" required class="border p-2 rounded text-sm">
-            <option value="">Dia da semana</option>
-            <option value="0">Domingo</option>
-            <option value="1">Segunda-feira</option>
-            <option value="2">Terca-feira</option>
-            <option value="3">Quarta-feira</option>
-            <option value="4">Quinta-feira</option>
-            <option value="5">Sexta-feira</option>
-            <option value="6">Sabado</option>
-          </select>
-          <input type="text" id="indispSemanalMotivo" placeholder="Motivo (Ex: restricao semanal)" required class="border p-2 rounded text-sm">
-          <button type="submit" class="bg-red-600 text-white p-2 rounded font-semibold hover:bg-red-700">Registrar</button>
+        <form id="formIndisponibilidadeSemanal" onsubmit="salvarIndisponibilidadeSemanal(event)" class="space-y-3">
+          <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+            <select id="indispSemanalFuncao" required onchange="renderizarMilitaresIndisponibilidadeSemanal()" class="border p-2 rounded text-sm">
+              <option value="">Selecione a Função</option>
+            </select>
+            <select id="indispSemanalMilitar" required onchange="carregarDiasSemanaisDoMilitar()" class="border p-2 rounded text-sm">
+              <option value="">Selecione o Militar</option>
+            </select>
+            <input type="text" id="indispSemanalMotivo" placeholder="Motivo (Ex: restrição semanal)" required class="border p-2 rounded text-sm">
+          </div>
+
+          <div class="rounded border bg-gray-50 p-3">
+            <p class="mb-2 text-xs font-semibold text-gray-700">Dias em que o militar não tira serviço</p>
+            <div class="flex flex-wrap gap-2">
+              <label class="inline-flex cursor-pointer items-center gap-2 rounded border bg-white px-3 py-2 text-sm"><input type="checkbox" name="indispSemanalDias" value="0"> Domingo</label>
+              <label class="inline-flex cursor-pointer items-center gap-2 rounded border bg-white px-3 py-2 text-sm"><input type="checkbox" name="indispSemanalDias" value="1"> Segunda-feira</label>
+              <label class="inline-flex cursor-pointer items-center gap-2 rounded border bg-white px-3 py-2 text-sm"><input type="checkbox" name="indispSemanalDias" value="2"> Terça-feira</label>
+              <label class="inline-flex cursor-pointer items-center gap-2 rounded border bg-white px-3 py-2 text-sm"><input type="checkbox" name="indispSemanalDias" value="3"> Quarta-feira</label>
+              <label class="inline-flex cursor-pointer items-center gap-2 rounded border bg-white px-3 py-2 text-sm"><input type="checkbox" name="indispSemanalDias" value="4"> Quinta-feira</label>
+              <label class="inline-flex cursor-pointer items-center gap-2 rounded border bg-white px-3 py-2 text-sm"><input type="checkbox" name="indispSemanalDias" value="5"> Sexta-feira</label>
+              <label class="inline-flex cursor-pointer items-center gap-2 rounded border bg-white px-3 py-2 text-sm"><input type="checkbox" name="indispSemanalDias" value="6"> Sábado</label>
+            </div>
+            <p class="mt-2 text-xs text-gray-500">Marque todos os dias semanais em que este militar não pode ser escalado. Ao selecionar um militar, os dias já cadastrados são carregados automaticamente.</p>
+          </div>
+
+          <div class="flex justify-end">
+            <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded font-semibold hover:bg-red-700">Salvar dias semanais</button>
+          </div>
         </form>
       </div>
       <!-- IMPORTAÇÃO DE INDISPONIBILIDADES POR CSV -->
@@ -983,6 +1040,12 @@ let usuarioLogado = null;
       indisponibilidades: lerLocalStorageJSON('cci_indisponibilidades', []),
       indisponibilidadesSemana: lerLocalStorageJSON('cci_indisponibilidades_semana', []),
       diasEspeciais: lerLocalStorageJSON('cci_dias_especiais', {}),
+      classificacaoSemanal: lerLocalStorageJSON('cci_classificacao_semanal', {
+        0: 'vermelho', 1: 'preto', 2: 'preto', 3: 'preto', 4: 'preto', 5: 'preto', 6: 'vermelho'
+      }),
+      excecoesClassificacaoDias: lerLocalStorageJSON('cci_excecoes_classificacao_dias', {}),
+      regrasEscala: lerLocalStorageJSON('cci_regras_escala', {}),
+      versaoEsquemaCCI: 6,
       // Escala atualmente aberta na interface.
 // Não é persistida separadamente; a fonte definitiva é "escalas".
 escala: {},
@@ -1062,6 +1125,13 @@ escala: {},
       if (!Array.isArray(estado.indisponibilidades)) estado.indisponibilidades = [];
       if (!Array.isArray(estado.indisponibilidadesSemana)) estado.indisponibilidadesSemana = [];
       if (!estado.diasEspeciais || typeof estado.diasEspeciais !== 'object') estado.diasEspeciais = {};
+      if (!estado.classificacaoSemanal || typeof estado.classificacaoSemanal !== 'object') {
+        estado.classificacaoSemanal = { 0: 'vermelho', 1: 'preto', 2: 'preto', 3: 'preto', 4: 'preto', 5: 'preto', 6: 'vermelho' };
+      }
+      if (!estado.excecoesClassificacaoDias || typeof estado.excecoesClassificacaoDias !== 'object') estado.excecoesClassificacaoDias = {};
+      if (!estado.regrasEscala || typeof estado.regrasEscala !== 'object') estado.regrasEscala = {};
+      estado.versaoEsquemaCCI = Math.max(Number(estado.versaoEsquemaCCI || 0), 6);
+      estado.funcoes.forEach(funcao => garantirRegrasEscalaFuncao(funcao));
       // Histórico mensal é a fonte definitiva das escalas.
 if (!estado.escalas || typeof estado.escalas !== 'object') {
   estado.escalas = {};
@@ -1351,7 +1421,7 @@ async function salvarEstadoNoServidor(
       return Math.round((dataFim.getTime() - dataInicio.getTime()) / 86400000) + 1;
     }
 
-    function obterIndisponibilidadeLongaNaData(militarId, dataStr) {
+    function obterIndisponibilidadeLongaNaData(militarId, dataStr, minimoDias = 30) {
       const indisponibilidadesMilitar = estado.indisponibilidades
         .filter(indisponibilidade => indisponibilidade.militarId === militarId)
         .filter(indisponibilidade => indisponibilidade.inicio && indisponibilidade.fim)
@@ -1390,7 +1460,7 @@ async function salvarEstadoNoServidor(
       const blocoLongo = blocos.find(bloco =>
         dataStr >= bloco.inicio
         && dataStr <= bloco.fim
-        && contarDiasIntervaloInclusivo(bloco.inicio, bloco.fim) >= 30
+        && contarDiasIntervaloInclusivo(bloco.inicio, bloco.fim) >= Math.max(1, Number(minimoDias || 30))
       );
       if (!blocoLongo) return null;
 
@@ -1557,6 +1627,7 @@ async function salvarEstadoNoServidor(
 
     function validarTipoEscalaManual(seletor) {
       const funcao = seletor.dataset.funcao;
+      garantirRegrasEscalaFuncao(funcao).distribuicao = seletor.value;
       if (seletor.value !== 'corrida' || contarMilitaresAtivosPorFuncao(funcao) !== 7) return;
 
       const confirmar = confirm(
@@ -1564,7 +1635,10 @@ async function salvarEstadoNoServidor(
         'Usar escala corrida pode ocasionar vicio da escala, ficando sempre o mesmo militar na segunda-feira, o mesmo nas tercas-feiras, e assim sucessivamente.\n\n' +
         'Deseja manter a escala corrida mesmo assim?'
       );
-      if (!confirmar) seletor.value = 'semanaFimSemana';
+      if (!confirmar) {
+        seletor.value = 'semanaFimSemana';
+        garantirRegrasEscalaFuncao(funcao).distribuicao = 'semanaFimSemana';
+      }
     }
 
     function renderizarTiposEscala(tiposSalvos) {
@@ -1584,32 +1658,370 @@ async function salvarEstadoNoServidor(
     }
 
     function obterTiposEscalaSelecionados() {
-      return Array.from(document.querySelectorAll('#listaTiposEscala select')).reduce((tipos, seletor) => {
-        tipos[seletor.dataset.funcao] = seletor.value;
+      return estado.funcoes.reduce((tipos, funcao) => {
+        const regra = garantirRegrasEscalaFuncao(funcao);
+        const seletor = Array.from(document.querySelectorAll('#listaTiposEscala select'))
+          .find(item => item.dataset.funcao === funcao);
+        tipos[funcao] = regra.distribuicao || seletor?.value || obterTipoPadraoFuncao(funcao);
         return tipos;
       }, {});
+    }
+
+    function migrarEstruturasEtapa6() {
+      estado.classificacaoSemanal ||= {
+        0: 'vermelho', 1: 'preto', 2: 'preto', 3: 'preto',
+        4: 'preto', 5: 'preto', 6: 'vermelho'
+      };
+      estado.excecoesClassificacaoDias ||= {};
+      estado.regrasEscala ||= {};
+
+      estado.funcoes.forEach(funcao => garantirRegrasEscalaFuncao(funcao));
+
+      Object.values(estado.escalas || {}).forEach(escala => {
+        if (!escala || !escala.mesAno) return;
+
+        // Escalas antigas continuam válidas. O snapshot é reconstruído apenas
+        // como fotografia das regras disponíveis na migração; os dias vermelhos
+        // já gravados na própria escala continuam sendo a fonte histórica.
+        if (!escala.regrasEscalaSnapshot || typeof escala.regrasEscalaSnapshot !== 'object') {
+          escala.regrasEscalaSnapshot = {};
+          estado.funcoes.forEach(funcao => {
+            const tipo = escala.tipos?.[funcao]
+              || escala.tiposEscala?.[funcao]
+              || garantirRegrasEscalaFuncao(funcao).distribuicao;
+            escala.regrasEscalaSnapshot[funcao] = obterResumoRegrasFuncao(funcao, tipo);
+          });
+          escala.snapshotMigradoEtapa6 = true;
+        }
+
+        escala.lastrosIndisponibilidade ||= {};
+        escala.diasVermelhos ||= [];
+      });
+    }
+
+    function obterClassificacaoHistoricaDia(escala, data, diaNumero) {
+      if (escala?.diasVermelhos) {
+        return escalaTemDiaVermelho(escala, data, diaNumero) ? 'vermelho' : 'preto';
+      }
+      return obterClassificacaoDia(data).cor;
+    }
+
+    function obterResumoContagemMilitarFuncao(militarId, funcao, mesReferencia = '') {
+      const contagem = criarContagemQuadrinhoLastro();
+      const mapa = { [militarId]: contagem };
+      Object.values(estado.escalas || {})
+        .filter(escala => escala?.mesAno && (!mesReferencia || escala.mesAno <= mesReferencia))
+        .forEach(escala => obterContagemSeparadaEscala(escala, mapa, funcao));
+      return obterTotaisQuadrinhoLastro(contagem);
+    }
+
+    function obterRegrasEscalaPadrao() {
+      return {
+        distribuicao: 'semanaFimSemana',
+        descanso: {
+          folgasAntes: 2,
+          folgasDepois: 2,
+          reduzido: { permitido: true, folgasAntes: 1, folgasDepois: 1, exigirConfirmacao: true }
+        },
+        vermelho: { permitirConsecutivos: false },
+        lastro: { habilitado: true, minimoDiasIndisponibilidade: 30 },
+        justica: { considerarTotal: true, separarPretoVermelho: true, usarRotacaoDesempate: true }
+      };
+    }
+
+    function garantirRegrasEscalaFuncao(funcao) {
+      estado.regrasEscala ||= {};
+      const padrao = obterRegrasEscalaPadrao();
+      const atual = estado.regrasEscala[funcao] || {};
+      estado.regrasEscala[funcao] = {
+        ...padrao,
+        ...atual,
+        descanso: {
+          ...padrao.descanso,
+          ...(atual.descanso || {}),
+          reduzido: { ...padrao.descanso.reduzido, ...(atual.descanso?.reduzido || {}) }
+        },
+        vermelho: { ...padrao.vermelho, ...(atual.vermelho || {}) },
+        lastro: { ...padrao.lastro, ...(atual.lastro || {}) },
+        justica: { ...padrao.justica, ...(atual.justica || {}) }
+      };
+      return estado.regrasEscala[funcao];
+    }
+
+    function renderizarRegrasEscala() {
+      const container = document.getElementById('listaRegrasEscala');
+      if (!container) return;
+      container.innerHTML = estado.funcoes.map((funcao, indice) => {
+        const r = garantirRegrasEscalaFuncao(funcao);
+        return `
+          <details class="rounded border bg-gray-50 p-3">
+            <summary class="cursor-pointer font-semibold text-sm">${funcao}</summary>
+            <div class="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+              <label class="text-xs font-semibold text-gray-700">Distribuição
+                <select data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="distribuicao" class="mt-1 w-full rounded border bg-white p-2 text-sm">
+                  <option value="semanaFimSemana" ${r.distribuicao === 'semanaFimSemana' ? 'selected' : ''}>Separar preto/vermelho</option>
+                  <option value="corrida" ${r.distribuicao === 'corrida' ? 'selected' : ''}>Corrida</option>
+                </select>
+              </label>
+              <label class="text-xs font-semibold text-gray-700">Folgas antes
+                <input type="number" min="0" max="30" value="${r.descanso.folgasAntes}" data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="folgasAntes" class="mt-1 w-full rounded border p-2 text-sm">
+              </label>
+              <label class="text-xs font-semibold text-gray-700">Folgas depois
+                <input type="number" min="0" max="30" value="${r.descanso.folgasDepois}" data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="folgasDepois" class="mt-1 w-full rounded border p-2 text-sm">
+              </label>
+              <label class="flex items-center gap-2 text-xs font-semibold text-gray-700">
+                <input type="checkbox" ${r.descanso.reduzido.permitido ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="reduzidoPermitido">
+                Permitir descanso reduzido
+              </label>
+              <label class="text-xs font-semibold text-gray-700">Folgas mínimas antes (reduzido)
+                <input type="number" min="0" max="30" value="${r.descanso.reduzido.folgasAntes}" data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="reduzidoFolgasAntes" class="mt-1 w-full rounded border p-2 text-sm">
+              </label>
+              <label class="text-xs font-semibold text-gray-700">Folgas mínimas depois (reduzido)
+                <input type="number" min="0" max="30" value="${r.descanso.reduzido.folgasDepois}" data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="reduzidoFolgasDepois" class="mt-1 w-full rounded border p-2 text-sm">
+              </label>
+              <label class="flex items-center gap-2 text-xs font-semibold text-gray-700">
+                <input type="checkbox" ${r.vermelho.permitirConsecutivos ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="vermelhosConsecutivos">
+                Permitir vermelhos consecutivos
+              </label>
+              <label class="flex items-center gap-2 text-xs font-semibold text-gray-700">
+                <input type="checkbox" ${r.lastro.habilitado ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="lastroHabilitado">
+                Utilizar lastro
+              </label>
+              <label class="text-xs font-semibold text-gray-700">Mínimo para lastro (dias)
+                <input type="number" min="1" max="365" value="${r.lastro.minimoDiasIndisponibilidade}" data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="lastroMinimo" class="mt-1 w-full rounded border p-2 text-sm">
+              </label>
+              <label class="flex items-center gap-2 text-xs font-semibold text-gray-700">
+                <input type="checkbox" ${r.descanso.reduzido.exigirConfirmacao !== false ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="reduzidoConfirmacao">
+                Confirmar antes de usar descanso reduzido
+              </label>
+              <label class="flex items-center gap-2 text-xs font-semibold text-gray-700">
+                <input type="checkbox" ${r.justica.considerarTotal !== false ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="justicaConsiderarTotal">
+                Justiça considera Quadrinho + Lastro
+              </label>
+              <label class="flex items-center gap-2 text-xs font-semibold text-gray-700">
+                <input type="checkbox" ${r.justica.separarPretoVermelho !== false ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="justicaSepararCores">
+                Equalizar preto e vermelho separadamente
+              </label>
+              <label class="flex items-center gap-2 text-xs font-semibold text-gray-700">
+                <input type="checkbox" ${r.justica.usarRotacaoDesempate !== false ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="justicaRotacao">
+                Usar rotação como desempate
+              </label>
+            </div>
+            <div class="mt-3 flex justify-end">
+              <button type="button" onclick="salvarRegrasEscalaFuncao('${encodeURIComponent(funcao)}')" class="rounded bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700">Salvar regras</button>
+            </div>
+          </details>`;
+      }).join('');
+    }
+
+    async function salvarRegrasEscalaFuncao(funcaoCodificada) {
+      const funcao = decodeURIComponent(funcaoCodificada);
+      const r = garantirRegrasEscalaFuncao(funcao);
+      const obter = campo => document.querySelector(`[data-regra-funcao="${funcaoCodificada}"][data-regra-campo="${campo}"]`);
+      r.distribuicao = obter('distribuicao')?.value || 'semanaFimSemana';
+      r.descanso.folgasAntes = Math.max(0, Number(obter('folgasAntes')?.value || 0));
+      r.descanso.folgasDepois = Math.max(0, Number(obter('folgasDepois')?.value || 0));
+      r.descanso.reduzido.permitido = Boolean(obter('reduzidoPermitido')?.checked);
+      r.descanso.reduzido.folgasAntes = Math.max(0, Number(obter('reduzidoFolgasAntes')?.value || 0));
+      r.descanso.reduzido.folgasDepois = Math.max(0, Number(obter('reduzidoFolgasDepois')?.value || 0));
+      r.vermelho.permitirConsecutivos = Boolean(obter('vermelhosConsecutivos')?.checked);
+      r.lastro.habilitado = Boolean(obter('lastroHabilitado')?.checked);
+      r.lastro.minimoDiasIndisponibilidade = Math.max(1, Number(obter('lastroMinimo')?.value || 30));
+      r.descanso.reduzido.exigirConfirmacao = Boolean(obter('reduzidoConfirmacao')?.checked);
+      r.justica.considerarTotal = Boolean(obter('justicaConsiderarTotal')?.checked);
+      r.justica.separarPretoVermelho = Boolean(obter('justicaSepararCores')?.checked);
+      r.justica.usarRotacaoDesempate = Boolean(obter('justicaRotacao')?.checked);
+
+      // Mantém o seletor legado sincronizado durante a transição.
+      const seletorTipo = document.querySelector(`#listaTiposEscala select[data-funcao="${CSS.escape(funcao)}"]`);
+      if (seletorTipo) seletorTipo.value = r.distribuicao;
+
+      estado.regrasEscala[funcao] = r;
+      const salvou = await salvarEstado();
+      if (salvou !== false) alert(`Regras de "${funcao}" salvas. Nesta etapa, o gerador atual ainda não foi substituído pelo novo motor configurável.`);
+    }
+
+    function renderizarClassificacaoSemanal() {
+      const container = document.getElementById('classificacaoSemanalDias');
+      if (!container) return;
+      const nomes = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+      container.innerHTML = nomes.map((nome, diaSemana) => {
+        const cor = estado.classificacaoSemanal?.[diaSemana] || (diaSemana === 0 || diaSemana === 6 ? 'vermelho' : 'preto');
+        return `<label class="text-xs font-semibold text-gray-700">${nome}
+          <select onchange="alterarClassificacaoSemanal(${diaSemana}, this.value)" class="mt-1 w-full rounded border bg-white p-2 text-xs">
+            <option value="preto" ${cor === 'preto' ? 'selected' : ''}>Preto</option>
+            <option value="vermelho" ${cor === 'vermelho' ? 'selected' : ''}>Vermelho</option>
+          </select>
+        </label>`;
+      }).join('');
+    }
+
+    async function alterarClassificacaoSemanal(diaSemana, cor) {
+      estado.classificacaoSemanal ||= {};
+      estado.classificacaoSemanal[diaSemana] = cor === 'vermelho' ? 'vermelho' : 'preto';
+      await salvarEstado();
+      renderizarTabelaEscala();
+      renderizarResumoServicos();
+    }
+
+    function obterClassificacaoAutomaticaDia(data) {
+      const dataStr = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}-${String(data.getDate()).padStart(2, '0')}`;
+      if (obterFeriadosNacionais(data.getFullYear()).has(dataStr)) return { cor: 'vermelho', origem: 'feriado_nacional' };
+      if (estado.diasEspeciais?.[dataStr]) return { cor: 'vermelho', origem: 'dia_especial' };
+      const corSemanal = estado.classificacaoSemanal?.[data.getDay()] || (data.getDay() === 0 || data.getDay() === 6 ? 'vermelho' : 'preto');
+      return { cor: corSemanal, origem: 'regra_semanal' };
+    }
+
+    function obterClassificacaoDia(data) {
+      const dataStr = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}-${String(data.getDate()).padStart(2, '0')}`;
+      const excecao = estado.excecoesClassificacaoDias?.[dataStr];
+      if (excecao?.cor === 'preto' || excecao?.cor === 'vermelho') {
+        return { cor: excecao.cor, origem: 'excecao_manual', motivo: excecao.motivo || '' };
+      }
+      return obterClassificacaoAutomaticaDia(data);
+    }
+
+    function fecharDropdownCorDia() {
+      document.getElementById('dropdownCorDiaFlutuante')?.remove();
+    }
+
+    function abrirDropdownCorDia(dataStr, elementoDia) {
+      if (!podeEditarSistema()) return;
+
+      fecharDropdownCorDia();
+
+      const [ano, mes, dia] = dataStr.split('-').map(Number);
+      const atual = estado.excecoesClassificacaoDias?.[dataStr]?.cor || 'automatico';
+
+      const caixa = document.createElement('div');
+      caixa.id = 'dropdownCorDiaFlutuante';
+      caixa.className = 'dropdown-cor-dia';
+
+      const select = document.createElement('select');
+      select.innerHTML = `
+        <option value="automatico"${atual === 'automatico' ? ' selected' : ''}>Automático</option>
+        <option value="preto"${atual === 'preto' ? ' selected' : ''}>Preto</option>
+        <option value="vermelho"${atual === 'vermelho' ? ' selected' : ''}>Vermelho</option>
+      `;
+
+      caixa.appendChild(select);
+      document.body.appendChild(caixa);
+
+      const rect = elementoDia.getBoundingClientRect();
+      const largura = Math.max(rect.width, 150);
+      caixa.style.width = `${largura}px`;
+
+      // Fica exatamente sobre a célula clicada. Se ultrapassar a tela,
+      // mantém o dropdown dentro da área visível.
+      const larguraCaixa = caixa.offsetWidth;
+      const alturaCaixa = caixa.offsetHeight;
+      const left = Math.min(
+        Math.max(4, rect.left),
+        Math.max(4, window.innerWidth - larguraCaixa - 4)
+      );
+      let top = rect.top;
+      if (top + alturaCaixa > window.innerHeight - 4) {
+        top = Math.max(4, rect.bottom - alturaCaixa);
+      }
+
+      caixa.style.left = `${left}px`;
+      caixa.style.top = `${top}px`;
+
+      select.addEventListener('change', async () => {
+        await alterarClassificacaoDiaNaEscala(dataStr, select.value);
+        fecharDropdownCorDia();
+      });
+
+      select.addEventListener('keydown', evento => {
+        if (evento.key === 'Escape') {
+          evento.preventDefault();
+          fecharDropdownCorDia();
+        }
+      });
+
+      // Abre imediatamente a lista nativa quando o navegador permitir.
+      select.focus();
+      try {
+        if (typeof select.showPicker === 'function') select.showPicker();
+      } catch (_) {}
+
+      setTimeout(() => {
+        const fecharAoClicarFora = evento => {
+          const caixaAtual = document.getElementById('dropdownCorDiaFlutuante');
+          if (!caixaAtual) {
+            document.removeEventListener('mousedown', fecharAoClicarFora, true);
+            return;
+          }
+          if (!caixaAtual.contains(evento.target) && evento.target !== elementoDia) {
+            fecharDropdownCorDia();
+            document.removeEventListener('mousedown', fecharAoClicarFora, true);
+          }
+        };
+        document.addEventListener('mousedown', fecharAoClicarFora, true);
+      }, 0);
+    }
+
+    async function alterarClassificacaoDiaNaEscala(dataStr, novaCor) {
+      if (!podeEditarSistema()) return;
+      if (!['automatico', 'preto', 'vermelho'].includes(novaCor)) return;
+
+      const [ano, mes, dia] = dataStr.split('-').map(Number);
+      const data = new Date(ano, mes - 1, dia);
+
+      estado.excecoesClassificacaoDias ||= {};
+      if (novaCor === 'automatico') {
+        delete estado.excecoesClassificacaoDias[dataStr];
+      } else {
+        estado.excecoesClassificacaoDias[dataStr] = {
+          cor: novaCor,
+          motivo: 'Alteração direta na escala'
+        };
+      }
+
+      const escala = estado.escalas?.[`${ano}-${String(mes).padStart(2, '0')}`];
+      if (escala) {
+        escala.diasVermelhos ||= [];
+        escala.diasVermelhos = escala.diasVermelhos.filter(d => d !== dataStr);
+        if (obterClassificacaoDia(data).cor === 'vermelho') {
+          escala.diasVermelhos.push(dataStr);
+        }
+        escala.diasVermelhos.sort();
+      }
+
+      await salvarEstado();
+      renderizarDiasEspeciais();
+      renderizarTabelaEscala();
+      renderizarResumoServicos();
     }
 
     function salvarDiaEspecial(evento) {
       evento.preventDefault();
       const data = document.getElementById('dataDiaEspecial').value;
-      const motivo = document.getElementById('motivoDiaEspecial').value.trim() || 'Dia sem expediente';
+      const cor = document.getElementById('corDiaEspecial')?.value || 'vermelho';
+      const motivo = document.getElementById('motivoDiaEspecial').value.trim();
       const mesAno = document.getElementById('mesAnoEscala').value;
       if (!data) return alert('Informe a data.');
-      if (mesAno && !data.startsWith(mesAno)) return alert('A data precisa pertencer ao mes selecionado.');
+      if (mesAno && !data.startsWith(mesAno)) return alert('A data precisa pertencer ao mês selecionado.');
 
-      estado.diasEspeciais[data] = motivo;
+      estado.excecoesClassificacaoDias ||= {};
+      if (cor === 'automatico') {
+        delete estado.excecoesClassificacaoDias[data];
+      } else {
+        estado.excecoesClassificacaoDias[data] = { cor, motivo: motivo || (cor === 'vermelho' ? 'Dia considerado vermelho' : 'Dia considerado preto') };
+      }
       salvarEstado();
       document.getElementById('dataDiaEspecial').value = '';
       document.getElementById('motivoDiaEspecial').value = '';
       renderizarDiasEspeciais();
+      renderizarTabelaEscala();
       renderizarResumoServicos();
     }
 
     function removerDiaEspecial(data) {
-      delete estado.diasEspeciais[data];
+      delete estado.excecoesClassificacaoDias?.[data];
       salvarEstado();
       renderizarDiasEspeciais();
+      renderizarTabelaEscala();
       renderizarResumoServicos();
     }
 
@@ -1617,20 +2029,24 @@ async function salvarEstadoNoServidor(
       const container = document.getElementById('listaDiasEspeciais');
       if (!container) return;
       const mesAno = document.getElementById('mesAnoEscala').value;
-      const dias = Object.entries(estado.diasEspeciais || {})
+      const dias = Object.entries(estado.excecoesClassificacaoDias || {})
         .filter(([data]) => !mesAno || data.startsWith(mesAno))
         .sort(([dataA], [dataB]) => dataA.localeCompare(dataB));
 
       if (dias.length === 0) {
-        container.innerHTML = '<span class="text-gray-400">Nenhum dia extra cadastrado para este mes.</span>';
+        container.innerHTML = '<span class="text-gray-400">Nenhuma exceção manual cadastrada para este mês.</span>';
         return;
       }
 
-      container.innerHTML = dias.map(([data, motivo]) => {
+      container.innerHTML = dias.map(([data, info]) => {
         const [ano, mes, dia] = data.split('-');
-        return `<span class="inline-flex items-center gap-2 rounded border border-red-200 bg-red-50 px-3 py-1 text-red-800">
-          <span>${dia}/${mes}/${ano} - ${motivo}</span>
-          <button type="button" onclick="removerDiaEspecial('${data}')" class="somente-edicao font-bold text-red-600 hover:text-red-800">x</button>
+        const cor = info?.cor === 'preto' ? 'Preto' : 'Vermelho';
+        const classes = info?.cor === 'preto'
+          ? 'border-gray-300 bg-gray-100 text-gray-800'
+          : 'border-red-200 bg-red-50 text-red-800';
+        return `<span class="inline-flex items-center gap-2 rounded border px-3 py-1 ${classes}">
+          <span>${dia}/${mes}/${ano} - ${cor}${info?.motivo ? ` - ${info.motivo}` : ''}</span>
+          <button type="button" onclick="removerDiaEspecial('${data}')" class="somente-edicao font-bold hover:opacity-70">x</button>
         </span>`;
       }).join('');
     }
@@ -1680,7 +2096,9 @@ async function salvarEstadoNoServidor(
     definirMesAnoEscala(mesAtual);
   }
 
-  renderizarTiposEscala();
+  migrarEstruturasEtapa6();
+    renderizarTiposEscala();
+  renderizarClassificacaoSemanal();
   renderizarDiasEspeciais();
   renderizarSelectFuncoes();
   renderizarFiltroMilitares();
@@ -1688,6 +2106,7 @@ async function salvarEstadoNoServidor(
   renderizarMilitares();
   renderizarFuncoes();
   renderizarVagas();
+  renderizarRegrasEscala();
   renderizarIndisponibilidades();
   renderizarTabelaEscala();
 }
@@ -2965,6 +3384,29 @@ async function sairDoSistema() {
         + militares.map(m => `<option value="${m.id}">${m.nome} (${m.saram})</option>`).join('');
       selMilitar.disabled = !funcao;
       selMilitar.value = militares.some(m => m.id === valorAtual) ? valorAtual : '';
+      carregarDiasSemanaisDoMilitar();
+    }
+
+    function obterCheckboxesDiasSemanais() {
+      return [...document.querySelectorAll('input[name="indispSemanalDias"]')];
+    }
+
+    function carregarDiasSemanaisDoMilitar() {
+      const militarId = document.getElementById('indispSemanalMilitar')?.value || '';
+      const registros = estado.indisponibilidadesSemana.filter(registro => registro.militarId === militarId);
+      const diasCadastrados = new Set(registros.map(registro => Number(registro.diaSemana)));
+
+      obterCheckboxesDiasSemanais().forEach(checkbox => {
+        checkbox.checked = militarId ? diasCadastrados.has(Number(checkbox.value)) : false;
+      });
+
+      const motivo = document.getElementById('indispSemanalMotivo');
+      if (motivo) {
+        const motivos = [...new Set(
+          registros.map(registro => String(registro.motivo || '').trim()).filter(Boolean)
+        )];
+        motivo.value = motivos.length === 1 ? motivos[0] : '';
+      }
     }
 
     // GESTÃO DE MILITARES
@@ -3276,12 +3718,14 @@ ${m.ativo === false
 
       estado.funcoes.push(nome);
       estado.vagas[nome] = 1;
+      garantirRegrasEscalaFuncao(nome);
       salvarEstado();
       document.getElementById('formFuncao').reset();
       renderizarFuncoes();
       renderizarSelectFuncoes();
       renderizarTiposEscala();
       renderizarVagas();
+      renderizarRegrasEscala();
     }
 
     function removerFuncao(funcao) {
@@ -3293,11 +3737,13 @@ ${m.ativo === false
 
       estado.funcoes = estado.funcoes.filter(item => item !== funcao);
       delete estado.vagas[funcao];
+      delete estado.regrasEscala?.[funcao];
       salvarEstado();
       renderizarFuncoes();
       renderizarSelectFuncoes();
       renderizarTiposEscala();
       renderizarVagas();
+      renderizarRegrasEscala();
     }
 
     // GESTÃO DE VAGAS DIÁRIAS
@@ -4107,34 +4553,65 @@ if (
       renderizarIndisponibilidades();
     }
 
-    function salvarIndisponibilidadeSemanal(e) {
+    async function salvarIndisponibilidadeSemanal(e) {
       e.preventDefault();
+
       const funcao = document.getElementById('indispSemanalFuncao').value;
       const militarId = document.getElementById('indispSemanalMilitar').value;
-      const diaSemana = Number(document.getElementById('indispSemanalDia').value);
       const motivo = document.getElementById('indispSemanalMotivo').value.trim();
       const militar = estado.militares.find(m => m.id === militarId);
+
       if (!militar || militar.funcao !== funcao) {
-        alert('Selecione um militar da funcao escolhida.');
-        return;
-      }
-      if (!Number.isInteger(diaSemana) || diaSemana < 0 || diaSemana > 6) {
-        alert('Selecione um dia da semana valido.');
-        return;
-      }
-      const jaExiste = estado.indisponibilidadesSemana.some(registro =>
-        registro.militarId === militarId && Number(registro.diaSemana) === diaSemana
-      );
-      if (jaExiste) {
-        alert('Este militar ja possui indisponibilidade cadastrada para este dia da semana.');
+        alert('Selecione um militar da função escolhida.');
         return;
       }
 
-      estado.indisponibilidadesSemana.push({ id: Date.now().toString(), militarId, diaSemana, motivo });
-      salvarEstado();
-      document.getElementById('formIndisponibilidadeSemanal').reset();
-      renderizarMilitaresIndisponibilidadeSemanal();
+      const diasSelecionados = obterCheckboxesDiasSemanais()
+        .filter(checkbox => checkbox.checked)
+        .map(checkbox => Number(checkbox.value))
+        .filter(dia => Number.isInteger(dia) && dia >= 0 && dia <= 6);
+
+      if (!diasSelecionados.length) {
+        alert('Selecione pelo menos um dia da semana.');
+        return;
+      }
+
+      const registrosAnteriores = estado.indisponibilidadesSemana
+        .filter(registro => registro.militarId === militarId);
+
+      // Substitui somente a configuração semanal deste militar.
+      // Isso permite marcar vários dias e também retirar dias anteriormente cadastrados.
+      estado.indisponibilidadesSemana = estado.indisponibilidadesSemana
+        .filter(registro => registro.militarId !== militarId);
+
+      const baseId = Date.now();
+      diasSelecionados.forEach((diaSemana, indice) => {
+        estado.indisponibilidadesSemana.push({
+          id: `${baseId}-${indice}`,
+          militarId,
+          diaSemana,
+          motivo
+        });
+      });
+
+      const salvou = await salvarEstado({
+        tipo: 'indisponibilidade_semanal',
+        militarId,
+        diasSemana: diasSelecionados,
+        motivo
+      });
+
+      if (!salvou) {
+        estado.indisponibilidadesSemana = estado.indisponibilidadesSemana
+          .filter(registro => registro.militarId !== militarId);
+        estado.indisponibilidadesSemana.push(...registrosAnteriores);
+        renderizarIndisponibilidades();
+        carregarDiasSemanaisDoMilitar();
+        return;
+      }
+
       renderizarIndisponibilidades();
+      carregarDiasSemanaisDoMilitar();
     }
 
     function removerIndisponibilidade(id) {
@@ -4463,6 +4940,15 @@ try {
       const ultimaDataServicoPorMilitar = {};
       const ultimoServicoFoiVermelhoPorMilitar = { ...ultimosTiposAnteriores };
       const contagemAnoGeracao = Object.fromEntries(estado.militares.map(m => [m.id, {}]));
+      const contagemSeparadaGeracao = Object.fromEntries(
+        estado.militares.map(m => [m.id, {}])
+      );
+      estado.militares.forEach(militar => {
+        estado.funcoes.forEach(funcao => {
+          contagemSeparadaGeracao[militar.id][funcao] = criarContagemQuadrinhoLastro();
+        });
+      });
+
       const pendenciasRotacao = {};
       const militaresAdiantadosRotacao = {};
       const bloqueiosRotacao = {};
@@ -4618,7 +5104,10 @@ try {
             ? (tipoFuncaoHistorico || tipoFuncaoConfigurado)
             : (usarDiferenciadaTemporaria ? 'semanaFimSemana' : tipoFuncaoConfigurado);
           tiposUsadosPorDia[dia][col.funcao] = tipoFuncao;
-          const aplicarRegraVermelha = tipoFuncao === 'semanaFimSemana' && servicoVermelho;
+          const regrasFuncaoDia = obterRegrasEfetivasFuncao(col.funcao, tipoFuncao);
+          const aplicarRegraVermelha = tipoFuncao === 'semanaFimSemana'
+            && servicoVermelho
+            && !regrasFuncaoDia.vermelho?.permitirConsecutivos;
           const chaveRotacao = tipoFuncao === 'semanaFimSemana'
             ? `${col.funcao}:${servicoVermelho ? 'fimSemana' : 'semana'}`
             : `${col.funcao}:todos`;
@@ -4656,12 +5145,18 @@ try {
               }
               const corLastro = lastro.cor === 'vermelho' ? 'vermelho' : 'preto';
               contagemAnoGeracao[militarLastro.id][col.funcao][corLastro]++;
+              if (contagemSeparadaGeracao[militarLastro.id]?.[col.funcao]?.[corLastro]) {
+                contagemSeparadaGeracao[militarLastro.id][col.funcao][corLastro].lastros++;
+              }
               militaresComLastroPorIndisponibilidade.push(militarLastro.id);
             });
           }
 
           const registrarLastroIndisponibilidade = militar => {
-            const indisponibilidadeLonga = obterIndisponibilidadeLongaNaData(militar.id, dataStr);
+            const regrasLastroFuncao = obterRegrasEfetivasFuncao(col.funcao, tipoFuncao);
+            if (!regrasLastroFuncao.lastro?.habilitado) return false;
+            const minimoDiasLastro = Math.max(1, Number(regrasLastroFuncao.lastro?.minimoDiasIndisponibilidade || 30));
+            const indisponibilidadeLonga = obterIndisponibilidadeLongaNaData(militar.id, dataStr, minimoDiasLastro);
             if (!indisponibilidadeLonga) return false;
             const chaveLastro = `${dia}|${col.chave}|${militar.id}`;
             if (lastrosIndisponibilidade[dia].some(lastro => `${dia}|${lastro.chave}|${lastro.militarId}` === chaveLastro)) {
@@ -4684,6 +5179,9 @@ try {
               contagemAnoGeracao[militar.id][col.funcao] = { preto: 0, vermelho: 0 };
             }
             contagemAnoGeracao[militar.id][col.funcao][cor]++;
+            if (contagemSeparadaGeracao[militar.id]?.[col.funcao]?.[cor]) {
+              contagemSeparadaGeracao[militar.id][col.funcao][cor].lastros++;
+            }
             militaresComLastroPorIndisponibilidade.push(militar.id);
             return true;
           };
@@ -4732,21 +5230,53 @@ try {
             if (militarTemIndisponibilidadeSemanal(militar.id)) return false;
             if (militarIniciaIndisponibilidadeNoDiaSeguinte(militar.id)) return false;
 
-            // 2. Checa Regra de Intervalo (servico, saida e duas folgas)
-            const ultimosServicos = historicoServicos[militar.id];
+            // 2. Motor central de elegibilidade: descanso configurável e vermelho.
+            const ultimosServicos = historicoServicos[militar.id] || [];
+            const servicosParaMotor = ultimosServicos.map(diaServico => {
+              const dataServico = new Date(ano, mes - 1, Number(diaServico));
+              return {
+                tempo: dataServico.getTime(),
+                vermelho: escalaTemDiaVermelho({ mesAno, diasVermelhos }, dataServico, Number(diaServico))
+              };
+            });
+
+            // Inclui o último serviço do mês anterior quando conhecido.
             const ultimaDataServico = ultimaDataServicoPorMilitar[militar.id];
-            const intervaloCalendario = ultimaDataServico === undefined
-              ? Infinity
-              : Math.round((dataObj.getTime() - ultimaDataServico) / 86400000);
-            if (intervaloCalendario < 3 || (!aceitarIntervaloReduzido && intervaloCalendario === 3)) return false;
+            if (ultimaDataServico !== undefined && !servicosParaMotor.some(s => s.tempo === ultimaDataServico)) {
+              servicosParaMotor.push({
+                tempo: ultimaDataServico,
+                vermelho: ultimoServicoFoiVermelhoPorMilitar[militar.id] === true
+              });
+            }
+
+            const avaliacaoCentral = avaliarElegibilidadeServico({
+              militar,
+              funcao: col.funcao,
+              data: dataObj,
+              escala: estado.escala,
+              tipoFuncao,
+              servicosMilitar: servicosParaMotor,
+              idsJaEscaladosNoDia: Object.values(novaEscala[dia]).filter(Boolean),
+              ignorarIndisponibilidade: true,
+              verificarVermelhoConsecutivo: aplicarRegraVermelha,
+              ultimoServicoFoiVermelho: ultimoServicoFoiVermelhoPorMilitar[militar.id]
+            });
+
+            if (avaliacaoCentral.impedimentos.length > 0) {
+              // A exceção vermelha antiga continua disponível somente quando
+              // a regra configurada não permite consecutivos e o fallback foi autorizado.
+              const somenteVermelho = avaliacaoCentral.impedimentos.every(m => m.includes('vermelho seguido'));
+              if (!(somenteVermelho && aceitarVermelhaConsecutiva)) return false;
+            }
+
+            const temDescansoReduzido = avaliacaoCentral.nivel === 'reduzido';
+            if (temDescansoReduzido && !aceitarIntervaloReduzido) return false;
 
             const ultimoEvento = ultimoEventoPorMilitar[`${militar.id}:${chaveRotacao}`];
             const eventoConsecutivo = ultimoEvento !== undefined && eventoRotacao - ultimoEvento < 2;
-            if (eventoConsecutivo && (!aceitarIntervaloReduzido || intervaloCalendario !== 3)) return false;
-            if (aplicarRegraVermelha && ultimoServicoFoiVermelhoPorMilitar[militar.id] && !aceitarVermelhaConsecutiva) return false;
+            if (eventoConsecutivo && !aceitarIntervaloReduzido) return false;
 
-            // 3. Checa se já está escalado no próprio dia
-            return !Object.values(novaEscala[dia]).includes(militar.id);
+            return true;
           };
 
           const obterMotivosImpedimento = militar => {
@@ -4767,11 +5297,11 @@ try {
               ? Infinity
               : Math.round((dataObj.getTime() - ultimaDataServico) / 86400000);
             if (intervaloCalendario === 1) {
-              motivos.push('dobraria serviço');
+              motivos.push('teria descanso incompatível');
             } else if (intervaloCalendario === 2) {
-              motivos.push('ficaria na 24');
+              motivos.push('ficaria descanso insuficiente');
             } else if (intervaloCalendario === 3) {
-              motivos.push('ficaria com apenas uma folga depois de sair de servico');
+              motivos.push('ficaria com descanso reduzido depois de sair de servico');
             }
 
             const ultimoEvento = ultimoEventoPorMilitar[`${militar.id}:${chaveRotacao}`];
@@ -4925,19 +5455,30 @@ try {
           if (candidatos.length === 0 && !reproduzirPrefixo) {
             let candidatosComIntervaloReduzido = obterMilitaresParaEscala(col.funcao).filter(m => {
               if (!podeSerEscalado(m, true, aplicarRegraVermelha)) return false;
-              const ultimosServicos = historicoServicos[m.id];
+              const ultimosServicos = historicoServicos[m.id] || [];
               const ultimaDataServico = ultimaDataServicoPorMilitar[m.id];
-              const intervaloCalendario = ultimaDataServico === undefined
-                ? Infinity
-                : Math.round((dataObj.getTime() - ultimaDataServico) / 86400000);
-              return ultimosServicos.length > 0 && intervaloCalendario === 3;
+              if (ultimaDataServico === undefined) return false;
+              const intervaloCalendario = Math.round((dataObj.getTime() - ultimaDataServico) / 86400000);
+              const regrasFuncao = obterRegrasEfetivasFuncao(col.funcao, tipoFuncao);
+              const descanso = classificarDescansoPorDiferenca(
+                intervaloCalendario,
+                Number(regrasFuncao.descanso?.folgasAntes ?? 2),
+                regrasFuncao,
+                'antes'
+              );
+              return ultimosServicos.length > 0 && descanso.nivel === 'reduzido';
             });
             candidatosComIntervaloReduzido = filtrarBloqueiosComoPreferencia(candidatosComIntervaloReduzido);
             candidatosComIntervaloReduzido = filtrarMilitaresAdiantados(candidatosComIntervaloReduzido);
 
-            if (candidatosComIntervaloReduzido.length > 0 && confirm(
-              `Não há candidato para ${dia}/${String(mes).padStart(2, '0')} mantendo duas folgas depois da saída de serviço. Permitir somente nesta situação uma folga depois da saída de serviço para ${candidatosComIntervaloReduzido.map(m => m.nome).join(', ')}?`
-            )) {
+            const regrasDescansoFuncao = obterRegrasEfetivasFuncao(col.funcao, tipoFuncao);
+            const autorizarDescansoReduzido = candidatosComIntervaloReduzido.length > 0 && (
+              regrasDescansoFuncao.descanso?.reduzido?.exigirConfirmacao === false
+              || confirm(
+                `Não há candidato para ${dia}/${String(mes).padStart(2, '0')} mantendo o descanso normal configurado. Permitir somente nesta situação o descanso reduzido configurado para ${candidatosComIntervaloReduzido.map(m => m.nome).join(', ')}?`
+              )
+            );
+            if (autorizarDescansoReduzido) {
               candidatos = candidatosComIntervaloReduzido;
               excecaoVermelhaConsecutiva = aplicarRegraVermelha
                 && candidatos.some(m => ultimoServicoFoiVermelhoPorMilitar[m.id]);
@@ -4946,11 +5487,13 @@ try {
 
           if (candidatos.length > 0) {
             const tipoContagemJustica = servicoVermelho ? 'vermelho' : 'preto';
-            const usarJusticaAnualPorCor = tipoFuncao === 'semanaFimSemana';
+            const regrasJusticaFuncao = obterRegrasEfetivasFuncao(col.funcao, tipoFuncao);
+            const usarJusticaConfiguravel = tipoFuncao === 'semanaFimSemana';
             const obterDadosCandidato = militar => {
               const servicos = historicoServicos[militar.id];
-              const contagemJustica = usarJusticaAnualPorCor
-                ? (contagemAnoGeracao[militar.id]?.[col.funcao]?.[tipoContagemJustica] || 0)
+              const contagemSeparada = contagemSeparadaGeracao[militar.id]?.[col.funcao] || criarContagemQuadrinhoLastro();
+              const contagemJustica = usarJusticaConfiguravel
+                ? obterValorJusticaSeparada(contagemSeparada, regrasJusticaFuncao, tipoContagemJustica)
                 : servicos.length;
               const folga = servicos.length > 0 ? dia - servicos[servicos.length - 1] : 99;
               const repeticoesDiaSemana = diasDaSemanaServico[militar.id][diaSemana] || 0;
@@ -4976,13 +5519,15 @@ try {
               const dadosB = obterDadosCandidato(b);
 
               // Score: Prioriza maior folga, menor total de serviços e menor repetição no dia da semana
-              if (!usarJusticaAnualPorCor) {
+              if (!usarJusticaConfiguravel) {
                 return dadosA.distancia - dadosB.distancia;
               }
               if (dadosA.contagemJustica !== dadosB.contagemJustica) {
                 return dadosA.contagemJustica - dadosB.contagemJustica;
               }
-              if (dadosA.distancia !== dadosB.distancia) return dadosA.distancia - dadosB.distancia;
+              if (regrasJusticaFuncao.justica?.usarRotacaoDesempate !== false && dadosA.distancia !== dadosB.distancia) {
+                return dadosA.distancia - dadosB.distancia;
+              }
               const scoreA = (dadosA.folga * 10) - (dadosA.contagemJustica * 15) - (dadosA.repeticoesDiaSemana * 20);
               const scoreB = (dadosB.folga * 10) - (dadosB.contagemJustica * 15) - (dadosB.repeticoesDiaSemana * 20);
               return scoreB - scoreA;
@@ -4995,6 +5540,9 @@ try {
 
             const escolhido = candidatos[0];
             novaEscala[dia][col.chave] = escolhido.id;
+            if (contagemSeparadaGeracao[escolhido.id]?.[col.funcao]) {
+              contagemSeparadaGeracao[escolhido.id][col.funcao][tipoContagemJustica].quadrinhos++;
+            }
             const militarEraPendente = pendenciasRotacao[chaveRotacao] === escolhido.id;
             const militarEraProximo = proximoMilitarDaRotacao?.id === escolhido.id;
             const militarJaEstavaAdiantado = militaresAdiantadosRotacao[chaveRotacao]?.has(escolhido.id);
@@ -5032,7 +5580,8 @@ try {
               explicacao.push(`Militares pulados por indisponibilidade, restricao semanal ou inicio de indisponibilidade no dia seguinte. Essas situacoes nao geram pendencia explicita de rotacao; eventual diferenca no acumulado dos quadrinhos sera considerada nas escolhas posteriores: ${militaresPuladosPorIndisponibilidade.map(obterNomeMilitar).join(', ')}.`);
             }
             if (militaresComLastroPorIndisponibilidade.length > 0) {
-              explicacao.push(`Lastro computado por indisponibilidade de 30 dias consecutivos ou mais, incluindo registros consecutivos ou sobrepostos quando existirem: ${militaresComLastroPorIndisponibilidade.map(obterNomeMilitar).join(', ')} recebeu contagem virtual de 1 servico ${servicoVermelho ? 'vermelho' : 'preto'} nesta vaga.`);
+              const minimoLastroJustificativa = Math.max(1, Number(obterRegrasEfetivasFuncao(col.funcao, tipoFuncao).lastro?.minimoDiasIndisponibilidade || 30));
+              explicacao.push(`Lastro computado por indisponibilidade de ${minimoLastroJustificativa} dias consecutivos ou mais, incluindo registros consecutivos ou sobrepostos quando existirem: ${militaresComLastroPorIndisponibilidade.map(obterNomeMilitar).join(', ')} recebeu 1 lastro ${servicoVermelho ? 'vermelho' : 'preto'} nesta vaga.`);
             }
             if (ultimoMilitar) {
               explicacao.push(`${houvePulosAutomaticos ? 'Ultimo militar da rotacao apos os pulos' : 'Ultimo militar considerado nesta rotacao'}: ${obterNomeMilitar(ultimoMilitar)}.`);
@@ -5272,6 +5821,12 @@ delete escalaBase.alteracoesManuais[dia][chave];
       estado.escala = {
   mesAno,
   tipos: tiposEscala,
+  regrasEscalaSnapshot: Object.fromEntries(
+    estado.funcoes.map(funcao => [
+      funcao,
+      obterResumoRegrasFuncao(funcao, tiposEscala[funcao] || garantirRegrasEscalaFuncao(funcao).distribuicao)
+    ])
+  ),
   tiposUsadosPorDia,
   ordemTrocaManual,
   lastrosIndisponibilidade,
@@ -5294,6 +5849,16 @@ if (deveMesclarResultado) {
   };
   funcoesGeradas.forEach(funcao => {
     estado.escala.tipos[funcao] = tiposEscala[funcao] || 'corrida';
+  });
+
+  estado.escala.regrasEscalaSnapshot = {
+    ...(escalaExistenteAntesGeracao?.regrasEscalaSnapshot || estado.escala.regrasEscalaSnapshot || {})
+  };
+  funcoesGeradas.forEach(funcao => {
+    estado.escala.regrasEscalaSnapshot[funcao] = obterResumoRegrasFuncao(
+      funcao,
+      tiposEscala[funcao] || garantirRegrasEscalaFuncao(funcao).distribuicao
+    );
   });
 
   estado.escala.estrutura = structuredClone(escalaExistenteAntesGeracao?.estrutura || estruturaGerada);
@@ -5509,6 +6074,13 @@ if (salvou) {
       const diasNoMes = new Date(ano, mes, 0).getDate();
       const ultimoDia = Math.max(diasNoMes, ...diasOrdenados);
 
+
+      Object.values(estado.escalas)
+        .filter(escala => escala.mesAno && escala.mesAno < mesAno)
+        .forEach(escala => {
+          estado.funcoes.forEach(funcao => obterContagemSeparadaEscala(escala, contagemSeparadaGeracao, funcao));
+        });
+
       for (let dia = 1; dia <= ultimoDia; dia++) {
         const dataStr = `${ano}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
         const dataObj = new Date(ano, mes - 1, dia);
@@ -5721,6 +6293,35 @@ if (salvou) {
       }
     }
 
+    function renderizarResumoRegrasMes() {
+      const box = document.getElementById('resumoRegrasMes');
+      if (!box) return;
+      const escala = estado.escala;
+      if (!escala?.mesAno) {
+        box.classList.add('hidden');
+        box.innerHTML = '';
+        return;
+      }
+
+      const snapshot = escala.regrasEscalaSnapshot || {};
+      const itens = Object.entries(snapshot).map(([funcao, r]) => {
+        const descanso = r.descanso || {};
+        const lastro = r.lastro || {};
+        const justica = r.justica || {};
+        return `<div class="mb-1"><strong>${funcao}:</strong> `
+          + `${r.distribuicao === 'corrida' ? 'Corrida' : 'Preto/Vermelho'}; `
+          + `descanso ${descanso.folgasAntes ?? 0} antes / ${descanso.folgasDepois ?? 0} depois; `
+          + `${descanso.reduzidoPermitido ? `reduzido ${descanso.reduzidoFolgasAntes ?? 0}/${descanso.reduzidoFolgasDepois ?? 0}` : 'sem reduzido'}; `
+          + `${r.vermelho?.permitirConsecutivos ? 'vermelhos consecutivos permitidos' : 'vermelhos consecutivos bloqueados'}; `
+          + `${lastro.habilitado ? `lastro ≥ ${lastro.minimoDiasIndisponibilidade ?? 30} dias` : 'lastro desativado'}; `
+          + `justiça ${justica.considerarTotal !== false ? 'por Total' : 'por Quadrinho'}${justica.separarPretoVermelho !== false ? ' separado por cor' : ' conjunto'}.</div>`;
+      });
+
+      box.innerHTML = `<div class="font-semibold mb-1">Regras registradas para ${escala.mesAno}</div>`
+        + (itens.length ? itens.join('') : '<div>Escala histórica sem snapshot detalhado.</div>');
+      box.classList.remove('hidden');
+    }
+
     function renderizarTabelaEscala() {
       const mesAno = document.getElementById('mesAnoEscala').value;
       const cabecalho = document.getElementById('cabecalhoTabelaEscala');
@@ -5773,7 +6374,10 @@ cabecalho.innerHTML = `
         const isFimDeSemana = escalaTemDiaVermelho(estado.escala, dataObj, dia);
 
         htmlCorpo += `<tr class="${isFimDeSemana ? 'bg-amber-50' : 'hover:bg-gray-50'}">`;
-        htmlCorpo += `<td class="border p-2 text-center font-bold">${dia}</td>`;
+        const dataStrLinha = `${ano}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+        const classificacaoLinha = obterClassificacaoDia(dataObj);
+        const tituloClassificacao = `Classificação: ${classificacaoLinha.cor === 'vermelho' ? 'Vermelho' : 'Preto'} | Origem: ${classificacaoLinha.origem || 'escala salva'} | Clique para alternar escolher Automático, Preto ou Vermelho`;
+        htmlCorpo += `<td class="border p-2 text-center font-bold ${podeEditarSistema() ? 'cursor-pointer hover:bg-blue-100' : ''}" title="${tituloClassificacao}" ${podeEditarSistema() ? `onclick="abrirDropdownCorDia('${dataStrLinha}', this)"` : ''}>${dia}</td>`;
         htmlCorpo += `<td class="border p-2 text-center text-xs font-semibold ${isFimDeSemana ? 'text-red-600' : 'text-gray-600'}">${nomeDiaSemana}</td>`;
 
         colunasVagas.forEach(col => {
@@ -5821,8 +6425,8 @@ const militaresNaOrdemBase = idsOrdenadosTroca
 //
 // Dentro dessa ordem:
 // 0 = apto normalmente
-// 1 = apenas uma folga
-// 2 = ficaria na 24
+// 1 = descanso reduzido
+// 2 = ficaria descanso insuficiente
 // 3 = demais violações
 //
 // Não aparecem:
@@ -5852,167 +6456,53 @@ const militaresPuxadosDepois =
 const gruposTroca = [
   [], // 0 - aptos pela rotação normal
   [], // 1 - aptos, mas puxados posteriormente
-  [], // 2 - apenas uma folga
-  [], // 3 - na 24
-  []  // 4 - demais violações
+  []  // 2 - descanso reduzido permitido
 ];
 
+const classificacoesTroca = new Map();
+
 militaresNaOrdemBase.forEach((militar, indiceOrdemBase) => {
+  if (militar.id === militarIdEscalado) return;
 
-  // O militar atualmente escalado aparece somente
-  // como a opção selecionada do dropdown.
-  if (militar.id === militarIdEscalado) {
-    return;
-  }
+  const classificacao = classificarCandidatoTrocaManual(dia, col.chave, militar.id);
+  classificacoesTroca.set(militar.id, classificacao);
 
-  const violacoes =
-    analisarViolacoesAlteracaoManual(
-      dia,
-      col.chave,
-      militar.id
-    );
+  // Impedimentos absolutos não aparecem como opção de substituição.
+  if (classificacao.impeditivoAbsoluto) return;
 
-  const temViolacao = trecho =>
-    violacoes.some(
-      violacao =>
-        String(violacao)
-          .toLowerCase()
-          .includes(trecho)
-    );
+  const item = { militar, indiceOrdemBase };
 
-  // ---------------------------------------------------
-  // NÃO DEVEM APARECER
-  // ---------------------------------------------------
-
-  // Já está em outra vaga no mesmo dia.
-  if (
-    temViolacao(
-      'mesma pessoa duas vezes no mesmo dia'
-    )
-  ) {
-    return;
-  }
-
-  // Serviço no dia imediatamente anterior ou posterior.
-  if (
-    temViolacao(
-      'dobraria serviço'
-    )
-  ) {
-    return;
-  }
-  // Militar indisponível na própria data.
-if (
-  temViolacao(
-    'militar indisponivel nesta data'
-  )
-) {
-  return;
-}
-
-// Indisponibilidade semanal cadastrada para este dia.
-if (
-  temViolacao(
-    'militar possui indisponibilidade cadastrada para este dia da semana'
-  )
-) {
-  return;
-}
-
-// Indisponibilidade datada iniciando no dia seguinte.
-if (
-  temViolacao(
-    'militar inicia indisponibilidade no dia seguinte'
-  )
-) {
-  return;
-}
-
-  // ---------------------------------------------------
-  // CLASSIFICAÇÃO
-  // ---------------------------------------------------
-
-  const ficariaNa24 =
-    temViolacao('ficaria na 24');
-
-  const apenasUmaFolga =
-    temViolacao('apenas uma folga');
-
-  const item = {
-    militar,
-    indiceOrdemBase
-  };
-
-  if (violacoes.length === 0) {
-
-  /*
-   * Continua sendo militar plenamente apto.
-   *
-   * Porém, se ele foi puxado posteriormente pelo
-   * gerador nesta mesma rotação, fica depois dos
-   * aptos que ainda estavam seguindo normalmente
-   * a sequência.
-   */
-  if (
-    militaresPuxadosDepois.has(militar.id)
-  ) {
+  if (classificacao.descansoReduzido) {
+    gruposTroca[2].push(item);
+  } else if (militaresPuxadosDepois.has(militar.id)) {
     gruposTroca[1].push(item);
   } else {
     gruposTroca[0].push(item);
   }
-
-} else if (
-  apenasUmaFolga &&
-  !ficariaNa24
-) {
-
-  gruposTroca[2].push(item);
-
-} else if (ficariaNa24) {
-
-  gruposTroca[3].push(item);
-
-} else {
-
-  gruposTroca[4].push(item);
-
-}
 });
-
-
-// =====================================================
-// PRESERVA A ORDEM ORIGINAL DO GERADOR
-// DENTRO DE CADA NÍVEL DE PRIORIDADE
-// =====================================================
 
 gruposTroca.forEach(grupo => {
-  grupo.sort(
-    (a, b) =>
-      a.indiceOrdemBase - b.indiceOrdemBase
-  );
+  grupo.sort((a, b) => a.indiceOrdemBase - b.indiceOrdemBase);
 });
 
-
-// =====================================================
-// ORDEM FINAL DO DROPDOWN
-// =====================================================
-
 const militaresOrdenadosTroca = [
-  ...gruposTroca[0], // aptos normais
-  ...gruposTroca[1], // aptos puxados posteriormente
-  ...gruposTroca[2], // apenas uma folga
-  ...gruposTroca[3], // na 24
-  ...gruposTroca[4]  // demais violações
+  ...gruposTroca[0],
+  ...gruposTroca[1],
+  ...gruposTroca[2]
 ].map(item => item.militar);
-
 
           const militarEscalado =
   estado.militares.find(m => m.id === militarIdEscalado);
 
 const opcoes = militaresOrdenadosTroca
-  .map(m =>
-    `<option value="${m.id}">${m.nome} (${m.saram})${m.ativo === false ? ' - inativo' : ''}</option>`
-  )
+  .map(m => {
+    const classificacao = classificacoesTroca.get(m.id);
+    const marcadores = [];
+    if (classificacao?.descansoReduzido) marcadores.push('descanso reduzido');
+    else if (militaresPuxadosDepois.has(m.id)) marcadores.push('puxado posteriormente');
+    const sufixo = marcadores.length ? ` — ${marcadores.join(', ')}` : '';
+    return `<option value="${m.id}">${m.nome} (${m.saram})${m.ativo === false ? ' - inativo' : ''}${sufixo}</option>`;
+  })
   .join('');
           const textoBotaoJustificativa = militarEscalado
             ? `${militarEscalado.nome} (${militarEscalado.saram})`
@@ -6159,6 +6649,234 @@ const opcoes = militaresOrdenadosTroca
       abrirModalJustificativa(titulo, 'Nao ha militar escalado nesta vaga.', { dia, chaveColuna });
     }
 
+    // ============================================================
+    // ETAPA 3 - MOTOR CENTRAL DE ELEGIBILIDADE
+    // ============================================================
+    // Centraliza regras impeditivas e de descanso. Nesta etapa,
+    // gerador e alteração manual passam a consultar a mesma base.
+    // Quadrinho, Lastro e Total continuam conceitos separados.
+
+    function obterRegrasEfetivasFuncao(funcao, tipoFuncao = '') {
+      const regras = structuredClone(garantirRegrasEscalaFuncao(funcao));
+      if (tipoFuncao) regras.distribuicao = tipoFuncao;
+      return regras;
+    }
+
+    function calcularFolgasEntreServicos(diferencaDias) {
+      if (!Number.isFinite(diferencaDias)) return Infinity;
+      // Serviço no dia 1 e próximo no dia 5 => diferença 4 => dias 3 e 4 de folga.
+      // O dia imediatamente posterior ao serviço é tratado como saída.
+      return Math.max(0, diferencaDias - 2);
+    }
+
+    function classificarDescansoPorDiferenca(diferencaDias, folgasExigidas, regras, lado = 'antes') {
+      if (!Number.isFinite(diferencaDias)) {
+        return { permitido: true, nivel: 'normal', folgas: Infinity, exigidas: folgasExigidas };
+      }
+
+      const folgas = calcularFolgasEntreServicos(Math.abs(diferencaDias));
+      const reduzido = regras?.descanso?.reduzido || {};
+      const minimoReduzido = lado === 'depois'
+        ? Number(reduzido.folgasDepois ?? 1)
+        : Number(reduzido.folgasAntes ?? 1);
+
+      if (folgas >= folgasExigidas) {
+        return { permitido: true, nivel: 'normal', folgas, exigidas: folgasExigidas };
+      }
+
+      if (reduzido.permitido && folgas >= minimoReduzido) {
+        return {
+          permitido: true,
+          nivel: 'reduzido',
+          folgas,
+          exigidas: folgasExigidas,
+          minimoReduzido,
+          exigirConfirmacao: reduzido.exigirConfirmacao !== false
+        };
+      }
+
+      return { permitido: false, nivel: 'impedido', folgas, exigidas: folgasExigidas, minimoReduzido };
+    }
+
+    function avaliarElegibilidadeServico({
+      militar,
+      funcao,
+      data,
+      escala = null,
+      chaveColuna = '',
+      tipoFuncao = '',
+      servicosMilitar = [],
+      idsJaEscaladosNoDia = [],
+      ignorarIndisponibilidade = false,
+      verificarVermelhoConsecutivo = true,
+      ultimoServicoFoiVermelho = false
+    }) {
+      const regras = obterRegrasEfetivasFuncao(funcao, tipoFuncao);
+      const impedimentos = [];
+      const alertas = [];
+
+      if (!militar) {
+        return { elegivel: false, nivel: 'impedido', impedimentos: ['militar inexistente'], alertas, regras };
+      }
+
+      if (militar.funcao !== funcao) impedimentos.push('militar pertence a outra funcao');
+
+      const dataStr = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}-${String(data.getDate()).padStart(2, '0')}`;
+      const diaSemana = data.getDay();
+
+      if (!ignorarIndisponibilidade) {
+        if (estado.indisponibilidades.some(i => i.militarId === militar.id && dataStr >= i.inicio && dataStr <= i.fim)) {
+          impedimentos.push('militar indisponivel nesta data');
+        }
+        if (estado.indisponibilidadesSemana.some(i => i.militarId === militar.id && Number(i.diaSemana) === diaSemana)) {
+          impedimentos.push('militar possui indisponibilidade cadastrada para este dia da semana');
+        }
+
+        // Só exige proteção do dia seguinte quando a regra realmente exige
+        // pelo menos uma folga depois do serviço.
+        if (Number(regras.descanso?.folgasDepois || 0) > 0) {
+          const dataSeguinte = new Date(data);
+          dataSeguinte.setDate(dataSeguinte.getDate() + 1);
+          const seguinteStr = `${dataSeguinte.getFullYear()}-${String(dataSeguinte.getMonth() + 1).padStart(2, '0')}-${String(dataSeguinte.getDate()).padStart(2, '0')}`;
+          if (estado.indisponibilidades.some(i => i.militarId === militar.id && i.inicio === seguinteStr)) {
+            impedimentos.push('militar inicia indisponibilidade no dia seguinte');
+          }
+        }
+      }
+
+      if (idsJaEscaladosNoDia.includes(militar.id)) {
+        impedimentos.push('mesma pessoa duas vezes no mesmo dia');
+      }
+
+      const tempoAtual = data.getTime();
+      const servicos = (servicosMilitar || [])
+        .filter(s => s && Number.isFinite(s.tempo) && s.tempo !== tempoAtual)
+        .sort((a, b) => a.tempo - b.tempo);
+
+      const anterior = [...servicos].reverse().find(s => s.tempo < tempoAtual);
+      const posterior = servicos.find(s => s.tempo > tempoAtual);
+
+      const difAnterior = anterior ? Math.round((tempoAtual - anterior.tempo) / 86400000) : Infinity;
+      const difPosterior = posterior ? Math.round((posterior.tempo - tempoAtual) / 86400000) : Infinity;
+
+      const descansoAntes = classificarDescansoPorDiferenca(
+        difAnterior,
+        Number(regras.descanso?.folgasAntes ?? 2),
+        regras,
+        'antes'
+      );
+      const descansoDepois = classificarDescansoPorDiferenca(
+        difPosterior,
+        Number(regras.descanso?.folgasDepois ?? 2),
+        regras,
+        'depois'
+      );
+
+      const registrarDescanso = (resultado, lado, servicoRef) => {
+        if (!servicoRef || resultado.nivel === 'normal') return;
+        const dataRef = new Date(servicoRef.tempo).toLocaleDateString('pt-BR');
+        if (resultado.nivel === 'reduzido') {
+          alertas.push(`descanso reduzido ${lado}: ${resultado.folgas} folga(s), referência ${dataRef}`);
+        } else {
+          impedimentos.push(`descanso insuficiente ${lado}: ${resultado.folgas} folga(s), referência ${dataRef}`);
+        }
+      };
+
+      registrarDescanso(descansoAntes, 'antes', anterior);
+      registrarDescanso(descansoDepois, 'depois', posterior);
+
+      const classificacao = obterClassificacaoDia(data);
+      const ehVermelho = classificacao.cor === 'vermelho';
+      if (verificarVermelhoConsecutivo && ehVermelho && !regras.vermelho?.permitirConsecutivos) {
+        const anteriorVermelho = anterior?.vermelho === true || ultimoServicoFoiVermelho === true;
+        const posteriorVermelho = posterior?.vermelho === true;
+        if (anteriorVermelho) impedimentos.push('servico vermelho seguido apos o servico vermelho anterior');
+        if (posteriorVermelho) impedimentos.push('servico vermelho seguido antes do proximo servico vermelho');
+      }
+
+      const nivel = impedimentos.length
+        ? 'impedido'
+        : (alertas.length ? 'reduzido' : 'normal');
+
+      return {
+        elegivel: impedimentos.length === 0,
+        nivel,
+        impedimentos: [...new Set(impedimentos)],
+        alertas: [...new Set(alertas)],
+        descansoAntes,
+        descansoDepois,
+        classificacaoDia: classificacao,
+        regras,
+        resumoDescanso: {
+          antes: { nivel: descansoAntes.nivel, folgas: descansoAntes.folgas, exigidas: descansoAntes.exigidas },
+          depois: { nivel: descansoDepois.nivel, folgas: descansoDepois.folgas, exigidas: descansoDepois.exigidas }
+        }
+      };
+    }
+
+    function classificarCandidatoTrocaManual(dia, chaveColuna, militarId) {
+      const violacoes = analisarViolacoesAlteracaoManual(dia, chaveColuna, militarId);
+      const normalizadas = violacoes.map(v => String(v).toLowerCase());
+      const tem = trecho => normalizadas.some(v => v.includes(trecho));
+
+      const impeditivoAbsoluto =
+        tem('mesma pessoa duas vezes') ||
+        tem('indisponivel nesta data') ||
+        tem('dia da semana') ||
+        tem('inicia indisponibilidade') ||
+        tem('descanso insuficiente') ||
+        tem('vermelho seguido') ||
+        tem('outra funcao');
+
+      const descansoReduzido = tem('descanso reduzido');
+
+      return {
+        violacoes,
+        impeditivoAbsoluto,
+        descansoReduzido,
+        nivel: impeditivoAbsoluto ? 'impedido' : (descansoReduzido ? 'reduzido' : 'normal')
+      };
+    }
+
+    function descreverRegrasDescansoFuncao(funcao, tipoFuncao = '') {
+      const r = obterRegrasEfetivasFuncao(funcao, tipoFuncao);
+      const normalAntes = Number(r.descanso?.folgasAntes ?? 0);
+      const normalDepois = Number(r.descanso?.folgasDepois ?? 0);
+      const reduzido = r.descanso?.reduzido || {};
+      const partes = [`normal: ${normalAntes} folga(s) antes e ${normalDepois} depois`];
+      if (reduzido.permitido) {
+        partes.push(`reduzido: mínimo ${Number(reduzido.folgasAntes ?? 0)} antes e ${Number(reduzido.folgasDepois ?? 0)} depois`);
+      } else {
+        partes.push('descanso reduzido desativado');
+      }
+      return partes.join('; ');
+    }
+
+    function obterResumoRegrasFuncao(funcao, tipoFuncao = '') {
+      const r = obterRegrasEfetivasFuncao(funcao, tipoFuncao);
+      return {
+        distribuicao: r.distribuicao,
+        descanso: {
+          folgasAntes: Number(r.descanso?.folgasAntes ?? 0),
+          folgasDepois: Number(r.descanso?.folgasDepois ?? 0),
+          reduzidoPermitido: Boolean(r.descanso?.reduzido?.permitido),
+          reduzidoFolgasAntes: Number(r.descanso?.reduzido?.folgasAntes ?? 0),
+          reduzidoFolgasDepois: Number(r.descanso?.reduzido?.folgasDepois ?? 0),
+          exigirConfirmacao: r.descanso?.reduzido?.exigirConfirmacao !== false
+        },
+        vermelho: { permitirConsecutivos: Boolean(r.vermelho?.permitirConsecutivos) },
+        lastro: {
+          habilitado: Boolean(r.lastro?.habilitado),
+          minimoDiasIndisponibilidade: Number(r.lastro?.minimoDiasIndisponibilidade ?? 30)
+        },
+        justica: {
+          considerarTotal: r.justica?.considerarTotal !== false,
+          separarPretoVermelho: r.justica?.separarPretoVermelho !== false,
+          usarRotacaoDesempate: r.justica?.usarRotacaoDesempate !== false
+        }
+      };
+    }
+
     function analisarViolacoesAlteracaoManual(dia, chaveColuna, militarId) {
       if (!militarId || !estado.escala?.mesAno) return [];
 
@@ -6188,7 +6906,9 @@ const opcoes = militaresOrdenadosTroca
       const usarDiferenciadaTemporaria = tiposEscala[funcao] === 'corrida'
         && militaresAtivosDaFuncao.length > efetivoDisponivelFuncao
         && efetivoDisponivelFuncao <= 7;
-      const aplicarRegraVermelha = tipoUsadoNoDia === 'semanaFimSemana' || usarDiferenciadaTemporaria;
+      const regrasFuncaoManual = obterRegrasEfetivasFuncao(funcao, tipoUsadoNoDia);
+      const aplicarRegraVermelha = (tipoUsadoNoDia === 'semanaFimSemana' || usarDiferenciadaTemporaria)
+        && !regrasFuncaoManual.vermelho?.permitirConsecutivos;
 
       if (militar.funcao !== funcao) {
         violacoes.push('militar pertence a outra funcao');
@@ -6256,30 +6976,42 @@ const opcoes = militaresOrdenadosTroca
           || servico.mesmaVagaEditada
           || lista[indice - 1].mesmaVagaEditada);
 
-      servicosUnicos.forEach(servico => {
-        if (servico.mesmaVagaEditada) return;
-        const diferencaDias = Math.abs(Math.round((dataAtual.getTime() - servico.tempo) / 86400000));
-        if (diferencaDias === 1) {
-          violacoes.push(`dobraria serviço em ${formatarData(servico.data)}`);
-        } else if (diferencaDias === 2) {
-          violacoes.push(`ficaria na 24 em relação a ${formatarData(servico.data)}`);
-        } else if (diferencaDias === 3) {
-          violacoes.push(`apenas uma folga depois de sair de servico em  ${formatarData(servico.data)}`);
-        }
+      const servicosParaMotor = servicosUnicos
+        .filter(servico => !servico.mesmaVagaEditada)
+        .map(servico => ({
+          tempo: servico.tempo,
+          vermelho: servico.vermelho === true
+        }));
+
+      const idsJaEscaladosNoDia = Object.entries(estado.escala.dados?.[dia] || {})
+        .filter(([chave]) => chave !== chaveColuna)
+        .map(([, id]) => id)
+        .filter(Boolean);
+
+      const avaliacao = avaliarElegibilidadeServico({
+        militar,
+        funcao,
+        data: dataAtual,
+        escala: estado.escala,
+        chaveColuna,
+        tipoFuncao: tipoUsadoNoDia,
+        servicosMilitar: servicosParaMotor,
+        idsJaEscaladosNoDia,
+        verificarVermelhoConsecutivo: aplicarRegraVermelha
       });
 
-      if (aplicarRegraVermelha && servicoVermelhoAtual) {
-        const anteriores = servicosUnicos.filter(servico => servico.tempo < dataAtual.getTime());
-        const posteriores = servicosUnicos.filter(servico => servico.tempo > dataAtual.getTime());
-        const anterior = anteriores[anteriores.length - 1];
-        const posterior = posteriores[0];
-        if (anterior?.vermelho) {
-          violacoes.push(`servico vermelho seguido apos ${formatarData(anterior.data)}`);
-        }
-        if (posterior?.vermelho) {
-          violacoes.push(`servico vermelho seguido antes de ${formatarData(posterior.data)}`);
-        }
-      }
+      // Mantém textos conhecidos pelo dropdown enquanto a interface
+      // migra para o novo conceito de folgas configuráveis.
+      avaliacao.impedimentos.forEach(motivo => {
+        if (motivo.includes('mesma pessoa duas vezes')) violacoes.push('mesma pessoa duas vezes no mesmo dia');
+        else if (motivo.includes('indisponivel nesta data')) violacoes.push('militar indisponivel nesta data');
+        else if (motivo.includes('dia da semana')) violacoes.push('militar possui indisponibilidade cadastrada para este dia da semana');
+        else if (motivo.includes('inicia indisponibilidade')) violacoes.push('militar inicia indisponibilidade no dia seguinte');
+        else if (motivo.includes('descanso insuficiente')) violacoes.push(motivo);
+        else if (motivo.includes('vermelho seguido')) violacoes.push(motivo);
+        else violacoes.push(motivo);
+      });
+      avaliacao.alertas.forEach(alerta => violacoes.push(alerta));
 
       return [...new Set(violacoes)];
     }
@@ -6368,12 +7100,31 @@ const opcoes = militaresOrdenadosTroca
           }
         }
 
-        const violacoes = analisarViolacoesAlteracaoManual(dia, chaveColuna, militarId);
-        if (violacoes.length > 0) {
-          const mensagem = `ATENCAO: Esta alteracao viola ${violacoes.length} regra(s):\n\n- ${violacoes.join('\n- ')}\n\nDeseja manter mesmo assim?`;
-          if (!confirm(mensagem)) {
-            renderizarTabelaEscala();
-            return;
+        const classificacaoTroca = classificarCandidatoTrocaManual(dia, chaveColuna, militarId);
+        const violacoes = classificacaoTroca.violacoes;
+
+        if (classificacaoTroca.impeditivoAbsoluto) {
+          alert(`ALTERACAO NAO PERMITIDA pelas regras configuradas:\n\n- ${violacoes.join('\n- ')}`);
+          renderizarTabelaEscala();
+          return;
+        }
+
+        if (classificacaoTroca.descansoReduzido) {
+          const funcaoTroca = obterFuncaoDaChave(chaveColuna);
+          const tiposEscalaTroca = obterTiposEscalaDaEscala(estado.escala);
+          const tipoTroca = estado.escala.tiposUsadosPorDia?.[dia]?.[funcaoTroca]
+            || tiposEscalaTroca[funcaoTroca]
+            || garantirRegrasEscalaFuncao(funcaoTroca).distribuicao;
+          const regrasTroca = obterRegrasEfetivasFuncao(funcaoTroca, tipoTroca);
+
+          if (regrasTroca.descanso?.reduzido?.exigirConfirmacao !== false) {
+            const mensagem = `Esta alteracao utiliza DESCANSO REDUZIDO.\n\n`
+              + `${descreverRegrasDescansoFuncao(funcaoTroca, tipoTroca)}\n\n`
+              + `Situacao encontrada:\n- ${violacoes.join('\n- ')}\n\nDeseja continuar?`;
+            if (!confirm(mensagem)) {
+              renderizarTabelaEscala();
+              return;
+            }
           }
         }
 
@@ -6413,9 +7164,10 @@ const opcoes = militaresOrdenadosTroca
           `Militar inserido/substituto: ${nomeNovo}.`,
           `Justificativa informada: ${dadosJustificativaManual.motivo}.`,
           `Responsavel pela alteracao: ${dadosJustificativaManual.responsavelNome} (SARAM: ${dadosJustificativaManual.responsavelSaram}).`,
-          violacoes.length > 0
-            ? `Alteracao mantida com autorizacao do usuario, mesmo violando: ${violacoes.join('; ')}.`
-            : 'Nenhuma violacao de regra foi identificada na validacao manual.',
+          classificacaoTroca.descansoReduzido
+            ? `Alteracao realizada com descanso reduzido permitido pelas regras: ${violacoes.join('; ')}.`
+            : 'Militar considerado apto pelas regras configuradas no momento da alteracao.',
+          `Regras de descanso aplicadas: ${descreverRegrasDescansoFuncao(obterFuncaoDaChave(chaveColuna), estado.escala.tiposUsadosPorDia?.[dia]?.[obterFuncaoDaChave(chaveColuna)] || obterTiposEscalaDaEscala(estado.escala)[obterFuncaoDaChave(chaveColuna)] || '')}.`,
           'As compensacoes da rotacao foram recalculadas a partir da escala atual apos esta edicao manual.',
           mesesFuturosGerados.length > 0
             ? `Escalas futuras excluidas por dependerem desta rotacao: ${mesesFuturosGerados.map(formatarMesAno).join(', ')}.`
@@ -6469,11 +7221,80 @@ const opcoes = militaresOrdenadosTroca
     }
 
     function ehServicoVermelho(data) {
-      const dataStr = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}-${String(data.getDate()).padStart(2, '0')}`;
-      return data.getDay() === 0
-        || data.getDay() === 6
-        || obterFeriadosNacionais(data.getFullYear()).has(dataStr)
-        || Boolean(estado.diasEspeciais?.[dataStr]);
+      return obterClassificacaoDia(data).cor === 'vermelho';
+    }
+
+    function criarContagemQuadrinhoLastro() {
+      return {
+        preto: { quadrinhos: 0, lastros: 0 },
+        vermelho: { quadrinhos: 0, lastros: 0 }
+      };
+    }
+
+    function obterTotaisQuadrinhoLastro(contagem) {
+      const preto = contagem?.preto || { quadrinhos: 0, lastros: 0 };
+      const vermelho = contagem?.vermelho || { quadrinhos: 0, lastros: 0 };
+      const totalPreto = (preto.quadrinhos || 0) + (preto.lastros || 0);
+      const totalVermelho = (vermelho.quadrinhos || 0) + (vermelho.lastros || 0);
+      return {
+        quadrinhosPreto: preto.quadrinhos || 0,
+        lastrosPreto: preto.lastros || 0,
+        totalPreto,
+        quadrinhosVermelho: vermelho.quadrinhos || 0,
+        lastrosVermelho: vermelho.lastros || 0,
+        totalVermelho,
+        totalGeral: totalPreto + totalVermelho
+      };
+    }
+
+    function obterValorJusticaSeparada(contagem, regras, corAtual) {
+      const totais = obterTotaisQuadrinhoLastro(contagem);
+      const considerarTotal = regras?.justica?.considerarTotal !== false;
+      const separarCores = regras?.justica?.separarPretoVermelho !== false;
+
+      if (separarCores) {
+        if (corAtual === 'vermelho') {
+          return considerarTotal ? totais.totalVermelho : totais.quadrinhosVermelho;
+        }
+        return considerarTotal ? totais.totalPreto : totais.quadrinhosPreto;
+      }
+
+      if (considerarTotal) return totais.totalGeral;
+      return totais.quadrinhosPreto + totais.quadrinhosVermelho;
+    }
+
+    function obterContagemSeparadaEscala(escala, contagem, filtroFuncao = '') {
+      if (!escala || !escala.dados || !escala.mesAno) return;
+      const [ano, mes] = escala.mesAno.split('-').map(Number);
+
+      // QUADRINHOS: somente serviços realmente existentes nas células da escala.
+      Object.entries(escala.dados).forEach(([dia, vagas]) => {
+        const data = new Date(ano, mes - 1, Number(dia));
+        const cor = escalaTemDiaVermelho(escala, data, Number(dia)) ? 'vermelho' : 'preto';
+
+        Object.entries(vagas).forEach(([chave, militarId]) => {
+          if (filtroFuncao && obterFuncaoDaChave(chave) !== filtroFuncao) return;
+          if (!militarId || !contagem[militarId]) return;
+          contagem[militarId][cor].quadrinhos++;
+        });
+      });
+
+      // LASTROS: somente registros existentes em lastrosIndisponibilidade.
+      Object.values(escala.lastrosIndisponibilidade || {}).flat().forEach(lastro => {
+        if (filtroFuncao && lastro.funcao !== filtroFuncao) return;
+        if (!lastro.militarId || !contagem[lastro.militarId]) return;
+        const cor = lastro.cor === 'vermelho' ? 'vermelho' : 'preto';
+        contagem[lastro.militarId][cor].lastros++;
+      });
+    }
+
+    function obterContagemSeparadaMilitarFuncaoAte(militarId, funcao, mesReferencia = '') {
+      const contagem = criarContagemQuadrinhoLastro();
+      const mapa = { [militarId]: contagem };
+      Object.values(estado.escalas)
+        .filter(escala => escala.mesAno && (!mesReferencia || escala.mesAno <= mesReferencia))
+        .forEach(escala => obterContagemSeparadaEscala(escala, mapa, funcao));
+      return contagem;
     }
 
     function obterContagemEscala(escala, contagem, filtroFuncao = '') {
@@ -6522,43 +7343,54 @@ const opcoes = militaresOrdenadosTroca
     function renderizarResumoServicos() {
       const corpo = document.getElementById('corpoResumoServicos');
       if (!corpo) return;
+
       const filtro = document.getElementById('filtroFuncaoResumo')?.value || '';
       const mesSelecionado = document.getElementById('mesAnoEscala').value;
-      const contagemMes = Object.fromEntries(estado.militares.map(m => [m.id, { preto: 0, vermelho: 0 }]));
-      const contagemAno = Object.fromEntries(estado.militares.map(m => [m.id, { preto: 0, vermelho: 0 }]));
 
-      aplicarContagensIniciais(contagemAno, filtro);
-      aplicarAjustesAcumulados(contagemAno, filtro);
-      if (mesSelecionado && estado.escalas[mesSelecionado]) obterContagemEscala(estado.escalas[mesSelecionado], contagemMes, filtro);
+      const contagemMes = Object.fromEntries(
+        estado.militares.map(m => [m.id, criarContagemQuadrinhoLastro()])
+      );
+      const contagemAcumulada = Object.fromEntries(
+        estado.militares.map(m => [m.id, criarContagemQuadrinhoLastro()])
+      );
+
+      if (mesSelecionado && estado.escalas[mesSelecionado]) {
+        obterContagemSeparadaEscala(estado.escalas[mesSelecionado], contagemMes, filtro);
+      }
+
       if (mesSelecionado) {
         Object.values(estado.escalas)
           .filter(escala => escala.mesAno && escala.mesAno <= mesSelecionado)
-          .forEach(escala => obterContagemEscala(escala, contagemAno, filtro));
+          .forEach(escala => obterContagemSeparadaEscala(escala, contagemAcumulada, filtro));
       }
 
       corpo.innerHTML = estado.militares.filter(militar => {
         if (!filtro) return true;
-        const mes = contagemMes[militar.id] || { preto: 0, vermelho: 0 };
-        const ano = contagemAno[militar.id] || { preto: 0, vermelho: 0 };
-        return militar.funcao === filtro || mes.preto + mes.vermelho + ano.preto + ano.vermelho > 0;
+        const mes = obterTotaisQuadrinhoLastro(contagemMes[militar.id]);
+        const acum = obterTotaisQuadrinhoLastro(contagemAcumulada[militar.id]);
+        return militar.funcao === filtro || mes.totalGeral + acum.totalGeral > 0;
       }).map(militar => {
-        const mes = contagemMes[militar.id];
-        const ano = contagemAno[militar.id];
-        const totalMes = mes.preto + mes.vermelho;
-        const totalAno = ano.preto + ano.vermelho;
+        const mes = obterTotaisQuadrinhoLastro(contagemMes[militar.id]);
+        const acum = obterTotaisQuadrinhoLastro(contagemAcumulada[militar.id]);
         const funcaoAjuste = filtro || militar.funcao;
-        return `<tr class="border-b hover:bg-gray-50">
+
+        const tituloMes =
+          `Mês selecionado — Preto: ${mes.quadrinhosPreto} quadrinho(s) + ${mes.lastrosPreto} lastro(s) = ${mes.totalPreto}; ` +
+          `Vermelho: ${mes.quadrinhosVermelho} quadrinho(s) + ${mes.lastrosVermelho} lastro(s) = ${mes.totalVermelho}.`;
+
+        return `<tr class="border-b hover:bg-gray-50" title="${tituloMes}">
           <td class="p-2 font-medium">${militar.nome} (${militar.saram})</td>
           <td class="p-2 text-gray-600">${filtro || militar.funcao}${militar.ativo === false ? ' (inativo)' : ''}</td>
-          <td class="p-2 text-center">${mes.preto}</td>
-          <td class="p-2 text-center text-red-600">${mes.vermelho}</td>
-          <td class="p-2 text-center font-bold">${totalMes}</td>
-          <td class="p-2 text-center">${ano.preto}</td>
-          <td class="p-2 text-center text-red-600">${ano.vermelho}</td>
-          <td class="p-2 text-center font-bold">${totalAno}</td>
+          <td class="p-2 text-center">${acum.quadrinhosPreto}</td>
+          <td class="p-2 text-center text-gray-600">${acum.lastrosPreto}</td>
+          <td class="p-2 text-center font-bold">${acum.totalPreto}</td>
+          <td class="p-2 text-center text-red-600">${acum.quadrinhosVermelho}</td>
+          <td class="p-2 text-center text-red-400">${acum.lastrosVermelho}</td>
+          <td class="p-2 text-center font-bold text-red-700">${acum.totalVermelho}</td>
+          <td class="p-2 text-center font-bold">${acum.totalGeral}</td>
           <td class="p-2 text-right">
             <div class="flex justify-end gap-1">
-              <button type="button" onclick="abrirModalAjusteAcumulado('${militar.id}', '${encodeURIComponent(funcaoAjuste)}')" class="somente-edicao rounded bg-gray-200 px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-300">Ajustar</button>
+              <button type="button" onclick="abrirModalAjusteAcumulado('${militar.id}', '${encodeURIComponent(funcaoAjuste)}')" class="somente-edicao rounded bg-gray-200 px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-300" title="Ajustes históricos permanecem separados de Quadrinho e Lastro">Ajustar</button>
               <button type="button" onclick="abrirModalAuditoriaAcumulado('${militar.id}', '${encodeURIComponent(funcaoAjuste)}')" class="rounded bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-200">Auditoria</button>
             </div>
           </td>
@@ -6670,6 +7502,10 @@ const opcoes = militaresOrdenadosTroca
     function abrirModalAuditoriaAcumulado(militarId, funcaoCodificada) {
       const funcao = decodeURIComponent(funcaoCodificada);
       const militar = estado.militares.find(m => m.id === militarId);
+      const funcaoAuditoria = decodeURIComponent(funcaoCodificada);
+      const mesAuditoria = document.getElementById('mesAnoEscala')?.value || '';
+      const resumoQLT = obterResumoContagemMilitarFuncao(militarId, funcaoAuditoria, mesAuditoria);
+
       if (!militar) return;
 
       const auditorias = (militar.auditoriaAjustesAcumulado || [])
@@ -6864,6 +7700,9 @@ if (salvou) {
   indisponibilidades: dados.indisponibilidades,
   indisponibilidadesSemana: Array.isArray(dados.indisponibilidadesSemana) ? dados.indisponibilidadesSemana : [],
   diasEspeciais: dados.diasEspeciais && typeof dados.diasEspeciais === 'object' ? dados.diasEspeciais : {},
+  classificacaoSemanal: dados.classificacaoSemanal && typeof dados.classificacaoSemanal === 'object' ? dados.classificacaoSemanal : { 0: 'vermelho', 1: 'preto', 2: 'preto', 3: 'preto', 4: 'preto', 5: 'preto', 6: 'vermelho' },
+  excecoesClassificacaoDias: dados.excecoesClassificacaoDias && typeof dados.excecoesClassificacaoDias === 'object' ? dados.excecoesClassificacaoDias : {},
+  regrasEscala: dados.regrasEscala && typeof dados.regrasEscala === 'object' ? dados.regrasEscala : {},
   escala: dados.escala && typeof dados.escala === 'object'
     ? dados.escala
     : {},
@@ -6890,7 +7729,21 @@ if (salvou) {
     }
 
     // EXPORTAÇÃO PARA PDF
-    async function exportarPDF() {
+    function obterLinhasResumoQuadrinhoLastroExportacao() {
+  const mesSelecionado = document.getElementById('mesAnoEscala')?.value || '';
+  return estado.militares.map(militar => {
+    const total = obterResumoContagemMilitarFuncao(militar.id, militar.funcao, mesSelecionado);
+    return {
+      militar: `${militar.nome} (${militar.saram})`,
+      funcao: militar.funcao,
+      preto: `${total.quadrinhosPreto} Q + ${total.lastrosPreto} L = ${total.totalPreto}`,
+      vermelho: `${total.quadrinhosVermelho} Q + ${total.lastrosVermelho} L = ${total.totalVermelho}`,
+      total: total.totalGeral
+    };
+  });
+}
+
+async function exportarPDF() {
       const elemento = document.getElementById('areaEscalaPDF');
       const copia = elemento.cloneNode(true);
       copia.classList.add('pdf-exportacao');
@@ -6945,6 +7798,40 @@ if (salvou) {
       } finally {
         areaMedicao.remove();
       }
+    }
+
+    function adicionarResumoQuadrinhoLastroWorkbook(workbook) {
+      if (typeof XLSX === 'undefined' || !workbook) return;
+      const mesSelecionado = document.getElementById('mesAnoEscala')?.value || '';
+      const linhas = [[
+        'Militar', 'SARAM', 'Função',
+        'Quadrinho Preto', 'Lastro Preto', 'Total Preto',
+        'Quadrinho Vermelho', 'Lastro Vermelho', 'Total Vermelho', 'Total Geral'
+      ]];
+
+      estado.militares.forEach(militar => {
+        const funcoes = estado.funcoes.filter(funcao =>
+          militar.funcao === funcao ||
+          Object.values(estado.escalas || {}).some(escala =>
+            Object.values(escala?.dados || {}).some(vagas =>
+              Object.entries(vagas || {}).some(([chave, id]) =>
+                id === militar.id && obterFuncaoDaChave(chave) === funcao
+              )
+            )
+          )
+        );
+        (funcoes.length ? funcoes : [militar.funcao]).forEach(funcao => {
+          const t = obterResumoContagemMilitarFuncao(militar.id, funcao, mesSelecionado);
+          linhas.push([
+            militar.nome, militar.saram, funcao,
+            t.quadrinhosPreto, t.lastrosPreto, t.totalPreto,
+            t.quadrinhosVermelho, t.lastrosVermelho, t.totalVermelho, t.totalGeral
+          ]);
+        });
+      });
+
+      const wsResumo = XLSX.utils.aoa_to_sheet(linhas);
+      XLSX.utils.book_append_sheet(workbook, wsResumo, 'Quadrinhos_Lastros');
     }
 
     function exportarXLS() {
@@ -7012,7 +7899,7 @@ if (salvou) {
   Desenvolvido por Sgt R.Cunha ®
 </footer>
 <script>
-  if ('serviceWorker' in navigator) {
+  if ('serviceWorker' in navigator && (location.protocol === 'http:' || location.protocol === 'https:')) {
     window.addEventListener('load', () => {
       navigator.serviceWorker
         .register('./service-worker.js')
