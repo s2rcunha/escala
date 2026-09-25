@@ -1,5 +1,4 @@
 ﻿
-
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -1059,8 +1058,16 @@ if (location.protocol === 'http:' || location.protocol === 'https:') {
     document.addEventListener('submit', evento => {
       const botao = evento.submitter || evento.target.querySelector('button[type="submit"], input[type="submit"]');
       if (!botao || botao.disabled) return;
-      registrarBotaoAcao(botao);
-    }, true);
+
+      // Executa depois do handler onsubmit do formulário.
+      // Isso evita que o botão seja desabilitado antes de funções como
+      // realizarLogin(event) iniciarem a própria operação.
+      setTimeout(() => {
+        if (!botao.disabled && botaoAcaoAtual !== botao) {
+          registrarBotaoAcao(botao);
+        }
+      }, 0);
+    }, false);
 
     function mostrarBannerConflitoServidor() {
   const banner =
@@ -3068,6 +3075,9 @@ async function excluirUsuarioInterface(
 async function realizarLogin(evento) {
 
   evento.preventDefault();
+  const botaoLoginAcao = document.getElementById('botaoLogin');
+  botaoAcaoAtual = botaoLoginAcao;
+  iniciarSpinnerBotao(botaoLoginAcao, 'Entrando...');
 
 
   const saram =
@@ -3170,6 +3180,8 @@ async function realizarLogin(evento) {
     );
 
   } finally {
+    finalizarSpinnerBotao(botaoLoginAcao);
+    if (botaoAcaoAtual === botaoLoginAcao) botaoAcaoAtual = null;
 
     botao.disabled = false;
 
@@ -8067,4 +8079,6 @@ async function exportarPDF() {
 </script>
 </body>
 </html>
+
+
 
