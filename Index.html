@@ -17,7 +17,7 @@ if (location.protocol === 'http:' || location.protocol === 'https:') {
 }
 </script>
 <link href="./icons/icon-192.png" rel="apple-touch-icon"/>
-<title>Sistema de Escala Automática - CCI</title>
+<title>ETAPA 49 - Sistema de Escala Automática - CCI</title>
 <!-- Tailwind CSS CDN -->
 <script src="https://cdn.tailwindcss.com"></script>
 <!-- Bibliotecas para exportacao de PDF em pagina unica -->
@@ -3682,7 +3682,7 @@ async function sairDoSistema() {
       const saram = document.getElementById('militarSaram').value.trim();
       const funcao = document.getElementById('militarFuncao').value;
       if (estado.militares.some(militar => militar.saram === saram)) {
-        alert('Ja existe militar cadastrado com este SARAM.');
+        alert('Já existe militar cadastrado com este SARAM.');
         return;
       }
 
@@ -3701,7 +3701,7 @@ async function sairDoSistema() {
     function removerMilitar(id) {
       const militar = estado.militares.find(m => m.id === id);
       if (!militar) return;
-      if (!confirm(`Inativar ${militar.nome} (${militar.saram})? Ele nao entrara em novas escalas, mas continuara aparecendo no historico.`)) return;
+      if (!confirm(`Inativar ${militar.nome} (${militar.saram})? Ele não entrará em novas escalas, mas continuará aparecendo no histórico.`)) return;
       militar.ativo = false;
       salvarEstado();
       renderizarMilitares();
@@ -3833,7 +3833,7 @@ async function sairDoSistema() {
         });
       });
 
-      if (temTroca) adicionarItemLegenda(container, '#ccff00', 'Militar trocou o servico');
+      if (temTroca) adicionarItemLegenda(container, '#ccff00', 'Militar trocou o serviço');
       if (temPuxado) adicionarItemLegenda(container, '#fee2e2', 'Militar foi puxado');
       legendasObservacao.forEach(observacao => {
         adicionarItemLegenda(container, observacao.cor, observacao.legenda);
@@ -4787,11 +4787,11 @@ if (
       const motivo = document.getElementById('indispMotivo').value.trim();
       const militar = estado.militares.find(m => m.id === militarId);
       if (!militar || militar.funcao !== funcao) {
-        alert('Selecione um militar da funcao escolhida.');
+        alert('Selecione um militar da função escolhida.');
         return;
       }
       if (fim < inicio) {
-        alert('A data final nao pode ser anterior a data inicial.');
+        alert('A data final não pode ser anterior à data inicial.');
         return;
       }
 
@@ -4902,7 +4902,7 @@ if (
         return `
           <tr class="border-b hover:bg-gray-50">
             <td class="p-2 font-medium">${militar ? militar.nome : 'N/A'}</td>
-            <td class="p-2 text-xs">Periodo</td>
+            <td class="p-2 text-xs">Período</td>
             <td class="p-2 text-xs">${formatarDataBR(i.inicio)}</td>
             <td class="p-2 text-xs">${formatarDataBR(i.fim)}</td>
             <td class="p-2 text-xs text-gray-600">${i.motivo}</td>
@@ -5340,6 +5340,11 @@ try {
             && estado.indisponibilidadesSemana.some(i => i.militarId === militarId && Number(i.diaSemana) === diaSemana);
           const militarIniciaIndisponibilidadeNoDiaSeguinte = militarId => {
             if (reproduzirPrefixo) return false;
+            // A proteção do dia anterior só existe quando a regra efetiva exige
+            // pelo menos uma folga depois do serviço. Com folgasDepois = 0,
+            // iniciar indisponibilidade amanhã não torna o militar inelegível hoje.
+            const regrasProtecao = obterRegrasEfetivasFuncao(col.funcao, tipoFuncaoConfigurado);
+            if (Number(regrasProtecao.descanso?.folgasDepois || 0) <= 0) return false;
             const dataSeguinte = new Date(dataObj);
             dataSeguinte.setDate(dataSeguinte.getDate() + 1);
             const dataSeguinteStr = `${dataSeguinte.getFullYear()}-${String(dataSeguinte.getMonth() + 1).padStart(2, '0')}-${String(dataSeguinte.getDate()).padStart(2, '0')}`;
@@ -5484,16 +5489,35 @@ try {
             }
           }
 
-          const podeSerEscalado = (militar, aceitarIntervaloReduzido = false, aceitarVermelhaConsecutiva = false) => {
-            if (militar.funcao !== col.funcao) return false;
+          // ETAPA 44: a sequência vermelha da função não depende do candidato.
+          // Ela é calculada uma única vez para esta vaga/dia e reutilizada por
+          // todos os candidatos e pelas justificativas. O cache é LOCAL ao
+          // processamento da vaga, portanto não fica obsoleto quando a geração
+          // avança para outra vaga ou outro dia.
+          const sequenciaVermelhaFuncaoGeracao = [];
+          Object.values(estado.escalas || {}).forEach(escalaHistorica => {
+            if (!escalaHistorica?.mesAno || escalaHistorica.mesAno >= mesAno || !escalaHistorica.dados) return;
+            const [anoHist, mesHist] = escalaHistorica.mesAno.split('-').map(Number);
+            Object.entries(escalaHistorica.dados).forEach(([diaHist, vagasHist]) => {
+              const dataHist = new Date(anoHist, mesHist - 1, Number(diaHist));
+              if (!escalaTemDiaVermelho(escalaHistorica, dataHist, Number(diaHist))) return;
+              Object.entries(vagasHist || {}).forEach(([chaveHist, idHist]) => {
+                if (chaveHist.replace(/ #\d+$/, '') !== col.funcao || !idHist) return;
+                sequenciaVermelhaFuncaoGeracao.push({ tempo: dataHist.getTime(), militarId: idHist });
+              });
+            });
+          });
+          Object.entries(novaEscala || {}).forEach(([diaParcial, vagasParciais]) => {
+            const dataParcial = new Date(ano, mes - 1, Number(diaParcial));
+            if (dataParcial.getTime() >= dataObj.getTime()) return;
+            if (!escalaTemDiaVermelho({ mesAno, diasVermelhos }, dataParcial, Number(diaParcial))) return;
+            Object.entries(vagasParciais || {}).forEach(([chaveParcial, idParcial]) => {
+              if (chaveParcial.replace(/ #\d+$/, '') !== col.funcao || !idParcial) return;
+              sequenciaVermelhaFuncaoGeracao.push({ tempo: dataParcial.getTime(), militarId: idParcial });
+            });
+          });
 
-            // 1. Checa Indisponibilidade
-            const indisp = militarEstaIndisponivel(militar.id);
-            if (indisp) return false;
-            if (militarTemIndisponibilidadeSemanal(militar.id)) return false;
-            if (militarIniciaIndisponibilidadeNoDiaSeguinte(militar.id)) return false;
-
-            // 2. Motor central de elegibilidade: descanso configurável e vermelho.
+          const obterAvaliacaoCentralGeracao = militar => {
             const ultimosServicos = historicoServicos[militar.id] || [];
             const servicosParaMotor = ultimosServicos.map(diaServico => {
               const dataServico = new Date(ano, mes - 1, Number(diaServico));
@@ -5503,7 +5527,24 @@ try {
               };
             });
 
-            // Inclui o último serviço do mês anterior quando conhecido.
+            // Preserva o histórico completo necessário para descanso e para as
+            // rotações preta/vermelha independentes, inclusive entre meses.
+            Object.values(estado.escalas || {}).forEach(escalaHistorica => {
+              if (!escalaHistorica?.mesAno || escalaHistorica.mesAno >= mesAno || !escalaHistorica.dados) return;
+              const [anoHist, mesHist] = escalaHistorica.mesAno.split('-').map(Number);
+              Object.entries(escalaHistorica.dados).forEach(([diaHist, vagasHist]) => {
+                if (!Object.values(vagasHist || {}).includes(militar.id)) return;
+                const dataHist = new Date(anoHist, mesHist - 1, Number(diaHist));
+                const tempoHist = dataHist.getTime();
+                if (!servicosParaMotor.some(s => s.tempo === tempoHist)) {
+                  servicosParaMotor.push({
+                    tempo: tempoHist,
+                    vermelho: escalaTemDiaVermelho(escalaHistorica, dataHist, Number(diaHist))
+                  });
+                }
+              });
+            });
+
             const ultimaDataServico = ultimaDataServicoPorMilitar[militar.id];
             if (ultimaDataServico !== undefined && !servicosParaMotor.some(s => s.tempo === ultimaDataServico)) {
               servicosParaMotor.push({
@@ -5512,19 +5553,32 @@ try {
               });
             }
 
-            const avaliacaoCentral = avaliarElegibilidadeServico({
+            return avaliarElegibilidadeServico({
               militar,
               funcao: col.funcao,
               data: dataObj,
-              escala: estado.escala,
+              escala: null,
               tipoFuncao,
+              classificacaoDiaOverride: servicoVermelho ? 'vermelho' : 'preto',
               servicosMilitar: servicosParaMotor,
               idsJaEscaladosNoDia: Object.values(novaEscala[dia]).filter(Boolean),
               ignorarIndisponibilidade: true,
               verificarVermelhoConsecutivo: aplicarRegraVermelha,
-              ultimoServicoFoiVermelho: ultimoServicoFoiVermelhoPorMilitar[militar.id]
+              sequenciaVermelhaFuncao: sequenciaVermelhaFuncaoGeracao
             });
+          };
 
+          const podeSerEscalado = (militar, aceitarIntervaloReduzido = false, aceitarVermelhaConsecutiva = false) => {
+            if (militar.funcao !== col.funcao) return false;
+
+            // 1. Checa Indisponibilidade
+            const indisp = militarEstaIndisponivel(militar.id);
+            if (indisp) return false;
+            if (militarTemIndisponibilidadeSemanal(militar.id)) return false;
+            if (militarIniciaIndisponibilidadeNoDiaSeguinte(militar.id)) return false;
+
+            // 2. A mesma avaliação central também alimenta as justificativas.
+            const avaliacaoCentral = obterAvaliacaoCentralGeracao(militar);
             if (avaliacaoCentral.impedimentos.length > 0) {
               // A exceção vermelha antiga continua disponível somente quando
               // a regra configurada não permite consecutivos e o fallback foi autorizado.
@@ -5547,7 +5601,7 @@ try {
             if (!militar) return motivos;
 
             const indisp = militarEstaIndisponivel(militar.id);
-            if (indisp) motivos.push('estava indisponivel nesta data');
+            if (indisp) motivos.push('estava indisponível nesta data');
             if (militarTemIndisponibilidadeSemanal(militar.id)) {
               motivos.push('possui indisponibilidade cadastrada para este dia da semana');
             }
@@ -5555,29 +5609,16 @@ try {
               motivos.push('iniciaria indisponibilidade no dia seguinte');
             }
 
-            const ultimaDataServico = ultimaDataServicoPorMilitar[militar.id];
-            const intervaloCalendario = ultimaDataServico === undefined
-              ? Infinity
-              : Math.round((dataObj.getTime() - ultimaDataServico) / 86400000);
-            if (intervaloCalendario === 1) {
-              motivos.push('teria descanso incompatível');
-            } else if (intervaloCalendario === 2) {
-              motivos.push('ficaria descanso insuficiente');
-            } else if (intervaloCalendario === 3) {
-              motivos.push('ficaria com descanso reduzido depois de sair de servico');
-            }
+            // Descanso, duplicidade no dia e vermelho consecutivo vêm do
+            // MESMO motor usado para decidir se o candidato pode ser escalado.
+            // Assim a justificativa não reconstrói essas regras com intervalos fixos.
+            const avaliacaoJustificativa = obterAvaliacaoCentralGeracao(militar);
+            avaliacaoJustificativa.impedimentos.forEach(motivo => motivos.push(motivo));
+            avaliacaoJustificativa.alertas.forEach(motivo => motivos.push(motivo));
 
             const ultimoEvento = ultimoEventoPorMilitar[`${militar.id}:${chaveRotacao}`];
             if (ultimoEvento !== undefined && eventoRotacao - ultimoEvento < 2) {
-              motivos.push('repetiria o evento anterior desta rotacao');
-            }
-
-            if (aplicarRegraVermelha && ultimoServicoFoiVermelhoPorMilitar[militar.id]) {
-              motivos.push('tiraria dois servicos vermelhos seguidos');
-            }
-
-            if (Object.values(novaEscala[dia]).includes(militar.id)) {
-              motivos.push('ja estava escalado em outra vaga no mesmo dia');
+              motivos.push('repetiria o evento anterior desta rotação');
             }
 
             if (tipoFuncao === 'semanaFimSemana') {
@@ -5587,7 +5628,7 @@ try {
               }
             }
 
-            return motivos;
+            return [...new Set(motivos)];
           };
 
           const obterAnaliseRotacaoAteEscolhido = escolhido => {
@@ -5608,11 +5649,11 @@ try {
 
               const motivos = obterMotivosImpedimento(militarAnalisado);
               if (motivos.length > 0) {
-                analise.push(`${nomeMilitar}: nao foi escalado porque ${motivos.join('; ')}.`);
+                analise.push(`${nomeMilitar}: não foi escalado porque ${motivos.join('; ')}.`);
               } else if (tipoFuncao === 'semanaFimSemana' && pendenciasRotacao[chaveRotacao] === escolhido.id) {
-                analise.push(`${nomeMilitar}: estava valido, mas havia militar pendente com prioridade nesta rotacao.`);
+                analise.push(`${nomeMilitar}: estava válido, mas havia militar pendente com prioridade nesta rotação.`);
               } else {
-                analise.push(`${nomeMilitar}: estava valido, mas outro militar foi escolhido pelo criterio de equilibrio aplicado nesta rotacao.`);
+                analise.push(`${nomeMilitar}: estava válido, mas outro militar foi escolhido pelo critério de equilíbrio aplicado nesta rotação.`);
               }
 
               indiceAnalise = (indiceAnalise + 1) % militaresDaRotacao.length;
@@ -5752,6 +5793,13 @@ try {
             const tipoContagemJustica = servicoVermelho ? 'vermelho' : 'preto';
             const regrasJusticaFuncao = obterRegrasEfetivasFuncao(col.funcao, tipoFuncao);
             const usarJusticaConfiguravel = tipoFuncao === 'semanaFimSemana';
+            // ETAPA 53 — a justificativa usa exatamente o mesmo modo de decisão
+            // empregado pelo gerador. Na diferenciada sem priorização por quantidade,
+            // o acumulado da cor não participa da escolha e não pode aparecer como motivo.
+            const priorizarMenorQuantidadeCor = usarJusticaConfiguravel
+              && regrasJusticaFuncao.justica?.separarPretoVermelho !== false;
+            const rotuloCorJustificativa = servicoVermelho ? 'vermelho' : 'preto';
+            const rotuloRotacaoJustificativa = servicoVermelho ? 'vermelha' : 'preta';
             const obterDadosCandidato = militar => {
               const servicos = historicoServicos[militar.id];
               const contagemSeparada = contagemSeparadaGeracao[militar.id]?.[col.funcao] || criarContagemQuadrinhoLastro();
@@ -5781,10 +5829,20 @@ try {
               const dadosA = obterDadosCandidato(a);
               const dadosB = obterDadosCandidato(b);
 
-              // Score: Prioriza maior folga, menor total de serviços e menor repetição no dia da semana
+              // Escala corrida: uma única rotação, sem distinção por cor.
               if (!usarJusticaConfiguravel) {
                 return dadosA.distancia - dadosB.distancia;
               }
+
+              // ETAPA 52 — na escala diferenciada, quando "Priorizar menor quantidade
+              // da cor do serviço" está DESMARCADO, preto e vermelho continuam com
+              // rotações independentes, mas a quantidade acumulada (da cor ou total)
+              // NÃO participa da escolha. A prioridade é diretamente a posição na
+              // rotação correspondente à cor do serviço.
+              if (!priorizarMenorQuantidadeCor) {
+                return dadosA.distancia - dadosB.distancia;
+              }
+
               if (dadosA.contagemJustica !== dadosB.contagemJustica) {
                 return dadosA.contagemJustica - dadosB.contagemJustica;
               }
@@ -5814,84 +5872,98 @@ try {
               : [];
             const explicacao = [
               `${obterNomeMilitar(escolhido.id)} foi escalado em ${formatarDataBR(dataObj)} para ${col.chave}.`,
-              `Tipo de servico: ${servicoVermelho ? 'vermelho' : 'preto'}.`,
-              `Rotacao usada: ${tipoFuncao === 'semanaFimSemana' ? (servicoVermelho ? 'fim de semana/feriado' : 'dias uteis') : 'corrida'}.`
+              `Tipo de serviço: ${servicoVermelho ? 'vermelho' : 'preto'}.`,
+              `Rotação usada: ${tipoFuncao === 'semanaFimSemana' ? (servicoVermelho ? 'fim de semana/feriado' : 'dias úteis') : 'corrida'}.`
             ];
             if (usarDiferenciadaTemporaria) {
-              explicacao.push(`A funcao esta configurada como corrida, mas nesta data havia ${efetivoDisponivelFuncao} militares aptos por indisponibilidade cadastrada, indisponibilidade por dia da semana ou inicio de indisponibilidade no dia seguinte; por isso foram aplicados temporariamente os criterios da escala diferenciada.`);
+              explicacao.push(`A escala está configurada como corrida, mas nesta data havia(m) apenas ${efetivoDisponivelFuncao} militares aptos por indisponibilidade cadastrada, indisponibilidade por dia da semana ou início de indisponibilidade no dia seguinte; por isso foram aplicados temporariamente os critérios da escala por quadrinho.`);
             }
-            if (tipoFuncao === 'semanaFimSemana') {
-              explicacao.push(`Prioridade da escolha: menor acumulado ${servicoVermelho ? 'vermelho' : 'preto'}; em empate, rotação por antiguidade.`);
+            if (!usarJusticaConfiguravel) {
+              explicacao.push('Regra utilizada: escala corrida, com uma única rotação por antiguidade.');
+            } else if (priorizarMenorQuantidadeCor) {
+              explicacao.push(`Regra utilizada: escala por quadrinho com priorização do menor acumulado ${rotuloCorJustificativa}; em empate, aplica-se a rotação ${rotuloRotacaoJustificativa} por antiguidade.`);
             } else {
-              explicacao.push('Prioridade da escolha: rotação por antiguidade entre os militares que atendem as regras do serviço.');
+              explicacao.push(`Regra utilizada: escala diferenciada sem quadrinhos; foi considerada diretamente a rotação ${rotuloRotacaoJustificativa} por antiguidade, sem usar o acumulado ${rotuloCorJustificativa} ou o total geral de quadrinhos como prioridade.`);
             }
             const houvePulosAutomaticos = militaresPuladosPorAdiantamento.length > 0 || militaresPuladosPorIndisponibilidade.length > 0;
             if (houvePulosAutomaticos) {
               if (ultimoMilitarAntesDosPulos) {
-                explicacao.push(`Ultimo militar da rotacao antes dos pulos: ${obterNomeMilitar(ultimoMilitarAntesDosPulos)}.`);
+                explicacao.push(`Último militar da rotação: ${obterNomeMilitar(ultimoMilitarAntesDosPulos)}.`);
               } else {
-                explicacao.push('Antes dos pulos, nao havia ultimo militar anterior nesta rotacao.');
+                explicacao.push('Não havia último militar anterior nesta rotação.');
               }
               if (proximoMilitarAntesDosPulos) {
-                explicacao.push(`Proximo previsto antes dos pulos: ${obterNomeMilitar(proximoMilitarAntesDosPulos.id)}.`);
+                explicacao.push(`Próximo previsto: ${obterNomeMilitar(proximoMilitarAntesDosPulos.id)}.`);
               }
             }
             if (militaresPuladosPorAdiantamento.length > 0) {
-              explicacao.push(`Militares pulados por ja terem cumprido esta vez antecipadamente: ${militaresPuladosPorAdiantamento.map(obterNomeMilitar).join(', ')}.`);
+              explicacao.push(`Militares pulados por já terem cumprido esta vez antecipadamente: ${militaresPuladosPorAdiantamento.map(obterNomeMilitar).join(', ')}.`);
             }
             if (militaresPuladosPorIndisponibilidade.length > 0) {
-              explicacao.push(`Militares pulados por indisponibilidade, restricao semanal ou inicio de indisponibilidade no dia seguinte. Essas situacoes nao geram pendencia explicita de rotacao; eventual diferenca no acumulado dos quadrinhos sera considerada nas escolhas posteriores: ${militaresPuladosPorIndisponibilidade.map(obterNomeMilitar).join(', ')}.`);
+              explicacao.push(`Militares pulados por indisponibilidade, restrição semanal ou início de indisponibilidade no dia seguinte. Essas situações não geram pendência explícita de rotação; eventual diferença no acumulado dos quadrinhos será considerada nas escolhas posteriores: ${militaresPuladosPorIndisponibilidade.map(obterNomeMilitar).join(', ')}.`);
             }
             if (militaresComLastroPorIndisponibilidade.length > 0) {
               const minimoLastroJustificativa = Math.max(1, Number(obterRegrasEfetivasFuncao(col.funcao, tipoFuncao).lastro?.minimoDiasIndisponibilidade || 30));
               explicacao.push(`Lastro computado por indisponibilidade de ${minimoLastroJustificativa} dias consecutivos ou mais, incluindo registros consecutivos ou sobrepostos quando existirem: ${militaresComLastroPorIndisponibilidade.map(obterNomeMilitar).join(', ')} recebeu 1 lastro ${servicoVermelho ? 'vermelho' : 'preto'} nesta vaga.`);
             }
             if (ultimoMilitar) {
-              explicacao.push(`${houvePulosAutomaticos ? 'Ultimo militar da rotacao apos os pulos' : 'Ultimo militar considerado nesta rotacao'}: ${obterNomeMilitar(ultimoMilitar)}.`);
+              explicacao.push(`${houvePulosAutomaticos ? 'Último militar da rotação após os pulos' : 'Último militar considerado nesta rotação'}: ${obterNomeMilitar(ultimoMilitar)}.`);
             } else {
-              explicacao.push('Nao havia ultimo militar anterior nesta rotacao; a escala iniciou pela ordem cadastrada.');
+              explicacao.push('Não havia último militar anterior nesta rotação; a escala iniciou pela ordem cadastrada.');
             }
             if (proximoMilitarDaRotacao) {
-              explicacao.push(`${houvePulosAutomaticos ? 'Proximo efetivo pela ordem apos os pulos' : 'Proximo previsto pela ordem'}: ${obterNomeMilitar(proximoMilitarDaRotacao.id)}.`);
+              explicacao.push(`${houvePulosAutomaticos ? 'Próximo efetivo pela ordem após os pulos' : 'Próximo previsto pela ordem'}: ${obterNomeMilitar(proximoMilitarDaRotacao.id)}.`);
             }
             const analiseRotacao = obterAnaliseRotacaoAteEscolhido(escolhido);
             if (analiseRotacao.length > 0) {
-              explicacao.push(`Analise da rotacao ate o escolhido:\n- ${analiseRotacao.join('\n- ')}`);
+              explicacao.push(`Análise da rotação até o escolhido:\n- ${analiseRotacao.join('\n- ')}`);
             }
             if (militarEraPendente) {
               explicacao.push('Este militar tinha prioridade por estar pendente de uma rodada anterior.');
             } else if (militarEraProximo) {
-              explicacao.push(tipoFuncao === 'semanaFimSemana'
-                ? `Ele foi escolhido porque estava entre os menores acumulados de servico ${servicoVermelho ? 'vermelho' : 'preto'} e era o proximo no desempate pela rotacao.`
-                : 'Ele foi escolhido porque era o proximo da rotacao e cumpria as regras do servico.');
+              if (!usarJusticaConfiguravel) {
+                explicacao.push('Ele foi escolhido porque era o próximo da rotação geral e cumpria as regras do serviço.');
+              } else if (priorizarMenorQuantidadeCor) {
+                explicacao.push(`Ele foi escolhido porque estava entre os menores acumulados de serviço ${rotuloCorJustificativa} e era o próximo no desempate pela rotação ${rotuloRotacaoJustificativa}.`);
+              } else {
+                explicacao.push(`Ele foi escolhido porque era o próximo militar apto da rotação ${rotuloRotacaoJustificativa}; nenhuma contagem acumulada foi usada como prioridade.`);
+              }
             } else if (proximoMilitarDaRotacao) {
               if (motivosProximo.length) {
-                explicacao.push(`O proximo da rotacao nao foi escalado porque ${motivosProximo.join('; ')}.`);
-                if (motivosProximo.includes('estava indisponivel nesta data')) {
-                  explicacao.push('A indisponibilidade nao gera pendencia explicita de rotacao. Quando nao houver lastro, eventual diferenca no acumulado dos quadrinhos sera considerada nas escolhas posteriores.');
+                explicacao.push(`O próximo da rotação não foi escalado porque ${motivosProximo.join('; ')}.`);
+                if (motivosProximo.includes('estava indisponível nesta data')) {
+                  explicacao.push('A indisponibilidade não gera pendência explícita de rotação.');
                 }
-                explicacao.push(tipoFuncao === 'semanaFimSemana'
-                  ? `Por isso, o sistema escolheu o candidato valido com menor acumulado de servico ${servicoVermelho ? 'vermelho' : 'preto'}; em empate, usou a rotação por antiguidade.`
-                  : 'Por isso, o sistema avancou na lista e escolheu o primeiro candidato valido conforme a rotação por antiguidade.');
+                if (!usarJusticaConfiguravel) {
+                  explicacao.push('Por isso, o sistema avançou na rotação geral e escolheu o primeiro candidato válido por antiguidade.');
+                } else if (priorizarMenorQuantidadeCor) {
+                  explicacao.push(`Entre os candidatos válidos restantes, o sistema priorizou o menor acumulado de quadrinhos ${rotuloCorJustificativa}; em empate, usou a rotação ${rotuloRotacaoJustificativa} por antiguidade.`);
+                } else {
+                  explicacao.push(`Por isso, o sistema avançou na rotação ${rotuloRotacaoJustificativa} e escolheu o primeiro candidato válido por antiguidade.`);
+                }
               } else {
-                explicacao.push(tipoFuncao === 'semanaFimSemana'
-                  ? 'O proximo da rotacao estava valido, mas outro candidato foi escolhido por ter menor acumulado de servicos desta cor nesta funcao.'
-                  : 'O proximo da rotacao estava valido, mas outro candidato foi escolhido conforme a rotação por antiguidade registrada.');
+                if (!usarJusticaConfiguravel) {
+                  explicacao.push('O próximo registrado da rotação não foi o escolhido; a decisão seguiu a rotação geral efetiva reconstruída para esta vaga.');
+                } else if (priorizarMenorQuantidadeCor) {
+                  explicacao.push(`O próximo da rotação estava válido, mas outro candidato foi escolhido por possuir menor acumulado de quadrinhos ${rotuloCorJustificativa}; a antiguidade ${rotuloRotacaoJustificativa} atua como desempate.`);
+                } else {
+                  explicacao.push(`A escolha seguiu exclusivamente a rotação ${rotuloRotacaoJustificativa} efetiva por antiguidade; o acumulado de quadrinhos ${rotuloCorJustificativa} não participou da prioridade.`);
+                }
               }
             }
             if (excecaoVermelhaConsecutiva && ultimoServicoFoiVermelhoPorMilitar[escolhido.id]) {
-              explicacao.push('Foi aplicada excecao de servico vermelho seguido porque nao havia outro militar disponivel para cumprir todas as regras.');
+              explicacao.push('Foi aplicada exceção de serviço vermelho seguido porque não havia outro militar disponível para cumprir todas as regras.');
             }
             if (militarJaEstavaAdiantado) {
-              explicacao.push('Este militar estava adiantado na rotacao e so foi usado porque nao havia outro candidato valido disponivel neste momento.');
+              explicacao.push('Este militar estava adiantado na rotação e só foi usado porque não havia outro candidato válido disponível neste momento.');
             }
             if (historicoServicos[escolhido.id].length > 0) {
               const ultimoDia = historicoServicos[escolhido.id][historicoServicos[escolhido.id].length - 1];
-              explicacao.push(`Ultimo servico deste militar no mes: dia ${ultimoDia}.`);
+              explicacao.push(`Último serviço deste militar no mês: dia ${ultimoDia}.`);
             } else if (ultimaDataServicoPorMilitar[escolhido.id] !== undefined) {
-              explicacao.push(`Ultimo servico anterior deste militar: ${formatarDataBR(new Date(ultimaDataServicoPorMilitar[escolhido.id]))}.`);
+              explicacao.push(`Último serviço anterior deste militar: ${formatarDataBR(new Date(ultimaDataServicoPorMilitar[escolhido.id]))}.`);
             } else {
-              explicacao.push('Este militar ainda nao tinha servico anterior registrado no historico considerado.');
+              explicacao.push('Este militar ainda não tinha serviço anterior registrado no histórico considerado.');
             }
             justificativas[dia][col.chave] = explicacao.join('\n');
             if (!militarEraPendente
@@ -6393,12 +6465,46 @@ if (salvou) {
 
             const ultimaDataServico = ultimaDataServicoPorMilitar[militar.id];
             const servicosParaMotor = [];
-            if (ultimaDataServico !== undefined) {
+            // No recálculo, usa todos os serviços já percorridos no mês, mantendo
+            // preto/vermelho independentes exatamente como no gerador e no dropdown.
+            Object.entries(escalaParcial).forEach(([diaParcial, vagasParciais]) => {
+              if (!Object.values(vagasParciais || {}).includes(militar.id)) return;
+              const dataParcial = new Date(ano, mes - 1, Number(diaParcial));
+              if (dataParcial.getTime() >= dataObj.getTime()) return;
+              servicosParaMotor.push({
+                tempo: dataParcial.getTime(),
+                vermelho: escalaTemDiaVermelho(escala, dataParcial, Number(diaParcial))
+              });
+            });
+            if (ultimaDataServico !== undefined && !servicosParaMotor.some(s => s.tempo === ultimaDataServico)) {
               servicosParaMotor.push({
                 tempo: ultimaDataServico,
                 vermelho: ultimoServicoFoiVermelhoPorMilitar[militar.id] === true
               });
             }
+
+            const sequenciaVermelhaFuncao = [];
+            Object.values(estado.escalas || {}).forEach(escalaHistorica => {
+              if (!escalaHistorica?.mesAno || escalaHistorica.mesAno >= escala.mesAno || !escalaHistorica.dados) return;
+              const [anoHist, mesHist] = escalaHistorica.mesAno.split('-').map(Number);
+              Object.entries(escalaHistorica.dados).forEach(([diaHist, vagasHist]) => {
+                const dataHist = new Date(anoHist, mesHist - 1, Number(diaHist));
+                if (!escalaTemDiaVermelho(escalaHistorica, dataHist, Number(diaHist))) return;
+                Object.entries(vagasHist || {}).forEach(([chaveHist, idHist]) => {
+                  if (chaveHist.replace(/ #\d+$/, '') !== col.funcao || !idHist) return;
+                  sequenciaVermelhaFuncao.push({ tempo: dataHist.getTime(), militarId: idHist });
+                });
+              });
+            });
+            Object.entries(escalaParcial || {}).forEach(([diaParcial, vagasParciais]) => {
+              const dataParcial = new Date(ano, mes - 1, Number(diaParcial));
+              if (dataParcial.getTime() >= dataObj.getTime()) return;
+              if (!escalaTemDiaVermelho(escala, dataParcial, Number(diaParcial))) return;
+              Object.entries(vagasParciais || {}).forEach(([chaveParcial, idParcial]) => {
+                if (chaveParcial.replace(/ #\d+$/, '') !== col.funcao || !idParcial) return;
+                sequenciaVermelhaFuncao.push({ tempo: dataParcial.getTime(), militarId: idParcial });
+              });
+            });
 
             const avaliacao = avaliarElegibilidadeServico({
               militar,
@@ -6406,10 +6512,11 @@ if (salvou) {
               data: dataObj,
               escala,
               tipoFuncao,
+              classificacaoDiaOverride: servicoVermelho ? 'vermelho' : 'preto',
               servicosMilitar: servicosParaMotor,
               idsJaEscaladosNoDia: Object.values(escalaParcial[dia]).filter(Boolean),
               verificarVermelhoConsecutivo: aplicarRegraVermelha,
-              ultimoServicoFoiVermelho: ultimoServicoFoiVermelhoPorMilitar[militar.id] === true
+              sequenciaVermelhaFuncao
             });
 
             if (!avaliacao.elegivel) {
@@ -6742,91 +6849,160 @@ const militaresNaOrdemBase = idsOrdenadosTroca
 
 
 // =====================================================
-// PRIORIZAÇÃO DAS SUGESTÕES DE TROCA
+// SUGESTÕES DE TROCA / "PRÓXIMOS"
 //
-// A ordem base vem de ordemTrocaManual, gravada pelo
-// próprio gerador no momento em que a escala foi criada.
+// A ordem base é a mesma ordem de prioridade registrada
+// pelo gerador para esta vaga/data (ordemTrocaManual).
 //
-// Dentro dessa ordem:
-// 0 = apto normalmente
-// 1 = descanso reduzido
-// 2 = ficaria descanso insuficiente
-// 3 = demais violações
+// O dropdown exclui SOMENTE:
+// - militar que já possui serviço no dia imediatamente anterior ou posterior;
+// - militar indisponível na própria data do serviço
+//   (por período ou indisponibilidade semanal);
+// - militar cuja indisponibilidade POR PERÍODO começa no dia seguinte,
+//   pois o dia anterior ao início do período fica protegido.
 //
-// Não aparecem:
-// - militar atualmente escalado nesta vaga;
-// - militar já escalado em outra vaga no mesmo dia;
-// - militar com serviço exatamente 1 dia antes/depois.
+// IMPORTANTE: indisponibilidade semanal no dia seguinte NÃO protege
+// automaticamente o dia anterior. Nesse caso o militar pode aparecer
+// normalmente, desde que o próprio dia do serviço esteja disponível.
+//
+// Os demais permanecem visíveis na ordem de prioridade
+// do gerador, sem reagrupamentos adicionais do dropdown.
 // =====================================================
 
-const dataTroca =
-  new Date(ano, mes - 1, Number(dia));
+const dataTroca = new Date(ano, mes - 1, Number(dia));
+const dataTrocaStr = `${ano}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
 
-const servicoVermelhoTroca =
-  escalaTemDiaVermelho(
-    estado.escala,
-    dataTroca,
-    Number(dia)
+const dataAnteriorTroca = new Date(dataTroca);
+dataAnteriorTroca.setDate(dataAnteriorTroca.getDate() - 1);
+const tempoAnteriorTroca = new Date(
+  dataAnteriorTroca.getFullYear(),
+  dataAnteriorTroca.getMonth(),
+  dataAnteriorTroca.getDate()
+).getTime();
+
+const dataSeguinteTroca = new Date(dataTroca);
+dataSeguinteTroca.setDate(dataSeguinteTroca.getDate() + 1);
+const tempoSeguinteTroca = new Date(
+  dataSeguinteTroca.getFullYear(),
+  dataSeguinteTroca.getMonth(),
+  dataSeguinteTroca.getDate()
+).getTime();
+
+const militarIndisponivelNaDataTroca = militarId =>
+  estado.indisponibilidades.some(i =>
+    i.militarId === militarId &&
+    dataTrocaStr >= i.inicio &&
+    dataTrocaStr <= i.fim
+  ) ||
+  estado.indisponibilidadesSemana.some(i =>
+    i.militarId === militarId &&
+    Number(i.diaSemana) === dataTroca.getDay()
   );
 
-const militaresPuxadosDepois =
-  obterMilitaresPuxadosDepoisDoDia(
-    estado.escala,
-    Number(dia),
-    col.funcao,
-    servicoVermelhoTroca
+const dataSeguinteTrocaStr = `${dataSeguinteTroca.getFullYear()}-${String(dataSeguinteTroca.getMonth() + 1).padStart(2, '0')}-${String(dataSeguinteTroca.getDate()).padStart(2, '0')}`;
+
+// Apenas indisponibilidade POR PERÍODO iniciando amanhã protege hoje.
+// A indisponibilidade semanal de amanhã não tem esse efeito.
+const militarTemInicioIndisponibilidadePeriodoAmanhaTroca = militarId =>
+  estado.indisponibilidades.some(i =>
+    i.militarId === militarId &&
+    i.inicio === dataSeguinteTrocaStr
   );
 
-const gruposTroca = [
-  [], // 0 - aptos pela rotação normal
-  [], // 1 - aptos, mas puxados posteriormente
-  []  // 2 - descanso reduzido permitido
-];
+const militarTemServicoNoTempoTroca = (militarId, tempoAlvo) => {
+  return Object.values(estado.escalas || {}).some(escala => {
+    if (!escala?.dados || !escala?.mesAno) return false;
 
-const classificacoesTroca = new Map();
+    const escalaAnalise = escala.mesAno === estado.escala.mesAno
+      ? estado.escala
+      : escala;
+    const [anoEscala, mesEscala] = escalaAnalise.mesAno.split('-').map(Number);
 
-militaresNaOrdemBase.forEach((militar, indiceOrdemBase) => {
-  if (militar.id === militarIdEscalado) return;
+    return Object.entries(escalaAnalise.dados || {}).some(([diaEscala, vagas]) => {
+      const tempoServico = new Date(
+        anoEscala,
+        mesEscala - 1,
+        Number(diaEscala)
+      ).getTime();
 
-  const classificacao = classificarCandidatoTrocaManualMemo(dia, col.chave, militar.id);
-  classificacoesTroca.set(militar.id, classificacao);
+      return tempoServico === tempoAlvo &&
+        Object.values(vagas || {}).includes(militarId);
+    });
+  });
+};
 
-  // Impedimentos absolutos não aparecem como opção de substituição.
-  if (classificacao.impeditivoAbsoluto) return;
+const militaresOrdenadosTroca = militaresNaOrdemBase
+  .filter(militar => {
+    // O militar já escalado nesta célula é mostrado separadamente
+    // como a opção selecionada, evitando duplicidade no <select>.
+    if (militar.id === militarIdEscalado) return false;
 
-  const item = { militar, indiceOrdemBase };
+    if (militarIndisponivelNaDataTroca(militar.id)) return false;
 
-  if (classificacao.descansoReduzido) {
-    gruposTroca[2].push(item);
-  } else if (militaresPuxadosDepois.has(militar.id)) {
-    gruposTroca[1].push(item);
-  } else {
-    gruposTroca[0].push(item);
-  }
-});
+    // Regra de apresentação do dropdown: quem já está escalado no serviço
+    // imediatamente anterior ou posterior não deve ser oferecido como opção.
+    // A busca usa timestamps reais e percorre todas as escalas, portanto também
+    // funciona corretamente nas viradas de mês/ano.
+    if (militarTemServicoNoTempoTroca(militar.id, tempoAnteriorTroca)) return false;
+    if (militarTemServicoNoTempoTroca(militar.id, tempoSeguinteTroca)) return false;
 
-gruposTroca.forEach(grupo => {
-  grupo.sort((a, b) => a.indiceOrdemBase - b.indiceOrdemBase);
-});
+    const tipoTrocaEfetivo = estado.escala.tiposUsadosPorDia?.[dia]?.[col.funcao]
+      || obterTiposEscalaDaEscala(estado.escala)[col.funcao]
+      || 'corrida';
+    const regrasTrocaEfetivas = obterRegrasEfetivasEdicaoManual(col.funcao, tipoTrocaEfetivo);
+    if (Number(regrasTrocaEfetivas.descanso?.folgasDepois || 0) > 0
+      && militarTemInicioIndisponibilidadePeriodoAmanhaTroca(militar.id)) return false;
+    return true;
+  })
+  .map((militar, indiceOrdemBase) => {
+    // A classificação abaixo é calculada pelas REGRAS EFETIVAS da função
+    // para esta data, exatamente como no motor da geração. Assim, uma regra
+    // desativada/configurada como permitida não cria artificialmente exceção.
+    // Entre violações realmente detectadas, a apresentação fica:
+    // normal -> vermelho consecutivo -> folga reduzida -> na 24 -> demais exceções.
+    // Se o mesmo militar acumular mais de uma condição, prevalece a de maior
+    // prioridade visual: vermelho > reduzida > na 24 > demais exceções.
+    const classificacao = classificarCandidatoTrocaManual(dia, col.chave, militar.id);
+    const motivos = (classificacao.violacoes || []).map(v => String(v).toLowerCase());
+    const temVermelhoConsecutivo = motivos.some(v => v.includes('vermelho seguido'));
+    const temFolgaReduzida = motivos.some(v => v.includes('descanso reduzido'));
+    const ficariaNa24 = motivos.some(v =>
+      v.includes('ficaria na 24') ||
+      v.includes('dobraria serviço') ||
+      v.includes('dobraria servico')
+    );
+    const temOutraExcecao = classificacao.violacaoFolga === true;
 
-const militaresOrdenadosTroca = [
-  ...gruposTroca[0],
-  ...gruposTroca[1],
-  ...gruposTroca[2]
-].map(item => item.militar);
+    // ETAPA 50 — filtros compostos do dropdown.
+    // A categoria principal representa a condição de descanso mais específica.
+    // Vermelho consecutivo funciona como segundo filtro e NÃO pode mascarar
+    // uma condição de folga reduzida/na 24. Ex.: vermelho + na 24 permanece
+    // no grupo "na 24"; entre candidatos equivalentes, o vermelho é usado
+    // apenas como critério secundário.
+    let prioridadeDropdown = 0;
+    if (ficariaNa24) prioridadeDropdown = 3;
+    else if (temFolgaReduzida) prioridadeDropdown = 2;
+    else if (temVermelhoConsecutivo) prioridadeDropdown = 1;
+    else if (temOutraExcecao) prioridadeDropdown = 4;
+
+    const filtroVermelhoSecundario = temVermelhoConsecutivo ? 1 : 0;
+
+    return { militar, indiceOrdemBase, prioridadeDropdown, filtroVermelhoSecundario };
+  })
+  .sort((a, b) =>
+    a.prioridadeDropdown - b.prioridadeDropdown ||
+    a.filtroVermelhoSecundario - b.filtroVermelhoSecundario ||
+    a.indiceOrdemBase - b.indiceOrdemBase
+  )
+  .map(item => item.militar);
 
           const militarEscalado =
   estado.militares.find(m => m.id === militarIdEscalado);
 
 const opcoes = militaresOrdenadosTroca
-  .map(m => {
-    const classificacao = classificacoesTroca.get(m.id);
-    const marcadores = [];
-    if (classificacao?.descansoReduzido) marcadores.push('descanso reduzido');
-    else if (militaresPuxadosDepois.has(m.id)) marcadores.push('puxado posteriormente');
-    const sufixo = marcadores.length ? ` — ${marcadores.join(', ')}` : '';
-    return `<option value="${m.id}">${m.nome} (${m.saram})${m.ativo === false ? ' - inativo' : ''}${sufixo}</option>`;
-  })
+  .map(m =>
+    `<option value="${m.id}">${m.nome} (${m.saram})${m.ativo === false ? ' - inativo' : ''}</option>`
+  )
   .join('');
           const textoBotaoJustificativa = militarEscalado
             ? `${militarEscalado.nome} (${militarEscalado.saram})`
@@ -6908,7 +7084,7 @@ const opcoes = militaresOrdenadosTroca
       const cor = document.getElementById('corObservacaoJustificativa').value;
       const legenda = document.getElementById('legendaObservacaoJustificativa').value.trim();
       if (!observacao) {
-        alert('Informe a observacao antes de salvar.');
+        alert('Informe a observação antes de salvar.');
         return;
       }
       if (!CORES_OBSERVACAO_PERMITIDAS.includes(cor)) {
@@ -6933,9 +7109,9 @@ const opcoes = militaresOrdenadosTroca
       if (!estado.escala.justificativas[dia]) estado.escala.justificativas[dia] = {};
       const justificativaAnterior = estado.escala.justificativas[dia][chaveColuna] || '';
       const registroObservacao = [
-        'OBSERVACAO:',
-        `Data e hora da observacao: ${new Date().toLocaleString('pt-BR')}.`,
-        `Observacao informada: ${observacao}.`,
+        'OBSERVAÇÃO:',
+        `Data e hora da observação: ${new Date().toLocaleString('pt-BR')}.`,
+        `Observação informada: ${observacao}.`,
         `Cor aplicada: ${cor}.`,
         `Legenda da cor: ${legenda}.`
       ].join('\n');
@@ -6964,13 +7140,13 @@ const opcoes = militaresOrdenadosTroca
       if (militar) {
         abrirModalJustificativa(
           titulo,
-          `${militar.nome} (${militar.saram}) foi escalado nesta vaga, mas esta escala foi gerada antes do registro detalhado de justificativas. Gere novamente a escala para salvar a explicacao automatica.`,
+          `${militar.nome} (${militar.saram}) foi escalado nesta vaga, mas esta escala foi gerada antes do registro detalhado de justificativas. Gere novamente a escala para salvar a explicação automática.`,
           { dia, chaveColuna }
         );
         return;
       }
 
-      abrirModalJustificativa(titulo, 'Nao ha militar escalado nesta vaga.', { dia, chaveColuna });
+      abrirModalJustificativa(titulo, 'Não há militar escalado nesta vaga.', { dia, chaveColuna });
     }
 
     // ============================================================
@@ -7033,9 +7209,13 @@ const opcoes = militaresOrdenadosTroca
       idsJaEscaladosNoDia = [],
       ignorarIndisponibilidade = false,
       verificarVermelhoConsecutivo = true,
-      ultimoServicoFoiVermelho = false
+      regrasOverride = null,
+      sequenciaVermelhaFuncao = [],
+      classificacaoDiaOverride = null
     }) {
-      const regras = obterRegrasEfetivasFuncao(funcao, tipoFuncao);
+      // Um único motor atende geração, recálculo e edição manual. Quando a escala
+      // já existe, regrasOverride recebe o snapshot congelado daquela geração.
+      const regras = regrasOverride || obterRegrasEfetivasFuncao(funcao, tipoFuncao);
       const impedimentos = [];
       const alertas = [];
 
@@ -7043,14 +7223,14 @@ const opcoes = militaresOrdenadosTroca
         return { elegivel: false, nivel: 'impedido', impedimentos: ['militar inexistente'], alertas, regras };
       }
 
-      if (militar.funcao !== funcao) impedimentos.push('militar pertence a outra funcao');
+      if (militar.funcao !== funcao) impedimentos.push('militar pertence a outra função');
 
       const dataStr = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}-${String(data.getDate()).padStart(2, '0')}`;
       const diaSemana = data.getDay();
 
       if (!ignorarIndisponibilidade) {
         if (estado.indisponibilidades.some(i => i.militarId === militar.id && dataStr >= i.inicio && dataStr <= i.fim)) {
-          impedimentos.push('militar indisponivel nesta data');
+          impedimentos.push('militar indisponível nesta data');
         }
         if (estado.indisponibilidadesSemana.some(i => i.militarId === militar.id && Number(i.diaSemana) === diaSemana)) {
           impedimentos.push('militar possui indisponibilidade cadastrada para este dia da semana');
@@ -7116,9 +7296,14 @@ const opcoes = militaresOrdenadosTroca
         }
 
         if (resultado.nivel === 'reduzido') {
+          // Preserva a terminologia operacional, mas identifica explicitamente
+          // que a ocorrência pertence ao descanso REDUZIDO. Isso permite à
+          // edição manual respeitar "exigir confirmação = não" mesmo quando
+          // a situação operacional é "na 24" ou "dobraria serviço".
           alertas.push(
-            motivoOperacional ||
-            `descanso reduzido ${lado}: ${resultado.folgas} folga(s), referência ${dataRef}`
+            motivoOperacional
+              ? `descanso reduzido - ${motivoOperacional}`
+              : `descanso reduzido ${lado}: ${resultado.folgas} folga(s), referência ${dataRef}`
           );
         } else {
           impedimentos.push(
@@ -7131,13 +7316,54 @@ const opcoes = militaresOrdenadosTroca
       registrarDescanso(descansoAntes, 'antes', anterior);
       registrarDescanso(descansoDepois, 'depois', posterior);
 
-      const classificacao = obterClassificacaoDia(data);
+      // A geração pode informar explicitamente a cor do dia que está sendo montado.
+      // Isso evita depender da escala que por acaso esteja aberta em estado.escala.
+      const corOverride = classificacaoDiaOverride === true || classificacaoDiaOverride === 'vermelho'
+        ? 'vermelho'
+        : (classificacaoDiaOverride === false || classificacaoDiaOverride === 'preto' ? 'preto' : '');
+      const classificacao = corOverride
+        ? { cor: corOverride }
+        : (escala
+          ? { cor: escalaTemDiaVermelho(escala, data, data.getDate()) ? 'vermelho' : 'preto' }
+          : obterClassificacaoDia(data));
       const ehVermelho = classificacao.cor === 'vermelho';
       if (verificarVermelhoConsecutivo && ehVermelho && !regras.vermelho?.permitirConsecutivos) {
-        const anteriorVermelho = anterior?.vermelho === true || ultimoServicoFoiVermelho === true;
-        const posteriorVermelho = posterior?.vermelho === true;
-        if (anteriorVermelho) impedimentos.push('servico vermelho seguido apos o servico vermelho anterior');
-        if (posteriorVermelho) impedimentos.push('servico vermelho seguido antes do proximo servico vermelho');
+        // ETAPA 47 — vermelhos consecutivos são avaliados por BLOCOS de dias
+        // vermelhos contíguos da função (ex.: sábado+domingo formam um bloco).
+        // Assim, ao editar domingo 20/09, o sábado 19/09 pertence ao bloco atual
+        // e o bloco anterior é 12-13/09. Isso detecta corretamente um militar que
+        // serviu no fim de semana anterior, mesmo havendo outro militar no sábado
+        // do fim de semana atual. A lógica também atravessa viradas de mês.
+        const porTempo = new Map();
+        (sequenciaVermelhaFuncao || []).forEach(item => {
+          if (!item || !Number.isFinite(item.tempo) || !item.militarId) return;
+          if (!porTempo.has(item.tempo)) porTempo.set(item.tempo, new Set());
+          porTempo.get(item.tempo).add(item.militarId);
+        });
+        if (!porTempo.has(tempoAtual)) porTempo.set(tempoAtual, new Set());
+        const dias = [...porTempo.entries()]
+          .map(([tempo, militaresIds]) => ({ tempo, militaresIds }))
+          .sort((a, b) => a.tempo - b.tempo);
+        const UM_DIA = 24 * 60 * 60 * 1000;
+        const blocos = [];
+        dias.forEach(evento => {
+          const ultimo = blocos[blocos.length - 1];
+          if (!ultimo || evento.tempo - ultimo.fim > UM_DIA * 1.5) {
+            blocos.push({ inicio: evento.tempo, fim: evento.tempo, militaresIds: new Set(evento.militaresIds) });
+          } else {
+            ultimo.fim = evento.tempo;
+            evento.militaresIds.forEach(id => ultimo.militaresIds.add(id));
+          }
+        });
+        const indiceAtual = blocos.findIndex(b => tempoAtual >= b.inicio && tempoAtual <= b.fim);
+        const blocoAnterior = indiceAtual > 0 ? blocos[indiceAtual - 1] : null;
+        const blocoPosterior = indiceAtual >= 0 && indiceAtual < blocos.length - 1 ? blocos[indiceAtual + 1] : null;
+        if (blocoAnterior?.militaresIds?.has(militar.id)) {
+          impedimentos.push('serviço vermelho seguido após o bloco vermelho anterior');
+        }
+        if (blocoPosterior?.militaresIds?.has(militar.id)) {
+          impedimentos.push('serviço vermelho seguido antes do próximo bloco vermelho');
+        }
       }
 
       const nivel = impedimentos.length
@@ -7165,17 +7391,51 @@ const opcoes = militaresOrdenadosTroca
       const normalizadas = violacoes.map(v => String(v).toLowerCase());
       const tem = trecho => normalizadas.some(v => v.includes(trecho));
 
+      // Exceções autorizáveis são obtidas DINAMICAMENTE pelo mesmo motor
+      // de elegibilidade usado pela geração, com as regras efetivas da função
+      // e do tipo de escala usado naquele dia. Nada aqui presume quantidade
+      // fixa de folgas ou uma regra fixa para vermelho consecutivo.
+      // Se a configuração permitir vermelho consecutivo, por exemplo, o motor
+      // não gera essa violação e nenhuma confirmação será exigida por ela.
+      // Resolve função e tipo dentro do próprio escopo desta função.
+      // A ETAPA 38 referenciava variáveis locais de analisarViolacoesAlteracaoManual,
+      // o que podia causar ReferenceError durante a montagem do dropdown.
+      const funcaoCandidato = obterFuncaoDaChave(chaveColuna);
+      const tiposEscalaCandidato = obterTiposEscalaDaEscala(estado.escala);
+      const tipoCandidato = estado.escala?.tiposUsadosPorDia?.[dia]?.[funcaoCandidato]
+        || tiposEscalaCandidato[funcaoCandidato]
+        || 'corrida';
+      const regrasCandidato = obterRegrasEfetivasEdicaoManual(funcaoCandidato, tipoCandidato);
+      const descansoReduzidoExigeConfirmacao = regrasCandidato.descanso?.reduzido?.exigirConfirmacao !== false;
+
+      // Classifica cada motivo individualmente. Uma ocorrência de "na 24"
+      // ou "dobraria serviço" que o próprio motor marcou como descanso
+      // reduzido autorizado NÃO exige ciência quando a configuração disser
+      // exigirConfirmacao = false. Já a mesma situação classificada como
+      // descanso insuficiente continua sendo exceção normalmente.
+      const motivoExigeCiencia = textoOriginal => {
+        const texto = String(textoOriginal).toLowerCase();
+        if (texto.includes('vermelho seguido')) return true;
+        if (texto.includes('descanso insuficiente')) return true;
+        if (texto.includes('descanso reduzido')) return descansoReduzidoExigeConfirmacao;
+        if (texto.includes('ficaria na 24') || texto.includes('dobraria serviço') || texto.includes('dobraria servico')) return true;
+        return false;
+      };
+      const violacaoFolga = violacoes.some(motivoExigeCiencia);
+
+      // Início de indisponibilidade POR PERÍODO no dia seguinte protege
+      // obrigatoriamente o dia anterior. Não é uma exceção de folga
+      // autorizável. A indisponibilidade semanal de amanhã não entra aqui,
+      // pois analisarViolacoesAlteracaoManual só registra este motivo a
+      // partir de estado.indisponibilidades (por período).
       const impeditivoAbsoluto =
         tem('mesma pessoa duas vezes') ||
         tem('indisponivel nesta data') ||
+        tem('indisponível nesta data') ||
         tem('dia da semana') ||
         tem('inicia indisponibilidade') ||
-        tem('descanso insuficiente') ||
-        tem('ficaria na 24') ||
-        tem('dobraria serviço') ||
-        tem('dobraria servico') ||
-        tem('vermelho seguido') ||
-        tem('outra funcao');
+        tem('outra funcao') ||
+        tem('outra função');
 
       const descansoReduzido = tem('descanso reduzido');
 
@@ -7183,12 +7443,13 @@ const opcoes = militaresOrdenadosTroca
         violacoes,
         impeditivoAbsoluto,
         descansoReduzido,
-        nivel: impeditivoAbsoluto ? 'impedido' : (descansoReduzido ? 'reduzido' : 'normal')
+        violacaoFolga,
+        nivel: impeditivoAbsoluto ? 'impedido' : (violacaoFolga ? 'folga' : 'normal')
       };
     }
 
     function descreverRegrasDescansoFuncao(funcao, tipoFuncao = '') {
-      const r = obterRegrasEfetivasFuncao(funcao, tipoFuncao);
+      const r = obterRegrasEfetivasEdicaoManual(funcao, tipoFuncao);
       const normalAntes = Number(r.descanso?.folgasAntes ?? 0);
       const normalDepois = Number(r.descanso?.folgasDepois ?? 0);
       const reduzido = r.descanso?.reduzido || {};
@@ -7198,6 +7459,7 @@ const opcoes = militaresOrdenadosTroca
       } else {
         partes.push('descanso reduzido desativado');
       }
+      partes.push(`vermelhos consecutivos: ${r.vermelho?.permitirConsecutivos ? 'permitidos' : 'exigem ciência para edição manual'}`);
       return partes.join('; ');
     }
 
@@ -7226,12 +7488,52 @@ const opcoes = militaresOrdenadosTroca
       };
     }
 
+    function obterRegrasEfetivasEdicaoManual(funcao, tipoFuncao = '') {
+      // Para uma escala já gerada, a edição manual deve obedecer exatamente
+      // às regras que estavam vigentes no momento da geração. Essas regras
+      // ficam congeladas em regrasEscalaSnapshot.
+      const snap = estado.escala?.regrasEscalaSnapshot?.[funcao];
+      if (!snap) return obterRegrasEfetivasFuncao(funcao, tipoFuncao);
+
+      const padrao = obterRegrasEscalaPadrao();
+      const descansoSnap = snap.descanso || {};
+      const regras = {
+        ...padrao,
+        distribuicao: tipoFuncao || snap.distribuicao || padrao.distribuicao,
+        descanso: {
+          ...padrao.descanso,
+          folgasAntes: Number(descansoSnap.folgasAntes ?? padrao.descanso.folgasAntes),
+          folgasDepois: Number(descansoSnap.folgasDepois ?? padrao.descanso.folgasDepois),
+          reduzido: {
+            ...padrao.descanso.reduzido,
+            permitido: Boolean(descansoSnap.reduzidoPermitido ?? descansoSnap.reduzido?.permitido ?? padrao.descanso.reduzido.permitido),
+            folgasAntes: Number(descansoSnap.reduzidoFolgasAntes ?? descansoSnap.reduzido?.folgasAntes ?? padrao.descanso.reduzido.folgasAntes),
+            folgasDepois: Number(descansoSnap.reduzidoFolgasDepois ?? descansoSnap.reduzido?.folgasDepois ?? padrao.descanso.reduzido.folgasDepois),
+            exigirConfirmacao: (descansoSnap.exigirConfirmacao ?? descansoSnap.reduzido?.exigirConfirmacao ?? padrao.descanso.reduzido.exigirConfirmacao) !== false
+          }
+        },
+        vermelho: {
+          ...padrao.vermelho,
+          ...(snap.vermelho || {})
+        },
+        lastro: {
+          ...padrao.lastro,
+          ...(snap.lastro || {})
+        },
+        justica: {
+          ...padrao.justica,
+          ...(snap.justica || {})
+        }
+      };
+      return regras;
+    }
+
     function analisarViolacoesAlteracaoManual(dia, chaveColuna, militarId) {
       if (!militarId || !estado.escala?.mesAno) return [];
 
       const violacoes = [];
       const militar = estado.militares.find(m => m.id === militarId);
-      if (!militar) return ['militar nao encontrado no cadastro'];
+      if (!militar) return ['militar não encontrado no cadastro'];
 
       const [ano, mes] = estado.escala.mesAno.split('-').map(Number);
       const dataStr = `${ano}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
@@ -7249,27 +7551,35 @@ const opcoes = militaresOrdenadosTroca
         .filter(m =>
           !estado.indisponibilidades.some(i => i.militarId === m.id && dataStr >= i.inicio && dataStr <= i.fim)
           && !estado.indisponibilidadesSemana.some(i => i.militarId === m.id && Number(i.diaSemana) === dataAtual.getDay())
-          && !estado.indisponibilidades.some(i => i.militarId === m.id && i.inicio === dataSeguinteStr)
+          && !(Number(obterRegrasEfetivasEdicaoManual(funcao, tipoUsadoNoDia).descanso?.folgasDepois || 0) > 0
+            && estado.indisponibilidades.some(i => i.militarId === m.id && i.inicio === dataSeguinteStr))
         )
         .length;
       const usarDiferenciadaTemporaria = tiposEscala[funcao] === 'corrida'
         && militaresAtivosDaFuncao.length > efetivoDisponivelFuncao
         && efetivoDisponivelFuncao <= 7;
-      const regrasFuncaoManual = obterRegrasEfetivasFuncao(funcao, tipoUsadoNoDia);
-      const aplicarRegraVermelha = (tipoUsadoNoDia === 'semanaFimSemana' || usarDiferenciadaTemporaria)
+      const regrasFuncaoManual = obterRegrasEfetivasEdicaoManual(funcao, tipoUsadoNoDia);
+      // ETAPA 52 — vermelho consecutivo só participa da elegibilidade manual
+      // quando a função usa distribuição diferenciada entre preto/vermelho.
+      // Em escala corrida, a cor não altera a fila e esta regra não se aplica.
+      // Mantém-se a diferenciação temporária já prevista pelo sistema quando
+      // o próprio motor muda excepcionalmente o tratamento da função.
+      const aplicarRegraVermelha = servicoVermelhoAtual
+        && (tipoUsadoNoDia === 'semanaFimSemana' || usarDiferenciadaTemporaria)
         && !regrasFuncaoManual.vermelho?.permitirConsecutivos;
 
       if (militar.funcao !== funcao) {
-        violacoes.push('militar pertence a outra funcao');
+        violacoes.push('militar pertence a outra função');
       }
 
       if (estado.indisponibilidades.some(i => i.militarId === militarId && dataStr >= i.inicio && dataStr <= i.fim)) {
-        violacoes.push('militar indisponivel nesta data');
+        violacoes.push('militar indisponível nesta data');
       }
       if (estado.indisponibilidadesSemana.some(i => i.militarId === militarId && Number(i.diaSemana) === dataAtual.getDay())) {
         violacoes.push('militar possui indisponibilidade cadastrada para este dia da semana');
       }
-      if (estado.indisponibilidades.some(i => i.militarId === militarId && i.inicio === dataSeguinteStr)) {
+      if (Number(regrasFuncaoManual.descanso?.folgasDepois || 0) > 0
+        && estado.indisponibilidades.some(i => i.militarId === militarId && i.inicio === dataSeguinteStr)) {
         violacoes.push('militar inicia indisponibilidade no dia seguinte');
       }
 
@@ -7337,6 +7647,31 @@ const opcoes = militaresOrdenadosTroca
         .map(([, id]) => id)
         .filter(Boolean);
 
+      const sequenciaVermelhaFuncao = [];
+      // ETAPA 46 — na edição manual, o mês atualmente aberto deve ser lido de
+      // estado.escala (fonte viva da tabela), e não de uma eventual cópia antiga
+      // existente em estado.escalas. Isso é essencial quando houve troca manual,
+      // classificação de dia ou outra alteração ainda não refletida na coleção.
+      const escalasParaSequenciaVermelha = Object.values(estado.escalas || {})
+        .filter(escalaHistorica => escalaHistorica?.mesAno !== estado.escala.mesAno);
+      escalasParaSequenciaVermelha.push(estado.escala);
+
+      escalasParaSequenciaVermelha.forEach(escalaHistorica => {
+        if (!escalaHistorica?.mesAno || !escalaHistorica.dados) return;
+        const [anoHist, mesHist] = escalaHistorica.mesAno.split('-').map(Number);
+        Object.entries(escalaHistorica.dados).forEach(([diaHist, vagasHist]) => {
+          const dataHist = new Date(anoHist, mesHist - 1, Number(diaHist));
+          if (!escalaTemDiaVermelho(escalaHistorica, dataHist, Number(diaHist))) return;
+          Object.entries(vagasHist || {}).forEach(([chaveHist, idHist]) => {
+            if (chaveHist.replace(/ #\d+$/, '') !== funcao || !idHist) return;
+            const mesmaVaga = escalaHistorica.mesAno === estado.escala.mesAno
+              && Number(diaHist) === Number(dia) && chaveHist === chaveColuna;
+            if (mesmaVaga) return;
+            sequenciaVermelhaFuncao.push({ tempo: dataHist.getTime(), militarId: idHist });
+          });
+        });
+      });
+
       const avaliacao = avaliarElegibilidadeServico({
         militar,
         funcao,
@@ -7344,23 +7679,71 @@ const opcoes = militaresOrdenadosTroca
         escala: estado.escala,
         chaveColuna,
         tipoFuncao: tipoUsadoNoDia,
+        classificacaoDiaOverride: servicoVermelhoAtual ? 'vermelho' : 'preto',
         servicosMilitar: servicosParaMotor,
         idsJaEscaladosNoDia,
-        verificarVermelhoConsecutivo: aplicarRegraVermelha
+        verificarVermelhoConsecutivo: aplicarRegraVermelha,
+        regrasOverride: regrasFuncaoManual,
+        sequenciaVermelhaFuncao
       });
 
       // Mantém textos conhecidos pelo dropdown enquanto a interface
       // migra para o novo conceito de folgas configuráveis.
       avaliacao.impedimentos.forEach(motivo => {
         if (motivo.includes('mesma pessoa duas vezes')) violacoes.push('mesma pessoa duas vezes no mesmo dia');
-        else if (motivo.includes('indisponivel nesta data')) violacoes.push('militar indisponivel nesta data');
+        else if (motivo.includes('indisponivel nesta data') || motivo.includes('indisponível nesta data')) violacoes.push('militar indisponível nesta data');
         else if (motivo.includes('dia da semana')) violacoes.push('militar possui indisponibilidade cadastrada para este dia da semana');
         else if (motivo.includes('inicia indisponibilidade')) violacoes.push('militar inicia indisponibilidade no dia seguinte');
         else if (motivo.includes('descanso insuficiente')) violacoes.push(motivo);
-        else if (motivo.includes('vermelho seguido')) violacoes.push(motivo);
+        else if (motivo.includes('vermelho seguido')) {
+          // A validação específica da rotação vermelha, logo abaixo, gera uma
+          // mensagem única e mais informativa (inclusive com a data). Evita
+          // repetir no alerta o mesmo motivo já detectado pelo motor geral.
+          if (!(aplicarRegraVermelha && servicoVermelhoAtual)) violacoes.push(motivo);
+        }
         else violacoes.push(motivo);
       });
       avaliacao.alertas.forEach(alerta => violacoes.push(alerta));
+
+      // ETAPA 42 — mensagem detalhada usa a mesma fila vermelha da função
+      // utilizada pelo motor central, inclusive atravessando a virada do mês.
+      if (aplicarRegraVermelha && servicoVermelhoAtual) {
+        const tempoAtual = dataAtual.getTime();
+        const porTempo = new Map();
+        sequenciaVermelhaFuncao.forEach(item => {
+          if (!item || !Number.isFinite(item.tempo) || !item.militarId) return;
+          if (!porTempo.has(item.tempo)) porTempo.set(item.tempo, new Set());
+          porTempo.get(item.tempo).add(item.militarId);
+        });
+        if (!porTempo.has(tempoAtual)) porTempo.set(tempoAtual, new Set());
+        const dias = [...porTempo.entries()]
+          .map(([tempo, militaresIds]) => ({ tempo, militaresIds }))
+          .sort((a, b) => a.tempo - b.tempo);
+        const UM_DIA = 24 * 60 * 60 * 1000;
+        const blocos = [];
+        dias.forEach(evento => {
+          const ultimo = blocos[blocos.length - 1];
+          if (!ultimo || evento.tempo - ultimo.fim > UM_DIA * 1.5) {
+            blocos.push({ inicio: evento.tempo, fim: evento.tempo, militaresIds: new Set(evento.militaresIds) });
+          } else {
+            ultimo.fim = evento.tempo;
+            evento.militaresIds.forEach(id => ultimo.militaresIds.add(id));
+          }
+        });
+        const indiceAtual = blocos.findIndex(b => tempoAtual >= b.inicio && tempoAtual <= b.fim);
+        const anterior = indiceAtual > 0 ? blocos[indiceAtual - 1] : null;
+        const posterior = indiceAtual >= 0 && indiceAtual < blocos.length - 1 ? blocos[indiceAtual + 1] : null;
+        if (anterior?.militaresIds?.has(militarId)) {
+          const inicio = new Date(anterior.inicio).toLocaleDateString('pt-BR');
+          const fim = new Date(anterior.fim).toLocaleDateString('pt-BR');
+          violacoes.push(`serviço vermelho seguido após o bloco vermelho anterior (${inicio}${inicio !== fim ? ` a ${fim}` : ''})`);
+        }
+        if (posterior?.militaresIds?.has(militarId)) {
+          const inicio = new Date(posterior.inicio).toLocaleDateString('pt-BR');
+          const fim = new Date(posterior.fim).toLocaleDateString('pt-BR');
+          violacoes.push(`serviço vermelho seguido antes do próximo bloco vermelho (${inicio}${inicio !== fim ? ` a ${fim}` : ''})`);
+        }
+      }
 
       return [...new Set(violacoes)];
     }
@@ -7402,7 +7785,7 @@ const opcoes = militaresOrdenadosTroca
       const responsavelNome = document.getElementById('responsavelAlteracaoManual').value.trim();
       const responsavelSaram = document.getElementById('saramResponsavelAlteracaoManual').value.trim();
       if (!tipo || !motivo || !responsavelNome || !responsavelSaram) {
-        alert('Preencha o tipo da alteracao, a justificativa, o nome e o SARAM do responsavel.');
+        alert('Preencha o tipo da alteração, a justificativa, o nome e o SARAM do responsável.');
         return;
       }
 
@@ -7438,9 +7821,9 @@ const opcoes = militaresOrdenadosTroca
         if (mesesFuturosGerados.length > 0) {
           const mensagemMeses = mesesFuturosGerados.map(formatarMesAno).join(', ');
           const confirmarExclusao = confirm(
-            `ATENCAO: ja existe escala futura gerada apos ${formatarMesAno(estado.escala.mesAno)}.\n\n`
-            + `Alterar esta escala pode mudar a rotacao e a contagem usadas nos meses seguintes.\n\n`
-            + `As seguintes escalas futuras serao excluidas e deverao ser geradas novamente: ${mensagemMeses}.\n\n`
+            `ATENÇÃO: já existe escala futura gerada após ${formatarMesAno(estado.escala.mesAno)}.\n\n`
+            + `Alterar esta escala pode mudar a rotação e a contagem usadas nos meses seguintes.\n\n`
+            + `As seguintes escalas futuras serão excluídas e deverão ser geradas novamente: ${mensagemMeses}.\n\n`
             + 'Deseja continuar?'
           );
           if (!confirmarExclusao) {
@@ -7453,27 +7836,46 @@ const opcoes = militaresOrdenadosTroca
         const violacoes = classificacaoTroca.violacoes;
 
         if (classificacaoTroca.impeditivoAbsoluto) {
-          alert(`ALTERACAO NAO PERMITIDA pelas regras configuradas:\n\n- ${violacoes.join('\n- ')}`);
+          alert(`ALTERAÇÃO NÃO PERMITIDA pelas regras configuradas:\n\n- ${violacoes.join('\n- ')}`);
           renderizarTabelaEscala();
           return;
         }
 
-        if (classificacaoTroca.descansoReduzido) {
+        // Toda exceção autorizável detectada pelas regras efetivas da geração
+        // exige ciência explícita. Se a regra estiver permitida/desativada na
+        // configuração da função, ela não aparecerá em 'violacoes' e não
+        // provocará confirmação.
+        if (classificacaoTroca.violacaoFolga) {
           const funcaoTroca = obterFuncaoDaChave(chaveColuna);
           const tiposEscalaTroca = obterTiposEscalaDaEscala(estado.escala);
           const tipoTroca = estado.escala.tiposUsadosPorDia?.[dia]?.[funcaoTroca]
             || tiposEscalaTroca[funcaoTroca]
             || garantirRegrasEscalaFuncao(funcaoTroca).distribuicao;
-          const regrasTroca = obterRegrasEfetivasFuncao(funcaoTroca, tipoTroca);
 
-          if (regrasTroca.descanso?.reduzido?.exigirConfirmacao !== false) {
-            const mensagem = `Esta alteracao utiliza DESCANSO REDUZIDO.\n\n`
-              + `${descreverRegrasDescansoFuncao(funcaoTroca, tipoTroca)}\n\n`
-              + `Situacao encontrada:\n- ${violacoes.join('\n- ')}\n\nDeseja continuar?`;
-            if (!confirm(mensagem)) {
-              renderizarTabelaEscala();
-              return;
-            }
+          const militarTroca = estado.militares.find(m => m.id === militarId);
+          const nomeMilitarTroca = militarTroca
+            ? `${militarTroca.nome} (${militarTroca.saram})`
+            : 'Militar selecionado';
+          const violacoesFolga = violacoes.filter(v => {
+            const texto = String(v).toLowerCase();
+            return texto.includes('descanso')
+              || texto.includes('folga')
+              || texto.includes('ficaria na 24')
+              || texto.includes('dobraria serviço')
+              || texto.includes('dobraria servico')
+              || texto.includes('vermelho seguido');
+          });
+
+          const mensagem = `ATENÇÃO - CIÊNCIA DE EXCEÇÃO\n\n`
+            + `${nomeMilitarTroca} descumpre uma ou mais regras configuradas para esta escala.\n\n`
+            + `Regras efetivas da função: ${descreverRegrasDescansoFuncao(funcaoTroca, tipoTroca)}\n\n`
+            + `Situação encontrada:\n- ${(violacoesFolga.length ? violacoesFolga : violacoes).join('\n- ')}\n\n`
+            + `Ao clicar em OK, você registra ciência e autoriza excepcionalmente este militar neste serviço.\n\n`
+            + `Deseja continuar?`;
+
+          if (!confirm(mensagem)) {
+            renderizarTabelaEscala();
+            return;
           }
         }
 
@@ -7501,26 +7903,26 @@ const opcoes = militaresOrdenadosTroca
         const nomeAnterior = militarAnterior ? `${militarAnterior.nome} (${militarAnterior.saram})` : 'Sem militar';
         const nomeNovo = militar ? `${militar.nome} (${militar.saram})` : 'Sem militar';
         const rotulosTipoAlteracao = {
-          troca: 'Militar trocou o servico',
+          troca: 'Militar trocou o serviço',
           puxado: 'Militar foi puxado',
           outros: 'Outros'
         };
         const registroManual = [
-          'ALTERACAO MANUAL:',
-          `Data e hora da alteracao: ${new Date().toLocaleString('pt-BR')}.`,
-          `Tipo de alteracao: ${rotulosTipoAlteracao[dadosJustificativaManual.tipo] || dadosJustificativaManual.tipo}.`,
-          `Militar original/substituido: ${nomeAnterior}.`,
+          'ALTERAÇÃO MANUAL:',
+          `Data e hora da alteração: ${new Date().toLocaleString('pt-BR')}.`,
+          `Tipo de alteração: ${rotulosTipoAlteracao[dadosJustificativaManual.tipo] || dadosJustificativaManual.tipo}.`,
+          `Militar original/substituído: ${nomeAnterior}.`,
           `Militar inserido/substituto: ${nomeNovo}.`,
           `Justificativa informada: ${dadosJustificativaManual.motivo}.`,
-          `Responsavel pela alteracao: ${dadosJustificativaManual.responsavelNome} (SARAM: ${dadosJustificativaManual.responsavelSaram}).`,
-          classificacaoTroca.descansoReduzido
-            ? `Alteracao realizada com descanso reduzido permitido pelas regras: ${violacoes.join('; ')}.`
-            : 'Militar considerado apto pelas regras configuradas no momento da alteracao.',
+          `Responsável pela alteração: ${dadosJustificativaManual.responsavelNome} (SARAM: ${dadosJustificativaManual.responsavelSaram}).`,
+          classificacaoTroca.violacaoFolga
+            ? `Alteração realizada mediante confirmação excepcional por descumprimento de regra efetiva da escala: ${violacoes.join('; ')}.`
+            : 'Militar considerado apto pelas regras configuradas no momento da alteração.',
           `Regras de descanso aplicadas: ${descreverRegrasDescansoFuncao(obterFuncaoDaChave(chaveColuna), estado.escala.tiposUsadosPorDia?.[dia]?.[obterFuncaoDaChave(chaveColuna)] || obterTiposEscalaDaEscala(estado.escala)[obterFuncaoDaChave(chaveColuna)] || '')}.`,
-          'As compensacoes da rotacao foram recalculadas a partir da escala atual apos esta edicao manual.',
+          'As compensações da rotação foram recalculadas a partir da escala atual após esta edição manual.',
           mesesFuturosGerados.length > 0
-            ? `Escalas futuras excluidas por dependerem desta rotacao: ${mesesFuturosGerados.map(formatarMesAno).join(', ')}.`
-            : 'Nao havia escala futura gerada para excluir.'
+            ? `Escalas futuras excluídas por dependerem desta rotação: ${mesesFuturosGerados.map(formatarMesAno).join(', ')}.`
+            : 'Não havia escala futura gerada para excluir.'
         ].join('\n');
         estado.escala.justificativas[dia][chaveColuna] = justificativaAnterior
           ? `${justificativaAnterior}\n\n${registroManual}`
@@ -7785,11 +8187,11 @@ const opcoes = militaresOrdenadosTroca
       const responsavelSaram = document.getElementById('saramResponsavelAjusteAcumulado').value.trim();
 
       if (!Number.isInteger(novoPreto) || novoPreto < 0 || !Number.isInteger(novoVermelho) || novoVermelho < 0) {
-        alert('Informe valores acumulados inteiros e nao negativos.');
+        alert('Informe valores acumulados inteiros e não negativos.');
         return;
       }
       if (!motivo || !responsavelNome || !responsavelSaram) {
-        alert('Informe a justificativa, o nome e o SARAM do responsavel.');
+        alert('Informe a justificativa, o nome e o SARAM do responsável.');
         return;
       }
 
@@ -7826,7 +8228,7 @@ const opcoes = militaresOrdenadosTroca
     }
 
     function formatarDataHoraAuditoria(valor) {
-      if (!valor) return 'Data nao registrada';
+      if (!valor) return 'Data não registrada';
       const data = new Date(valor);
       return Number.isNaN(data.getTime()) ? valor : data.toLocaleString('pt-BR');
     }
@@ -7858,13 +8260,13 @@ if (!militar) return;
 
       const cabecalho = document.createElement('p');
       cabecalho.className = 'font-semibold text-gray-800';
-      cabecalho.textContent = `Funcao: ${funcao}`;
+      cabecalho.textContent = `Função: ${funcao}`;
       container.appendChild(cabecalho);
 
       if (auditorias.length === 0) {
         const vazio = document.createElement('p');
         vazio.className = 'rounded border border-gray-200 bg-gray-50 p-3 text-gray-500';
-        vazio.textContent = 'Nao ha ajuste manual de acumulado registrado para este militar nesta funcao.';
+        vazio.textContent = 'Não há ajuste manual de acumulado registrado para este militar nesta função.';
         container.appendChild(vazio);
       } else {
         auditorias.forEach((registro, indice) => {
@@ -7877,7 +8279,7 @@ if (!militar) return;
           bloco.appendChild(titulo);
 
           bloco.appendChild(criarLinhaAuditoria('Data e hora', formatarDataHoraAuditoria(registro.dataHora)));
-          bloco.appendChild(criarLinhaAuditoria('Referencia', registro.mesReferencia || 'Sem mes selecionado'));
+          bloco.appendChild(criarLinhaAuditoria('Referência', registro.mesReferencia || 'Sem mês selecionado'));
           bloco.appendChild(criarLinhaAuditoria(
             'Valores anteriores',
             `${registro.anterior?.preto ?? 0} preto(s), ${registro.anterior?.vermelho ?? 0} vermelho(s)`
@@ -7887,13 +8289,13 @@ if (!militar) return;
             `${registro.novo?.preto ?? 0} preto(s), ${registro.novo?.vermelho ?? 0} vermelho(s)`
           ));
           bloco.appendChild(criarLinhaAuditoria(
-            'Diferenca aplicada',
+            'Diferença aplicada',
             `${registro.ajusteNovo?.preto ?? 0} preto(s), ${registro.ajusteNovo?.vermelho ?? 0} vermelho(s)`
           ));
-          bloco.appendChild(criarLinhaAuditoria('Justificativa', registro.motivo || 'Nao informada'));
+          bloco.appendChild(criarLinhaAuditoria('Justificativa', registro.motivo || 'Não informada'));
           bloco.appendChild(criarLinhaAuditoria(
-            'Responsavel',
-            `${registro.responsavelNome || 'Nao informado'} (SARAM: ${registro.responsavelSaram || 'Nao informado'})`
+            'Responsável',
+            `${registro.responsavelNome || 'Não informado'} (SARAM: ${registro.responsavelSaram || 'Não informado'})`
           ));
 
           container.appendChild(bloco);
@@ -7932,13 +8334,13 @@ if (!militar) return;
     async function limparEscala() {
       const mesAnoAtual = document.getElementById('mesAnoEscala')?.value || '';
       if (!mesAnoAtual || !estado.escalas?.[mesAnoAtual]) {
-        alert('Nao ha escala gerada para o mes selecionado.');
+        alert('Não há escala gerada para o mês selecionado.');
         return;
       }
       const mesesFuturosGerados = mesAnoAtual ? obterMesesFuturosGerados(mesAnoAtual) : [];
       const avisoEscalasFuturas = mesesFuturosGerados.length > 0
-        ? `\n\nATENCAO: ja existem escalas futuras geradas apos ${formatarMesAno(mesAnoAtual)}.\n\n`
-          + `Ao limpar esta escala, as seguintes escalas futuras tambem serao excluidas e deverao ser geradas novamente: ${mesesFuturosGerados.map(formatarMesAno).join(', ')}.`
+        ? `\n\nATENÇÃO: já existem escalas futuras geradas após ${formatarMesAno(mesAnoAtual)}.\n\n`
+          + `Ao limpar esta escala, as seguintes escalas futuras também serão excluídas e deverão ser geradas novamente: ${mesesFuturosGerados.map(formatarMesAno).join(', ')}.`
         : '';
 
       if (!confirm(`Deseja realmente limpar a escala atual?${avisoEscalasFuturas}`)) return;
@@ -8126,7 +8528,7 @@ async function exportarPDF() {
         pdf.save(`Escala_CCI_${document.getElementById('mesAnoEscala').value}.pdf`);
       } catch (erro) {
         console.error('Erro ao exportar PDF:', erro);
-        alert('Nao foi possivel gerar o PDF. Verifique sua conexao e tente novamente.');
+        alert('Não foi possível gerar o PDF. Verifique sua conexão e tente novamente.');
       } finally {
         areaMedicao.remove();
       }
