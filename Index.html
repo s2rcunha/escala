@@ -907,39 +907,25 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
 <div class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50 p-4" id="modalAjusteAcumulado">
 <form class="flex max-h-[90vh] w-full max-w-xl flex-col rounded bg-white shadow-xl" onsubmit="confirmarAjusteAcumulado(event)">
 <div class="flex items-center justify-between border-b px-5 py-4">
-<h3 class="text-lg font-bold text-gray-800">Ajustar acumulado de serviços</h3>
+<h3 class="text-lg font-bold text-gray-800">Ajustar lastros manualmente</h3>
 <button aria-label="Cancelar ajuste" class="rounded bg-gray-100 px-3 py-1 text-lg font-bold text-gray-600 hover:bg-gray-200" onclick="fecharModalAjusteAcumulado()" type="button">x</button>
 </div>
 <div class="space-y-4 overflow-y-auto px-5 py-4">
 <p class="text-sm text-gray-700" id="descricaoAjusteAcumulado"></p>
-<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-<label class="block text-sm font-semibold text-gray-700">
-            Novo acum. preto
-            <input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="novoAcumuladoPreto" min="0" required="" step="1" type="number"/>
-</label>
-<label class="block text-sm font-semibold text-gray-700">
-            Novo acum. vermelho
-            <input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="novoAcumuladoVermelho" min="0" required="" step="1" type="number"/>
-</label>
-</div>
+<p class="rounded border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">Este ajuste altera somente os lastros manuais. Os quadrinhos permanecem vinculados aos serviços efetivamente realizados e o Total é recalculado automaticamente como Quadrinhos + Lastros.</p>
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2" id="camposAjusteLastros"></div>
 <label class="block text-sm font-semibold text-gray-700">
           Justificativa do ajuste
-          <textarea class="mt-1 w-full rounded border p-2 text-sm font-normal" id="motivoAjusteAcumulado" placeholder="Explique por que o acumulado precisa ser ajustado" required="" rows="4"></textarea>
+          <textarea class="mt-1 w-full rounded border p-2 text-sm font-normal" id="motivoAjusteAcumulado" placeholder="Explique por que os lastros precisam ser ajustados" required rows="4"></textarea>
 </label>
 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-<label class="block text-sm font-semibold text-gray-700">
-            Nome do responsável
-            <input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="responsavelAjusteAcumulado" required="" type="text"/>
-</label>
-<label class="block text-sm font-semibold text-gray-700">
-            SARAM do responsável
-            <input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="saramResponsavelAjusteAcumulado" required="" type="text"/>
-</label>
+<label class="block text-sm font-semibold text-gray-700">Nome do responsável<input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="responsavelAjusteAcumulado" required type="text"/></label>
+<label class="block text-sm font-semibold text-gray-700">SARAM do responsável<input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="saramResponsavelAjusteAcumulado" required type="text"/></label>
 </div>
 </div>
 <div class="flex justify-end gap-2 border-t px-5 py-3">
 <button class="rounded bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300" onclick="fecharModalAjusteAcumulado()" type="button">Cancelar</button>
-<button class="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700" type="submit">Salvar ajuste</button>
+<button class="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700" type="submit">Salvar lastros</button>
 </div>
 </form>
 </div>
@@ -5644,6 +5630,16 @@ try {
 
       aplicarContagensIniciaisPorFuncao(contagemAnoGeracao);
       aplicarAjustesAcumuladosPorFuncao(contagemAnoGeracao);
+      // Lastros manuais cadastrados em Quadrinhos e Totais participam da justiça da geração.
+      estado.militares.forEach(militar => {
+        Object.entries(militar.ajustesLastrosManuais || {}).forEach(([funcao, valores]) => {
+          if (!contagemAnoGeracao[militar.id]) return;
+          if (!contagemAnoGeracao[militar.id][funcao]) contagemAnoGeracao[militar.id][funcao] = {};
+          Object.entries(valores || {}).forEach(([corId, quantidade]) => {
+            contagemAnoGeracao[militar.id][funcao][corId] = (contagemAnoGeracao[militar.id][funcao][corId] || 0) + Math.max(0, normalizarNumeroContagem(quantidade));
+          });
+        });
+      });
       Object.values(estado.escalas)
         .filter(escala => escala.mesAno && escala.mesAno < mesAno)
         .forEach(escala => obterContagemEscalaPorFuncao(escala, contagemAnoGeracao));
@@ -8414,16 +8410,51 @@ const opcoes = militaresOrdenadosTroca
       return contagem[corId];
     }
 
+    function obterLastrosManuaisMilitarFuncao(militar, funcao) {
+      const salvos = militar?.ajustesLastrosManuais?.[funcao] || {};
+      return Object.fromEntries(obterCoresServico().map(c => [c.id, Math.max(0, normalizarNumeroContagem(salvos[c.id]))]));
+    }
+
+    function aplicarLastrosManuaisResumo(contagem, filtroFuncao = '') {
+      estado.militares.forEach(militar => {
+        if (!contagem[militar.id]) return;
+        const funcoes = filtroFuncao ? [filtroFuncao] : Object.keys(militar.ajustesLastrosManuais || {});
+        funcoes.forEach(funcao => {
+          const lastros = obterLastrosManuaisMilitarFuncao(militar, funcao);
+          Object.entries(lastros).forEach(([corId, quantidade]) => {
+            garantirCorNaContagem(contagem[militar.id], corId).lastros += quantidade;
+          });
+        });
+      });
+    }
+
     function obterTotaisQuadrinhoLastro(contagem) {
       const porCor = {};
       let totalGeral = 0;
-      obterCoresServico().forEach(c => {
-        const item = contagem?.[c.id] || { quadrinhos:0,lastros:0 };
-        const total=(item.quadrinhos||0)+(item.lastros||0);
-        porCor[c.id]={quadrinhos:item.quadrinhos||0,lastros:item.lastros||0,total}; totalGeral+=total;
+
+      obterCoresServico().forEach(cor => {
+        const item = contagem?.[cor.id] || { quadrinhos: 0, lastros: 0 };
+        const quadrinhos = item.quadrinhos || 0;
+        const lastros = item.lastros || 0;
+        const total = quadrinhos + lastros;
+
+        porCor[cor.id] = { quadrinhos, lastros, total };
+        totalGeral += total;
       });
-      const p=porCor.preto||{quadrinhos:0,lastros:0,total:0}, v=porCor.vermelho||{quadrinhos:0,lastros:0,total:0};
-      return { porCor, quadrinhosPreto:p.quadrinhos,lastrosPreto:p.lastros,totalPreto:p.total,quadrinhosVermelho:v.quadrinhos,lastrosVermelho:v.lastros,totalVermelho:v.total,totalGeral };
+
+      const preto = porCor.preto || { quadrinhos: 0, lastros: 0, total: 0 };
+      const vermelho = porCor.vermelho || { quadrinhos: 0, lastros: 0, total: 0 };
+
+      return {
+        porCor,
+        quadrinhosPreto: preto.quadrinhos,
+        lastrosPreto: preto.lastros,
+        totalPreto: preto.total,
+        quadrinhosVermelho: vermelho.quadrinhos,
+        lastrosVermelho: vermelho.lastros,
+        totalVermelho: vermelho.total,
+        totalGeral
+      };
     }
 
     function obterValorJusticaSeparada(contagem, regras, corAtual) {
@@ -8508,21 +8539,89 @@ const opcoes = militaresOrdenadosTroca
     function renderizarResumoServicos() {
       const corpo = document.getElementById('corpoResumoServicos');
       if (!corpo) return;
+
       const tabela = corpo.closest('table');
       const filtro = document.getElementById('filtroFuncaoResumo')?.value || '';
       const mesSelecionado = document.getElementById('mesAnoEscala').value;
       const cores = obterCoresServico();
-      const contagemMes = Object.fromEntries(estado.militares.map(m => [m.id, criarContagemQuadrinhoLastro()]));
-      const contagemAcumulada = Object.fromEntries(estado.militares.map(m => [m.id, criarContagemQuadrinhoLastro()]));
-      if (mesSelecionado && estado.escalas[mesSelecionado]) obterContagemSeparadaEscala(estado.escalas[mesSelecionado], contagemMes, filtro);
-      if (mesSelecionado) Object.values(estado.escalas).filter(e=>e.mesAno&&e.mesAno<=mesSelecionado).forEach(e=>obterContagemSeparadaEscala(e,contagemAcumulada,filtro));
-      if (tabela?.tHead) tabela.tHead.innerHTML = `<tr class="bg-gray-100 border-b"><th class="p-2 text-left">Militar</th><th class="p-2 text-left">Função</th>${cores.map(c=>`<th class="p-2 text-center" colspan="3" style="color:${c.hex}">${c.nome}<div class="mt-1 grid grid-cols-3 gap-2 text-[10px] text-gray-500"><span>Q</span><span>L</span><span>Total</span></div></th>`).join('')}<th class="p-2 text-center font-bold">Total Geral</th><th class="p-2 text-right">Ações</th></tr>`;
-      corpo.innerHTML = estado.militares.filter(m=>{
-        if(!filtro)return true; const a=obterTotaisQuadrinhoLastro(contagemAcumulada[m.id]); return m.funcao===filtro||a.totalGeral>0;
-      }).map(m=>{
-        const acum=obterTotaisQuadrinhoLastro(contagemAcumulada[m.id]); const funcaoAjuste=filtro||m.funcao;
-        const celulas=cores.map(c=>{const x=acum.porCor[c.id]||{quadrinhos:0,lastros:0,total:0};return `<td class="p-2 text-center" style="color:${c.hex}">${x.quadrinhos}</td><td class="p-2 text-center text-gray-500">${x.lastros}</td><td class="p-2 text-center font-bold" style="color:${c.hex}">${x.total}</td>`}).join('');
-        return `<tr class="border-b hover:bg-gray-50"><td class="p-2 font-medium">${m.nome} (${m.saram})</td><td class="p-2 text-gray-600">${filtro||m.funcao}${m.ativo===false?' (inativo)':''}</td>${celulas}<td class="p-2 text-center font-bold">${acum.totalGeral}</td><td class="p-2 text-right"><div class="flex justify-end gap-1"><button type="button" onclick="abrirModalAjusteAcumulado('${m.id}','${encodeURIComponent(funcaoAjuste)}')" class="somente-edicao rounded bg-gray-200 px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-300">Ajustar</button><button type="button" onclick="abrirModalAuditoriaAcumulado('${m.id}','${encodeURIComponent(funcaoAjuste)}')" class="rounded bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-200">Auditoria</button></div></td></tr>`;
+      const contagemMes = Object.fromEntries(
+        estado.militares.map(militar => [militar.id, criarContagemQuadrinhoLastro()])
+      );
+      const contagemAcumulada = Object.fromEntries(
+        estado.militares.map(militar => [militar.id, criarContagemQuadrinhoLastro()])
+      );
+
+      if (mesSelecionado && estado.escalas[mesSelecionado]) {
+        obterContagemSeparadaEscala(
+          estado.escalas[mesSelecionado],
+          contagemMes,
+          filtro
+        );
+      }
+
+      if (mesSelecionado) {
+        Object.values(estado.escalas)
+          .filter(escala => escala.mesAno && escala.mesAno <= mesSelecionado)
+          .forEach(escala => {
+            obterContagemSeparadaEscala(escala, contagemAcumulada, filtro);
+          });
+      }
+
+      aplicarLastrosManuaisResumo(contagemAcumulada, filtro);
+
+      if (tabela?.tHead) {
+        const cabecalhosCores = cores.map(cor => `
+          <th class="p-2 text-center" colspan="3" style="color:${cor.hex}">
+            ${cor.nome}
+            <div class="mt-1 grid grid-cols-3 gap-2 text-[10px] text-gray-500">
+              <span>Q</span><span>L</span><span>Total</span>
+            </div>
+          </th>
+        `).join('');
+
+        tabela.tHead.innerHTML = `
+          <tr class="bg-gray-100 border-b">
+            <th class="p-2 text-left">Militar</th>
+            <th class="p-2 text-left">Função</th>
+            ${cabecalhosCores}
+            <th class="p-2 text-center font-bold">Total Geral</th>
+            <th class="p-2 text-right">Ações</th>
+          </tr>
+        `;
+      }
+
+      const militaresVisiveis = estado.militares.filter(militar => {
+        if (!filtro) return true;
+        const acumulado = obterTotaisQuadrinhoLastro(contagemAcumulada[militar.id]);
+        return militar.funcao === filtro || acumulado.totalGeral > 0;
+      });
+
+      corpo.innerHTML = militaresVisiveis.map(militar => {
+        const acumulado = obterTotaisQuadrinhoLastro(contagemAcumulada[militar.id]);
+        const funcaoAjuste = filtro || militar.funcao;
+        const celulasCores = cores.map(cor => {
+          const item = acumulado.porCor[cor.id] || { quadrinhos: 0, lastros: 0, total: 0 };
+          return `
+            <td class="p-2 text-center" style="color:${cor.hex}">${item.quadrinhos}</td>
+            <td class="p-2 text-center text-gray-500">${item.lastros}</td>
+            <td class="p-2 text-center font-bold" style="color:${cor.hex}">${item.total}</td>
+          `;
+        }).join('');
+
+        return `
+          <tr class="border-b hover:bg-gray-50">
+            <td class="p-2 font-medium">${militar.nome} (${militar.saram})</td>
+            <td class="p-2 text-gray-600">${filtro || militar.funcao}${militar.ativo === false ? ' (inativo)' : ''}</td>
+            ${celulasCores}
+            <td class="p-2 text-center font-bold">${acumulado.totalGeral}</td>
+            <td class="p-2 text-right">
+              <div class="flex justify-end gap-1">
+                <button type="button" onclick="abrirModalAjusteAcumulado('${militar.id}','${encodeURIComponent(funcaoAjuste)}')" class="somente-edicao rounded bg-gray-200 px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-300">Ajustar</button>
+                <button type="button" onclick="abrirModalAuditoriaAcumulado('${militar.id}','${encodeURIComponent(funcaoAjuste)}')" class="rounded bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-200">Auditoria</button>
+              </div>
+            </td>
+          </tr>
+        `;
       }).join('');
     }
 
@@ -8534,13 +8633,16 @@ const opcoes = militaresOrdenadosTroca
       if (!militar) return;
 
       const mesReferencia = document.getElementById('mesAnoEscala').value || '';
-      const acumuladoAtual = obterAcumuladoMilitarFuncao(militarId, funcao, mesReferencia, true);
-      contextoAjusteAcumuladoAtual = { militarId, funcao, mesReferencia, acumuladoAnterior: acumuladoAtual };
+      const lastrosAtuais = obterLastrosManuaisMilitarFuncao(militar, funcao);
+      contextoAjusteAcumuladoAtual = { militarId, funcao, mesReferencia, lastrosAnteriores: structuredClone(lastrosAtuais) };
 
       document.getElementById('descricaoAjusteAcumulado').textContent =
-        `${militar.nome} (${militar.saram}) - ${funcao}. Acumulado atual: ${acumuladoAtual.preto} preto(s), ${acumuladoAtual.vermelho} vermelho(s).`;
-      document.getElementById('novoAcumuladoPreto').value = acumuladoAtual.preto;
-      document.getElementById('novoAcumuladoVermelho').value = acumuladoAtual.vermelho;
+        `${militar.nome} (${militar.saram}) - ${funcao}. Informe abaixo somente os lastros manuais desejados.`;
+      document.getElementById('camposAjusteLastros').innerHTML = obterCoresServico().map(cor => `
+        <label class="block text-sm font-semibold text-gray-700">
+          Lastro ${cor.nome}
+          <input class="mt-1 w-full rounded border p-2 text-sm font-normal" data-cor-lastro="${cor.id}" min="0" required step="1" type="number" value="${lastrosAtuais[cor.id] || 0}"/>
+        </label>`).join('');
       document.getElementById('motivoAjusteAcumulado').value = '';
       document.getElementById('responsavelAjusteAcumulado').value = '';
       document.getElementById('saramResponsavelAjusteAcumulado').value = '';
@@ -8557,59 +8659,54 @@ const opcoes = militaresOrdenadosTroca
       contextoAjusteAcumuladoAtual = null;
     }
 
-    function confirmarAjusteAcumulado(evento) {
+    async function confirmarAjusteAcumulado(evento) {
       evento.preventDefault();
       if (!contextoAjusteAcumuladoAtual) return;
 
-      const { militarId, funcao, mesReferencia, acumuladoAnterior } = contextoAjusteAcumuladoAtual;
+      const { militarId, funcao, mesReferencia, lastrosAnteriores } = contextoAjusteAcumuladoAtual;
       const militar = estado.militares.find(m => m.id === militarId);
       if (!militar) return;
 
-      const novoPreto = Number(document.getElementById('novoAcumuladoPreto').value);
-      const novoVermelho = Number(document.getElementById('novoAcumuladoVermelho').value);
+      const novosLastros = {};
+      for (const campo of document.querySelectorAll('#camposAjusteLastros [data-cor-lastro]')) {
+        const valor = Number(campo.value);
+        if (!Number.isInteger(valor) || valor < 0) {
+          alert('Informe valores de lastro inteiros e não negativos.');
+          return;
+        }
+        novosLastros[campo.dataset.corLastro] = valor;
+      }
       const motivo = document.getElementById('motivoAjusteAcumulado').value.trim();
       const responsavelNome = document.getElementById('responsavelAjusteAcumulado').value.trim();
       const responsavelSaram = document.getElementById('saramResponsavelAjusteAcumulado').value.trim();
-
-      if (!Number.isInteger(novoPreto) || novoPreto < 0 || !Number.isInteger(novoVermelho) || novoVermelho < 0) {
-        alert('Informe valores acumulados inteiros e não negativos.');
-        return;
-      }
       if (!motivo || !responsavelNome || !responsavelSaram) {
         alert('Informe a justificativa, o nome e o SARAM do responsável.');
         return;
       }
 
-      const acumuladoSemAjuste = obterAcumuladoMilitarFuncao(militarId, funcao, mesReferencia, false);
-      const ajusteAnterior = militar.ajustesAcumuladoServicos?.[funcao] || { preto: 0, vermelho: 0 };
-      if (!militar.ajustesAcumuladoServicos || typeof militar.ajustesAcumuladoServicos !== 'object') {
-        militar.ajustesAcumuladoServicos = {};
-      }
-      militar.ajustesAcumuladoServicos[funcao] = {
-        preto: novoPreto - acumuladoSemAjuste.preto,
-        vermelho: novoVermelho - acumuladoSemAjuste.vermelho
-      };
-
+      militar.ajustesLastrosManuais ||= {};
+      militar.ajustesLastrosManuais[funcao] = novosLastros;
       if (!Array.isArray(militar.auditoriaAjustesAcumulado)) militar.auditoriaAjustesAcumulado = [];
       militar.auditoriaAjustesAcumulado.push({
-        dataHora: new Date().toISOString(),
-        funcao,
-        mesReferencia,
-        anterior: acumuladoAnterior,
-        novo: { preto: novoPreto, vermelho: novoVermelho },
-        ajusteAnterior: {
-          preto: normalizarNumeroAjuste(ajusteAnterior.preto),
-          vermelho: normalizarNumeroAjuste(ajusteAnterior.vermelho)
-        },
-        ajusteNovo: militar.ajustesAcumuladoServicos[funcao],
-        motivo,
-        responsavelNome,
-        responsavelSaram
+        tipo: 'lastro_manual',
+        dataHora: new Date().toISOString(), funcao, mesReferencia,
+        lastrosAnteriores: structuredClone(lastrosAnteriores),
+        lastrosNovos: structuredClone(novosLastros),
+        motivo, responsavelNome, responsavelSaram
       });
 
-      salvarEstado();
-      fecharModalAjusteAcumulado();
-      renderizarResumoServicos();
+      mostrarProcessamento('Salvando ajuste manual de lastros...');
+      try {
+        const salvou = await salvarEstado();
+        if (salvou === false) throw new Error('O servidor não confirmou o salvamento.');
+        fecharModalAjusteAcumulado();
+        renderizarResumoServicos();
+      } catch (erro) {
+        console.error('Erro ao salvar lastros manuais:', erro);
+        alert(`Não foi possível salvar o ajuste de lastros. ${erro?.message || erro}`);
+      } finally {
+        ocultarProcessamento();
+      }
     }
 
     function formatarDataHoraAuditoria(valor) {
@@ -8630,15 +8727,15 @@ const opcoes = militaresOrdenadosTroca
     function abrirModalAuditoriaAcumulado(militarId, funcaoCodificada) {
       const funcao = decodeURIComponent(funcaoCodificada);
       const militar = estado.militares.find(m => m.id === militarId);
-if (!militar) return;
+      if (!militar) return;
 
       const auditorias = (militar.auditoriaAjustesAcumulado || [])
-        .filter(registro => registro.funcao === funcao)
+        .filter(registro => registro.funcao === funcao && registro.tipo === 'lastro_manual')
         .slice()
         .reverse();
 
       document.getElementById('tituloModalAuditoriaAcumulado').textContent =
-        `Auditoria - ${militar.nome} (${militar.saram})`;
+        `Auditoria de lastros - ${militar.nome} (${militar.saram})`;
 
       const container = document.getElementById('conteudoModalAuditoriaAcumulado');
       container.innerHTML = '';
@@ -8648,10 +8745,14 @@ if (!militar) return;
       cabecalho.textContent = `Função: ${funcao}`;
       container.appendChild(cabecalho);
 
-      if (auditorias.length === 0) {
+      const formatarLastros = valores => obterCoresServico()
+        .map(cor => `${cor.nome}: ${valores?.[cor.id] || 0}`)
+        .join(' | ');
+
+      if (!auditorias.length) {
         const vazio = document.createElement('p');
         vazio.className = 'rounded border border-gray-200 bg-gray-50 p-3 text-gray-500';
-        vazio.textContent = 'Não há ajuste manual de acumulado registrado para este militar nesta função.';
+        vazio.textContent = 'Não há ajuste manual de lastros registrado para este militar nesta função.';
         container.appendChild(vazio);
       } else {
         auditorias.forEach((registro, indice) => {
@@ -8665,18 +8766,8 @@ if (!militar) return;
 
           bloco.appendChild(criarLinhaAuditoria('Data e hora', formatarDataHoraAuditoria(registro.dataHora)));
           bloco.appendChild(criarLinhaAuditoria('Referência', registro.mesReferencia || 'Sem mês selecionado'));
-          bloco.appendChild(criarLinhaAuditoria(
-            'Valores anteriores',
-            `${registro.anterior?.preto ?? 0} preto(s), ${registro.anterior?.vermelho ?? 0} vermelho(s)`
-          ));
-          bloco.appendChild(criarLinhaAuditoria(
-            'Valores novos',
-            `${registro.novo?.preto ?? 0} preto(s), ${registro.novo?.vermelho ?? 0} vermelho(s)`
-          ));
-          bloco.appendChild(criarLinhaAuditoria(
-            'Diferença aplicada',
-            `${registro.ajusteNovo?.preto ?? 0} preto(s), ${registro.ajusteNovo?.vermelho ?? 0} vermelho(s)`
-          ));
+          bloco.appendChild(criarLinhaAuditoria('Lastros anteriores', formatarLastros(registro.lastrosAnteriores)));
+          bloco.appendChild(criarLinhaAuditoria('Lastros novos', formatarLastros(registro.lastrosNovos)));
           bloco.appendChild(criarLinhaAuditoria('Justificativa', registro.motivo || 'Não informada'));
           bloco.appendChild(criarLinhaAuditoria(
             'Responsável',
@@ -8687,13 +8778,11 @@ if (!militar) return;
         });
       }
 
-      const ajusteAtual = militar.ajustesAcumuladoServicos?.[funcao];
-      if (ajusteAtual) {
-        const rodape = document.createElement('p');
-        rodape.className = 'text-xs text-gray-500';
-        rodape.textContent = `Ajuste manual atualmente aplicado: ${normalizarNumeroAjuste(ajusteAtual.preto)} preto(s), ${normalizarNumeroAjuste(ajusteAtual.vermelho)} vermelho(s).`;
-        container.appendChild(rodape);
-      }
+      const atuais = obterLastrosManuaisMilitarFuncao(militar, funcao);
+      const rodape = document.createElement('p');
+      rodape.className = 'text-xs text-gray-500';
+      rodape.textContent = `Lastros manuais atualmente aplicados: ${formatarLastros(atuais)}.`;
+      container.appendChild(rodape);
 
       const modal = document.getElementById('modalAuditoriaAcumulado');
       modal.classList.remove('hidden');
