@@ -747,6 +747,15 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
 <input accept="application/json,.json" class="hidden" id="arquivoImportacao" onchange="importarBancoDados(event)" type="file"/>
 </div>
 </div>
+<div class="mt-4 rounded border border-red-200 bg-red-50 p-3">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <p class="text-sm font-bold text-red-800">Recomeçar histórico das escalas</p>
+      <p class="mt-1 text-xs text-red-700">Apaga todas as escalas geradas/publicadas, a memória histórica, quadrinhos iniciais e lastros/ajustes manuais. Militares, funções, regras, dimensionamento, classificação dos dias e indisponibilidades são preservados.</p>
+    </div>
+    <button class="rounded bg-red-700 px-4 py-2 text-sm font-bold text-white hover:bg-red-800" onclick="zerarHistoricoEscalas()" type="button">Zerar histórico das escalas</button>
+  </div>
+</div>
 </div>
 <div class="overflow-x-auto rounded bg-white p-4 shadow-sm cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="lista">
 <div class="mb-3 flex justify-end">
@@ -1196,7 +1205,10 @@ let usuarioLogado = null;
       // Escala atualmente aberta na interface.
 // Não é persistida separadamente; a fonte definitiva é "escalas".
 escala: {},
-      escalas: lerLocalStorageJSON('cci_escalas', {})
+      escalas: lerLocalStorageJSON('cci_escalas', {}),
+      // Escalas removidas da visualização, mas preservadas como memória histórica
+      // para quadrinhos, lastros, rotações e regras entre meses.
+      historicoEscalasExcluidas: lerLocalStorageJSON('cci_historico_escalas_excluidas', {})
     };
     let versaoServidor = null;
     let filaSalvamento = Promise.resolve();
@@ -1258,6 +1270,13 @@ escala: {},
       // Histórico mensal é a fonte definitiva das escalas.
 if (!estado.escalas || typeof estado.escalas !== 'object') {
   estado.escalas = {};
+}
+
+// Escalas excluídas podem permanecer apenas como memória histórica.
+// Elas não aparecem como escala gerada/publicada, mas continuam participando
+// das contagens e da continuidade das regras para os meses posteriores.
+if (!estado.historicoEscalasExcluidas || typeof estado.historicoEscalasExcluidas !== 'object') {
+  estado.historicoEscalasExcluidas = {};
 }
 
 // Compatibilidade com bancos antigos:
@@ -1713,7 +1732,7 @@ async function salvarEstadoNoServidor(
       // MULTICORES: mantém uma chave independente para toda cor realmente usada,
       // inclusive cores sem dia semanal fixo (ex.: Roxo somente em 24/25 de dezembro).
       const contagem = Object.fromEntries(obterCoresServico().map(c => [c.id, 0]));
-      Object.values(estado.escalas)
+      obterEscalasHistoricas()
         .filter(escala => escala.mesAno && (!mesReferencia || escala.mesAno <= mesReferencia))
         .forEach(escala => {
           if (!escala?.dados || !escala.mesAno) return;
@@ -1771,7 +1790,7 @@ async function salvarEstadoNoServidor(
       aplicarContagensIniciais(contagem, funcao);
       aplicarAjustesAcumulados(contagem, funcao);
 
-      Object.values(estado.escalas)
+      obterEscalasHistoricas()
         .filter(escala => escala.mesAno && (!mesReferencia || escala.mesAno <= mesReferencia))
         .forEach(escala => obterContagemEscala(escala, contagem, funcao));
 
@@ -5348,14 +5367,19 @@ if (
     }
 
     // ALGORITMO DE GERAÇÃO AUTOMÁTICA DA ESCALA
-    function obterEscalaAnterior(mesAno) {
-      const mesAtual = `${mesAno}-01`;
-      const mesesAnteriores = Object.keys(estado.escalas)
-        .filter(mes => `${mes}-01` < mesAtual)
-        .sort()
-        .reverse();
+    function obterEscalasHistoricas() {
+      const historico = estado.historicoEscalasExcluidas || {};
+      const ativas = estado.escalas || {};
+      const porMes = { ...historico, ...ativas };
+      return Object.values(porMes)
+        .filter(escala => escala?.mesAno && escala?.dados)
+        .sort((a, b) => a.mesAno.localeCompare(b.mesAno));
+    }
 
-      return mesesAnteriores.length > 0 ? estado.escalas[mesesAnteriores[0]] : null;
+    function obterEscalaAnterior(mesAno) {
+      return obterEscalasHistoricas()
+        .filter(escala => escala.mesAno < mesAno)
+        .sort((a, b) => b.mesAno.localeCompare(a.mesAno))[0] || null;
     }
 
     function obterUltimosMilitaresPorFuncao(escalaAnterior) {
@@ -5680,7 +5704,7 @@ try {
           });
         });
       });
-      Object.values(estado.escalas)
+      obterEscalasHistoricas()
         .filter(escala => escala.mesAno && escala.mesAno < mesAno)
         .forEach(escala => obterContagemEscalaPorFuncao(escala, contagemAnoGeracao));
 
@@ -5691,7 +5715,7 @@ try {
         const contagemFuncao = Object.fromEntries(
           estado.militares.map(m => [m.id, contagemSeparadaGeracao[m.id][funcao]])
         );
-        Object.values(estado.escalas || {})
+        obterEscalasHistoricas()
           .filter(escala => escala?.mesAno && escala.mesAno < mesAno)
           .sort((a,b) => a.mesAno.localeCompare(b.mesAno))
           .forEach(escala => obterContagemSeparadaEscala(escala, contagemFuncao, funcao));
@@ -6672,14 +6696,30 @@ if (deveMesclarResultado) {
   estado.escala.compensacoesRotacao = recalcularCompensacoesRotacaoDaEscala(estado.escala);
 }
 
+// Se este mês já havia sido excluído historicamente e agora está sendo gerado de novo,
+// a nova escala substitui aquela memória. Guardamos uma cópia apenas para restaurar
+// em memória caso a gravação no servidor falhe.
+const historicoAnteriorMesmoMes = estado.historicoEscalasExcluidas?.[mesAno]
+  ? structuredClone(estado.historicoEscalasExcluidas[mesAno])
+  : null;
+if (historicoAnteriorMesmoMes) {
+  delete estado.historicoEscalasExcluidas[mesAno];
+}
+
 estado.escalas[mesAno] = estado.escala;
 
-const salvou = await salvarEstado();
+const salvou = await salvarEstado({
+  acao: historicoAnteriorMesmoMes ? 'regenerar_mes_substituindo_historico' : 'gerar_escala',
+  mesAno
+});
 
 if (salvou) {
   renderizarTabelaEscala();
   atualizarCoresMesesEscala();
   atualizarAvisoEscalasNaoPublicadas();
+} else if (historicoAnteriorMesmoMes) {
+  estado.historicoEscalasExcluidas[mesAno] = historicoAnteriorMesmoMes;
+  delete estado.escalas[mesAno];
 }
 
 } catch (erro) {
@@ -8056,7 +8096,7 @@ const opcoes = militaresOrdenadosTroca
       }
 
       const servicos = [];
-      Object.values(estado.escalas)
+      obterEscalasHistoricas()
         .filter(escala => !escala?.mesAno || escala.mesAno <= estado.escala.mesAno)
         .forEach(escala => {
         if (!escala?.dados || !escala.mesAno) return;
@@ -8600,7 +8640,7 @@ const opcoes = militaresOrdenadosTroca
       }
 
       if (mesSelecionado) {
-        Object.values(estado.escalas)
+        obterEscalasHistoricas()
           .filter(escala => escala.mesAno && escala.mesAno <= mesSelecionado)
           .forEach(escala => {
             obterContagemSeparadaEscala(escala, contagemAcumulada, filtro);
@@ -8847,64 +8887,169 @@ const opcoes = militaresOrdenadosTroca
 
     async function limparEscala() {
       const mesAnoAtual = document.getElementById('mesAnoEscala')?.value || '';
-      if (!mesAnoAtual || !estado.escalas?.[mesAnoAtual]) {
+      const escalaAtual = estado.escalas?.[mesAnoAtual];
+      if (!mesAnoAtual || !escalaAtual) {
         alert('Não há escala gerada para o mês selecionado.');
         return;
       }
-      const mesesFuturosGerados = mesAnoAtual ? obterMesesFuturosGerados(mesAnoAtual) : [];
-      const avisoEscalasFuturas = mesesFuturosGerados.length > 0
-        ? `\n\nATENÇÃO: já existem escalas futuras geradas após ${formatarMesAno(mesAnoAtual)}.\n\n`
-          + `Ao limpar esta escala, as seguintes escalas futuras também serão excluídas e deverão ser geradas novamente: ${mesesFuturosGerados.map(formatarMesAno).join(', ')}.`
-        : '';
 
-      if (!confirm(`Deseja realmente limpar a escala atual?${avisoEscalasFuturas}`)) return;
+      const mesesFuturosGerados = obterMesesFuturosGerados(mesAnoAtual);
+      const possuiFuturas = mesesFuturosGerados.length > 0;
+      const mensagem = possuiFuturas
+        ? `Deseja excluir a escala de ${formatarMesAno(mesAnoAtual)}?\n\n`
+          + `As escalas posteriores (${mesesFuturosGerados.map(formatarMesAno).join(', ')}) serão PRESERVADAS.\n\n`
+          + 'Como existem escalas posteriores, uma memória histórica deste mês será mantida internamente para preservar quadrinhos, lastros, rotação e verificações entre meses, como fim de semana/cor consecutiva.'
+        : `Deseja excluir a escala de ${formatarMesAno(mesAnoAtual)}?\n\n`
+          + 'Como esta é a última escala gerada, ela será removida COMPLETAMENTE, inclusive qualquer memória histórica deste mesmo mês. Ao gerar este mês novamente, a apuração partirá somente dos meses anteriores.';
 
-mostrarProcessamento('Limpando escala, aguarde...');
+      const avisoZerarHistorico = '\n\nIMPORTANTE: esta opção limpa apenas a escala selecionada. Para apagar TODO o histórico das escalas, zerar quadrinhos, lastros e reiniciar as contagens, acesse Backups → Gerenciar Backups → Zerar histórico das escalas.';
+      const mensagemConfirmacao = mensagem + avisoZerarHistorico;
 
-try {
+      if (!confirm(mensagemConfirmacao)) return;
 
-  // Permite que o navegador exiba o spinner antes de iniciar a operação.
-  await new Promise(resolve => setTimeout(resolve, 50));
+      mostrarProcessamento('Excluindo escala e preservando histórico, aguarde...');
 
-  // Remove também as publicações dos meses que serão excluídos da escala.
-  // Assim, uma escala limpa no sistema deixa de aparecer na página pública de visualização.
-  const mesesParaExcluir = [mesAnoAtual, ...mesesFuturosGerados];
-  for (const mesEscala of mesesParaExcluir) {
-    await executarAppsScript('excluirEscalaPublicada', mesEscala, tokenSessao);
-  }
+      try {
+        await new Promise(resolve => setTimeout(resolve, 50));
 
-  delete estado.escalas[mesAnoAtual];
-      mesesFuturosGerados.forEach(mesEscala => {
-        delete estado.escalas[mesEscala];
-      });
-      estado.escala = {};
+        // Remove somente a publicação do mês escolhido. Escalas futuras permanecem intactas.
+        await executarAppsScript('excluirEscalaPublicada', mesAnoAtual, tokenSessao);
 
-const salvou = await salvarEstado({
-  acao: 'limpar_escala',
-  mesAno: mesAnoAtual
-});
+        estado.historicoEscalasExcluidas ||= {};
+        if (possuiFuturas) {
+          // Uma escala intermediária precisa continuar compondo o histórico das escalas
+          // posteriores que já foram geradas a partir dela.
+          estado.historicoEscalasExcluidas[mesAnoAtual] = structuredClone(escalaAtual);
+          estado.historicoEscalasExcluidas[mesAnoAtual].historicoExcluido = true;
+          estado.historicoEscalasExcluidas[mesAnoAtual].excluidaEm = new Date().toISOString();
+        } else {
+          // A última escala pode ser descartada integralmente. Isso permite refazê-la
+          // sem que quadrinhos, lastros ou continuidade do mês apagado interfiram.
+          delete estado.historicoEscalasExcluidas[mesAnoAtual];
+        }
 
-if (salvou) {
-  renderizarTabelaEscala();
-  atualizarCoresMesesEscala();
-  atualizarAvisoEscalasNaoPublicadas();
-}
+        delete estado.escalas[mesAnoAtual];
+        estado.escala = {};
 
-} catch (erro) {
+        const salvou = await salvarEstado({
+          acao: possuiFuturas ? 'excluir_escala_preservando_historico' : 'excluir_ultima_escala_completa',
+          mesAno: mesAnoAtual,
+          memoriaHistoricaPreservada: possuiFuturas,
+          escalasFuturasPreservadas: mesesFuturosGerados
+        });
 
-  console.error('Erro ao limpar escala:', erro);
+        if (salvou) {
+          renderizarTabelaEscala();
+          renderizarResumoServicos();
+          atualizarCoresMesesEscala();
+          atualizarAvisoEscalasNaoPublicadas();
+          alert(
+            possuiFuturas
+              ? `Escala de ${formatarMesAno(mesAnoAtual)} excluída com sucesso.\n\n`
+                + 'As escalas posteriores foram mantidas e a memória histórica necessária para sua consistência foi preservada.'
+              : `Escala de ${formatarMesAno(mesAnoAtual)} excluída completamente.\n\n`
+                + 'Nenhum quadrinho, lastro ou memória deste mês permanecerá para interferir em uma nova geração.'
+          );
+        }
+      } catch (erro) {
+        console.error('Erro ao excluir escala preservando histórico:', erro);
+        alert(
+          'Ocorreu um erro durante a exclusão da escala.\n\n'
+          + 'Nenhuma escala futura deve ser removida. Verifique o console para mais detalhes.'
+        );
+      } finally {
+        ocultarProcessamento();
+      }
+    }
 
-  alert(
-    'Ocorreu um erro durante a limpeza da escala.\n\n' +
-    'Verifique o console para mais detalhes.'
-  );
+    async function zerarHistoricoEscalas() {
+      const mesesAtivos = Object.keys(estado.escalas || {}).sort();
+      const mesesHistoricos = Object.keys(estado.historicoEscalasExcluidas || {}).sort();
+      const quantidadeEscalas = mesesAtivos.length;
+      const quantidadeHistorico = mesesHistoricos.length;
 
-} finally {
+      const confirmou = confirm(
+        'ATENÇÃO: esta operação reinicia completamente o histórico das escalas.\n\n' +
+        `Escalas geradas que serão apagadas: ${quantidadeEscalas}.\n` +
+        `Escalas já excluídas mantidas em memória histórica: ${quantidadeHistorico}.\n\n` +
+        'Também serão zerados os quadrinhos iniciais, lastros manuais e demais ajustes acumulados dos militares.\n\n' +
+        'Serão PRESERVADOS: militares, funções, regras, dimensionamento, classificação dos dias e indisponibilidades.\n\n' +
+        'Deseja continuar?'
+      );
+      if (!confirmou) return;
 
-  ocultarProcessamento();
+      const confirmacaoFinal = prompt(
+        'Esta ação não pode ser desfeita pelo sistema.\n\n' +
+        'Para confirmar que deseja recomeçar as escalas do zero, digite exatamente:\n\nZERAR HISTÓRICO'
+      );
+      if (String(confirmacaoFinal || '').trim().toUpperCase() !== 'ZERAR HISTÓRICO') {
+        alert('Operação cancelada. O texto de confirmação não corresponde ao solicitado.');
+        return;
+      }
 
-}
-}
+      mostrarProcessamento('Zerando histórico das escalas, aguarde...');
+
+      try {
+        await new Promise(resolve => setTimeout(resolve, 50));
+
+        // Remove do visualizador público todas as escalas que ainda estão ativas/publicáveis.
+        // As escalas presentes somente na memória histórica já haviam sido retiradas da publicação
+        // quando foram excluídas individualmente.
+        for (const mesAno of mesesAtivos) {
+          await executarAppsScript('excluirEscalaPublicada', mesAno, tokenSessao);
+        }
+
+        // Reinício efetivo da sequência histórica.
+        estado.escalas = {};
+        estado.historicoEscalasExcluidas = {};
+        estado.escala = {};
+
+        // Zera qualquer ponto de partida/ajuste que possa influenciar a justiça da próxima escala.
+        // Cadastros e configurações estruturais dos militares são mantidos.
+        estado.militares.forEach(militar => {
+          militar.contagemInicialServicos = {};
+          militar.ajustesAcumuladoServicos = {};
+          militar.ajustesLastrosManuais = {};
+          militar.auditoriaAjustesAcumulado = [];
+        });
+
+        // Compatibilidade com versões que ainda consultem estas chaves antes do carregamento do servidor.
+        try {
+          localStorage.removeItem('cci_escalas');
+          localStorage.removeItem('cci_historico_escalas_excluidas');
+        } catch (erroLocal) {
+          console.warn('Não foi possível limpar as chaves locais antigas:', erroLocal);
+        }
+
+        const salvou = await salvarEstado({
+          acao: 'zerar_historico_escalas',
+          escalasRemovidas: quantidadeEscalas,
+          memoriasHistoricasRemovidas: quantidadeHistorico
+        });
+        if (!salvou) {
+          throw new Error('O servidor não confirmou o salvamento do histórico zerado.');
+        }
+
+        renderizarTabelaEscala();
+        renderizarResumoServicos();
+        atualizarCoresMesesEscala();
+        atualizarAvisoEscalasNaoPublicadas();
+
+        alert(
+          'Histórico das escalas zerado com sucesso.\n\n' +
+          'A próxima escala será gerada como a primeira da nova sequência, sem herdar quadrinhos, lastros, rotações ou continuidade das escalas anteriores.\n\n' +
+          'Militares, funções, regras, dimensionamento, classificação dos dias e indisponibilidades foram preservados.'
+        );
+      } catch (erro) {
+        console.error('Erro ao zerar histórico das escalas:', erro);
+        alert(
+          'Não foi possível concluir o reinício do histórico.\n\n' +
+          'Verifique a conexão e o console antes de tentar novamente. Por segurança, faça um backup antes de repetir a operação.'
+        );
+      } finally {
+        ocultarProcessamento();
+      }
+    }
 
     function exportarBancoDados() {
       const backup = {
@@ -8918,7 +9063,8 @@ if (salvou) {
           indisponibilidades: estado.indisponibilidades,
           indisponibilidadesSemana: estado.indisponibilidadesSemana,
           diasEspeciais: estado.diasEspeciais,
-          escalas: estado.escalas
+          escalas: estado.escalas,
+          historicoEscalasExcluidas: estado.historicoEscalasExcluidas || {}
         }
       };
       const arquivo = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
@@ -8968,7 +9114,10 @@ if (salvou) {
   escala: dados.escala && typeof dados.escala === 'object'
     ? dados.escala
     : {},
-  escalas: dados.escalas
+  escalas: dados.escalas,
+  historicoEscalasExcluidas: dados.historicoEscalasExcluidas && typeof dados.historicoEscalasExcluidas === 'object'
+    ? dados.historicoEscalasExcluidas
+    : {}
 };
           normalizarEstadoAtual();
           if (!await salvarEstado()) return;
