@@ -1,16 +1,14 @@
 ﻿
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <meta name="theme-color" content="#b91c1c">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="Escala CCI">
-
-  <script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="#24435f" name="theme-color"/>
+<meta content="yes" name="mobile-web-app-capable"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="default" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="Escala CCI" name="apple-mobile-web-app-title"/>
+<script>
 if (location.protocol === 'http:' || location.protocol === 'https:') {
   const manifestLink = document.createElement('link');
   manifestLink.rel = 'manifest';
@@ -18,15 +16,14 @@ if (location.protocol === 'http:' || location.protocol === 'https:') {
   document.head.appendChild(manifestLink);
 }
 </script>
-  <link rel="apple-touch-icon" href="./icons/icon-192.png">
-
-  <title>Sistema de Escala Automática - CCI</title>
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Bibliotecas para exportacao de PDF em pagina unica -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <style>
+<link href="./icons/icon-192.png" rel="apple-touch-icon"/>
+<title>Sistema de Escala Automática - CCI</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Bibliotecas para exportacao de PDF em pagina unica -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
     #areaEscalaPDF {
       overflow-x: auto;
     }
@@ -150,838 +147,815 @@ if (location.protocol === 'http:' || location.protocol === 'https:') {
     #mesEscala option[data-status="sem-escala"] { color: #dc2626; font-weight: 600; }
     #mesEscala option[data-status="gerada"] { color: #2563eb; font-weight: 600; }
     #mesEscala option[data-status="publicada"] { color: #16a34a; font-weight: 700; }
-</style>
-</head>
-<body class="bg-gray-100 font-sans text-gray-800">
 
-  <!-- =====================================================
+    /* UI/UX ETAPA 1 - estrutura inspirada na linha visual do SUCOI */
+    :root{--cci-topo:#24435f;--cci-menu:#242424;--cci-hover:#303030;--cci-destaque:#16a7c9;--cci-side:238px;--cci-side-mini:64px;--cci-top:58px}
+    #sistemaPrincipal{max-width:none!important;margin:0!important;padding:0!important;min-height:100vh}
+    .cci-topbar{position:fixed;inset:0 0 auto 0;height:var(--cci-top);z-index:1200;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 18px;background:var(--cci-topo);color:white;box-shadow:0 1px 4px #0004}
+    .cci-brand{display:flex;align-items:center;gap:12px;min-width:0}.cci-brand-mark{width:38px;height:38px;border:1px solid #ffffff4d;border-radius:5px;display:grid;place-items:center;font-weight:800;background:#ffffff12}.cci-brand-title{font-size:17px;font-weight:700;line-height:1.05}.cci-brand-sub{margin-top:3px;font-size:11px;color:#d9e3eb}
+    .cci-user #areaUsuarioLogado{border-left:0!important;padding-left:0!important}.cci-user #nomeUsuarioLogado{color:white!important}.cci-user #perfilUsuarioLogado{color:#cbd8e3!important}.cci-user #areaUsuarioLogado>button{background:#ffffff18!important;border:1px solid #ffffff2e}
+    .cci-sidebar{position:fixed;left:0;top:var(--cci-top);bottom:0;width:var(--cci-side);z-index:1100;background:var(--cci-menu);color:#ddd;overflow:auto;transition:width .22s ease,transform .22s ease;box-shadow:2px 0 5px #0002}body.cci-menu-recolhido .cci-sidebar{width:var(--cci-side-mini)}
+    .cci-toggle{width:100%;height:48px;display:flex;align-items:center;gap:14px;padding:0 18px;border:0;border-bottom:1px solid #ffffff14;color:#ddd;background:#1f1f1f;cursor:pointer}.cci-toggle:hover{background:var(--cci-hover);color:white}.cci-nav-title{padding:18px 18px 8px;color:var(--cci-destaque);font-size:13px;font-weight:700;letter-spacing:.04em}.cci-nav{padding-bottom:14px}.cci-nav-btn{width:100%;min-height:44px;border:0;border-left:3px solid transparent;background:transparent;color:#d1d1d1;cursor:pointer;display:flex;align-items:center;gap:14px;padding:9px 16px;text-align:left;font-size:13px}.cci-nav-btn:hover{background:var(--cci-hover);color:white}.cci-nav-btn.ativo{color:white;background:#303030;border-left-color:var(--cci-destaque)}.cci-nav-icon{flex:0 0 28px;width:28px;text-align:center;font-size:18px}.cci-nav-label,.cci-nav-title,.cci-toggle-label{white-space:nowrap;transition:opacity .12s}body.cci-menu-recolhido .cci-nav-label,body.cci-menu-recolhido .cci-nav-title,body.cci-menu-recolhido .cci-toggle-label{opacity:0;pointer-events:none}
+    .cci-main{min-height:100vh;padding:calc(var(--cci-top) + 18px) 18px 24px 256px;transition:padding-left .22s}body.cci-menu-recolhido .cci-main{padding-left:82px}.cci-page-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;padding:0 2px}.cci-page-title{font-size:20px;font-weight:700;color:#263746}.cci-page-sub{margin-top:2px;font-size:12px;color:#6b7280}
+    @media(max-width:767px){.cci-topbar{padding:0 10px}.cci-brand-sub{display:none}.cci-brand-title{font-size:14px}.cci-sidebar,body.cci-menu-recolhido .cci-sidebar{width:min(82vw,260px);transform:translateX(-100%);box-shadow:8px 0 24px #0005}body.cci-menu-mobile-aberto .cci-sidebar{transform:translateX(0)}body.cci-menu-recolhido .cci-nav-label,body.cci-menu-recolhido .cci-nav-title,body.cci-menu-recolhido .cci-toggle-label{opacity:1;pointer-events:auto}.cci-main,body.cci-menu-recolhido .cci-main{padding:calc(var(--cci-top) + 12px) 10px 18px}.cci-mobile{display:grid!important;place-items:center;width:38px;height:38px;border-radius:5px;background:#ffffff18}.cci-user #areaUsuarioLogado>div{display:none}}@media(min-width:768px){.cci-mobile{display:none!important}}
+
+/* ==========================================================
+   UI/UX ETAPA 2 - identidade visual inspirada no SUCOI
+   Alteracoes exclusivamente visuais; regras/IDs/JS preservados.
+   ========================================================== */
+:root{
+  --cci-topo:#213f5d;
+  --cci-menu:#252525;
+  --cci-menu-deep:#211f20;
+  --cci-hover:#303030;
+  --cci-destaque:#1aa6c8;
+  --cci-bg:#f1f2f3;
+  --cci-border:#d2d6da;
+  --cci-text:#303942;
+  --cci-muted:#6d7780;
+  --cci-danger:#d7194a;
+  --cci-success:#10a83f;
+  --cci-primary:#167aa5;
+  --cci-side:238px;
+  --cci-side-mini:64px;
+  --cci-top:48px;
+}
+html{background:var(--cci-bg)}
+body{background:var(--cci-bg)!important;color:var(--cci-text);font-family:Arial,"Helvetica Neue",sans-serif!important;font-size:13px}
+
+/* Barra superior */
+.cci-topbar{height:var(--cci-top);padding:0 13px;background:var(--cci-topo);box-shadow:none;border-bottom:0;gap:12px}
+.cci-brand{gap:9px}.cci-brand-mark{width:31px;height:31px;border:0;border-radius:0;background:transparent;font-size:11px;color:#e8edf1}
+.cci-brand-title{font-size:13px;font-weight:600;line-height:1.05}.cci-brand-sub{margin-top:2px;font-size:10px;color:#edf2f6}
+.cci-user #nomeUsuarioLogado{font-size:11px!important;font-weight:600!important}.cci-user #perfilUsuarioLogado{font-size:9px!important;color:#d9e3ea!important}
+.cci-user #areaUsuarioLogado>button{padding:5px 9px!important;border:0!important;border-radius:2px!important;background:#ffffff12!important;font-size:11px!important}
+.cci-user #areaUsuarioLogado>button:hover{background:#ffffff25!important}
+
+/* Menu lateral */
+.cci-sidebar{top:var(--cci-top);background:var(--cci-menu);box-shadow:none;border-right:1px solid #191919}
+.cci-toggle{height:40px;padding:0 15px;background:var(--cci-menu-deep);border-bottom:1px solid #333;color:#c7c7c7;gap:11px;font-size:12px}
+.cci-nav-title{padding:18px 18px 9px;color:var(--cci-destaque);font-size:14px;font-weight:400;letter-spacing:0}
+.cci-nav{padding-bottom:10px}.cci-nav-btn{min-height:36px;padding:6px 16px;border-left-width:2px;gap:9px;font-size:12px;color:#d1d1d1}
+.cci-nav-btn:hover{background:#2c2c2c}.cci-nav-btn.ativo{background:#2c2c2c;border-left-color:var(--cci-destaque);color:#fff}
+.cci-nav-icon{flex-basis:22px;width:22px;font-size:15px;color:#c9c9c9}.cci-nav-btn.ativo .cci-nav-icon{color:var(--cci-destaque)}
+
+/* Area principal */
+.cci-main{padding:calc(var(--cci-top) + 12px) 14px 22px 252px;background:var(--cci-bg)}
+body.cci-menu-recolhido .cci-main{padding-left:78px}.cci-page-heading{margin-bottom:8px;padding:0 3px;border-bottom:1px solid #d7dadd;min-height:34px}
+.cci-page-title{font-size:16px;font-weight:500;color:#2c465b}.cci-page-sub{font-size:10px;color:#818a92;margin-top:1px}
+
+/* Cards/paines: mais planos e densos */
+.aba-conteudo{gap:10px!important}.aba-conteudo>div.bg-white,.aba-conteudo>div[class*="bg-white"],.aba-conteudo>div.overflow-x-auto.bg-white{border:1px solid var(--cci-border);border-radius:1px!important;box-shadow:none!important;padding:11px!important;background:#fff!important}
+.aba-conteudo h3{font-size:13px!important;font-weight:700!important;color:#3e4851;margin-bottom:9px!important}
+.aba-conteudo p{line-height:1.35}
+
+/* Barra superior de acoes da escala */
+#aba-gerador>div:first-child{background:#272727!important;border-color:#272727!important;padding:6px 8px!important;min-height:43px}
+#aba-gerador>div:first-child>div.flex{gap:5px!important}
+#aba-gerador>div:first-child button{min-height:29px;padding:5px 10px!important;border-radius:2px!important;font-size:11px!important;box-shadow:none!important}
+#statusPublicacaoEscala{color:#c7c7c7!important;padding:0 3px}
+
+/* Controles */
+input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),select,textarea{border:1px solid #c8ccd0!important;border-radius:2px!important;background:#fff!important;color:#333!important;box-shadow:inset 0 1px 1px rgba(0,0,0,.035);outline:none;min-height:30px}
+input:focus,select:focus,textarea:focus{border-color:#5ca6c2!important;box-shadow:0 0 0 1px rgba(26,166,200,.12)!important}
+label{color:#535d66!important}.aba-conteudo label>span,.aba-conteudo label.block{font-size:11px!important}
+
+/* Botoes globais mais administrativos */
+button{transition:background-color .12s ease,border-color .12s ease,color .12s ease}
+.aba-conteudo button[class*="bg-"]{border-radius:2px!important;box-shadow:none!important;font-size:11px!important;padding-top:6px!important;padding-bottom:6px!important}
+.bg-red-600{background-color:#cf2348!important}.hover\\:bg-red-700:hover{background-color:#b51d3e!important}
+.bg-blue-600{background-color:#147ea7!important}.hover\\:bg-blue-700:hover{background-color:#116d91!important}
+.bg-green-600{background-color:#10a23d!important}.hover\\:bg-green-700:hover{background-color:#0d8b34!important}
+.bg-emerald-600{background-color:#188f67!important}.bg-amber-600{background-color:#c48313!important}.bg-indigo-600{background-color:#4d6689!important}.bg-indigo-500{background-color:#60799b!important}.bg-gray-500{background-color:#6b7075!important}
+
+/* Mes/ano e classificacao como faixa de filtros */
+#aba-gerador>div:nth-of-type(2){padding:10px!important}
+#aba-gerador>div:nth-of-type(2)>.mb-4{margin-bottom:10px!important}
+#classificacaoSemanalDias{gap:5px!important}
+#aba-gerador .bg-gray-50{background:#f7f7f7!important;border-color:#d8dadd!important;border-radius:1px!important}
+
+/* Tabelas no padrao administrativo */
+table{border-color:#cfd2d5!important}thead tr{background:#eceeef!important;color:#3e454b!important}thead th{font-size:11px!important;font-weight:700!important;padding:7px 8px!important;border-color:#cfd2d5!important}tbody td{font-size:11px!important;padding:6px 8px!important;border-color:#d8dade!important}tbody tr:hover{background:#f8fafb}
+#areaEscalaPDF{padding:12px!important;border-radius:1px!important;box-shadow:none!important;border:1px solid var(--cci-border)}
+#areaEscalaPDF>div.text-center{margin-bottom:9px!important}#areaEscalaPDF #tituloEscala{font-size:15px!important;color:#313a42}
+#areaEscalaPDF thead tr{background:#3e4851!important;color:#fff!important}#areaEscalaPDF thead th{color:#fff!important}
+
+/* Modais */
+.fixed.inset-0>form,.fixed.inset-0>div[class*="bg-white"]{border-radius:2px!important}
+.fixed.inset-0 [class*="border-b"]{background:#f5f6f7}.fixed.inset-0 h3{font-size:14px!important;color:#33404a!important}
+
+/* Login alinhado com a nova identidade */
+#telaLogin{background:#edf0f2}
+#telaLogin>div{max-width:390px;border:1px solid #cfd4d8;border-radius:2px!important;box-shadow:0 3px 14px rgba(0,0,0,.12)!important;padding:0!important;overflow:hidden}
+#telaLogin>div:before{content:"CCI  •  SISTEMA DE ESCALA";display:block;background:var(--cci-topo);color:white;padding:14px 18px;font-size:13px;font-weight:700;letter-spacing:.02em}
+#telaLogin .mb-6{margin:18px 18px 14px!important;text-align:left!important}#telaLogin h1{font-size:16px!important;color:#2d465b!important}#telaLogin form{padding:0 18px 18px}#botaoLogin{border-radius:2px!important;background:var(--cci-primary)!important;padding:8px 12px!important;font-size:12px!important}
+
+@media(max-width:767px){
+  .cci-topbar{height:48px;padding:0 8px}.cci-brand-mark{display:none}.cci-brand-title{font-size:12px}.cci-main,body.cci-menu-recolhido .cci-main{padding:58px 7px 14px}.cci-page-heading{min-height:31px}.cci-page-title{font-size:15px}
+  .cci-mobile{width:32px;height:32px;border-radius:2px!important}.aba-conteudo>div.bg-white,.aba-conteudo>div[class*="bg-white"]{padding:9px!important}
+}
+
+
+/* UI/UX ETAPA 3 - navegação hierárquica com submenus */
+.cci-nav-group{width:100%}
+.cci-nav-parent{position:relative}
+.cci-nav-arrow{margin-left:auto;font-size:20px;line-height:1;transition:transform .18s ease;color:#9ca3af}
+.cci-nav-group.submenu-aberto>.cci-nav-parent .cci-nav-arrow{transform:rotate(90deg);color:var(--cci-destaque)}
+.cci-submenu{display:none;background:#1d1d1d;border-left:3px solid #191919;padding:3px 0 5px}
+.cci-submenu.aberto{display:block}
+.cci-submenu-btn{width:100%;min-height:34px;border:0;background:transparent;color:#bfc4c8;display:flex;align-items:center;gap:7px;padding:6px 12px 6px 47px;text-align:left;font-size:12px;cursor:pointer;transition:background .12s,color .12s,padding-left .12s}
+.cci-submenu-btn:hover{background:#2b2b2b;color:#fff;padding-left:50px}
+.cci-submenu-btn.ativo{background:#292929;color:#fff;border-right:3px solid var(--cci-destaque)}
+.cci-submenu-dot{color:#68727a;font-size:15px}.cci-submenu-btn.ativo .cci-submenu-dot{color:var(--cci-destaque)}
+.cci-submenu-nivel2{display:none;background:#181818;border-left:2px solid #343434;margin-left:34px}
+.cci-submenu-nivel2.aberto{display:block}
+.cci-submenu-parent{position:relative}
+.cci-submenu-parent .cci-submenu-arrow{margin-left:auto;font-size:14px;transition:transform .15s}
+.cci-submenu-parent.aberto .cci-submenu-arrow{transform:rotate(90deg)}
+.cci-submenu-nivel2 .cci-submenu-btn{padding-left:28px;font-size:11.5px;min-height:31px}
+.cci-submenu-nivel2 .cci-submenu-btn:hover{padding-left:31px}
+.cci-subpage-panel.cci-subpage-oculta{display:none!important}
+body.cci-menu-recolhido .cci-submenu{display:none!important}
+body.cci-menu-recolhido .cci-nav-arrow{display:none}
+@media(max-width:767px){body.cci-menu-recolhido .cci-submenu.aberto{display:block!important}.cci-submenu-btn{padding-left:47px}}
+
+/* UI/UX ETAPA 12 - colunas fixas e barra horizontal sempre acessível na escala */
+#areaEscalaPDF{overflow-x:visible!important}
+#areaEscalaPDF .cci-escala-scroll{width:100%;overflow-x:auto;overflow-y:visible;position:relative}
+#areaEscalaPDF #tabelaEscalaPrincipal{width:max-content;min-width:100%;border-collapse:separate;border-spacing:0}
+#areaEscalaPDF #tabelaEscalaPrincipal th:nth-child(1),
+#areaEscalaPDF #tabelaEscalaPrincipal td:nth-child(1){position:sticky;left:0;z-index:4;min-width:64px;width:64px;max-width:64px}
+#areaEscalaPDF #tabelaEscalaPrincipal th:nth-child(2),
+#areaEscalaPDF #tabelaEscalaPrincipal td:nth-child(2){position:sticky;left:64px;z-index:4;min-width:76px;width:76px;max-width:76px;box-shadow:2px 0 0 rgba(0,0,0,.12)}
+#areaEscalaPDF #tabelaEscalaPrincipal thead th:nth-child(1),
+#areaEscalaPDF #tabelaEscalaPrincipal thead th:nth-child(2){z-index:6;background:#3e4851!important;color:#fff!important}
+#areaEscalaPDF #tabelaEscalaPrincipal tbody td:nth-child(1),
+#areaEscalaPDF #tabelaEscalaPrincipal tbody td:nth-child(2){background-color:#fff; background-clip:padding-box}
+#areaEscalaPDF #tabelaEscalaPrincipal tbody tr.bg-amber-50>td:nth-child(1),
+#areaEscalaPDF #tabelaEscalaPrincipal tbody tr.bg-amber-50>td:nth-child(2){background-color:#fffbeb}
+#areaEscalaPDF #tabelaEscalaPrincipal tbody tr:hover>td:nth-child(1),
+#areaEscalaPDF #tabelaEscalaPrincipal tbody tr:hover>td:nth-child(2){background-color:#f9fafb}
+#areaEscalaPDF #tabelaEscalaPrincipal tbody tr.bg-amber-50:hover>td:nth-child(1),
+#areaEscalaPDF #tabelaEscalaPrincipal tbody tr.bg-amber-50:hover>td:nth-child(2){background-color:#fef3c7}
+#areaEscalaPDF #tabelaEscalaPrincipal th:nth-child(2),
+#areaEscalaPDF #tabelaEscalaPrincipal td:nth-child(2){border-right:2px solid #9ca3af;box-shadow:3px 0 5px rgba(0,0,0,.10)}
+#areaEscalaPDF .cci-escala-scrollbar-sticky{position:sticky;bottom:0;z-index:20;width:100%;height:18px;overflow-x:auto;overflow-y:hidden;background:#f3f4f6;border:1px solid #d1d5db;border-top:0}
+#areaEscalaPDF .cci-escala-scrollbar-sticky>div{height:1px;min-width:100%}
+@media(max-width:767px){#areaEscalaPDF #tabelaEscalaPrincipal th:nth-child(1),#areaEscalaPDF #tabelaEscalaPrincipal td:nth-child(1){min-width:54px;width:54px;max-width:54px}#areaEscalaPDF #tabelaEscalaPrincipal th:nth-child(2),#areaEscalaPDF #tabelaEscalaPrincipal td:nth-child(2){left:54px;min-width:68px;width:68px;max-width:68px}}
+</style>
+<style>
+/* ETAPA 21 — descrições contextuais do menu lateral */
+#cciMenuTooltip{position:fixed;z-index:99999;max-width:280px;padding:8px 10px;border-radius:6px;background:#111827;color:#fff;font-size:12px;line-height:1.35;box-shadow:0 8px 24px rgba(0,0,0,.24);pointer-events:none;opacity:0;visibility:hidden;transform:translateY(-50%);transition:opacity .12s ease;white-space:normal;}
+#cciMenuTooltip.visivel{opacity:1;visibility:visible;}
+</style></head>
+<body class="bg-gray-100 font-sans text-gray-800">
+<!-- =====================================================
        TELA DE LOGIN
        ===================================================== -->
-  <div
-    id="telaLogin"
-    class="min-h-screen flex items-center justify-center p-4"
-  >
-    <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-
-      <div class="mb-6 text-center">
-
-        <h1 class="text-2xl font-bold text-red-700">
+<div class="min-h-screen flex items-center justify-center p-4" id="telaLogin">
+<div class="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
+<div class="mb-6 text-center">
+<h1 class="text-2xl font-bold text-red-700">
           Sistema de Escala de Serviço - CCI
         </h1>
-
-        <p class="mt-1 text-sm text-gray-500">
+<p class="mt-1 text-sm text-gray-500">
           Acesso ao sistema
         </p>
-
-      </div>
-
-      <form
-        id="formLogin"
-        onsubmit="realizarLogin(event)"
-        class="space-y-4"
-      >
-
-        <div>
-          <label
-            for="loginSaram"
-            class="mb-1 block text-sm font-semibold text-gray-700"
-          >
+</div>
+<form class="space-y-4" id="formLogin" onsubmit="realizarLogin(event)">
+<div>
+<label class="mb-1 block text-sm font-semibold text-gray-700" for="loginSaram">
             SARAM
           </label>
-
-          <input
-            id="loginSaram"
-            type="text"
-            required
-            autocomplete="username"
-            class="w-full rounded border p-3"
-            placeholder="Informe seu SARAM"
-          >
-        </div>
-
-        <div>
-          <label
-            for="loginSenha"
-            class="mb-1 block text-sm font-semibold text-gray-700"
-          >
+<input autocomplete="username" class="w-full rounded border p-3" id="loginSaram" placeholder="Informe seu SARAM" required="" type="text"/>
+</div>
+<div>
+<label class="mb-1 block text-sm font-semibold text-gray-700" for="loginSenha">
             Senha
           </label>
-
-          <input
-            id="loginSenha"
-            type="password"
-            required
-            autocomplete="current-password"
-            class="w-full rounded border p-3"
-            placeholder="Informe sua senha"
-          >
-        </div>
-
-        <div
-          id="mensagemLogin"
-          class="hidden rounded bg-red-50 p-3 text-sm text-red-700"
-        ></div>
-
-        <button
-          id="botaoLogin"
-          type="submit"
-          class="w-full rounded bg-red-600 px-4 py-3 font-bold text-white hover:bg-red-700"
-        >
+<input autocomplete="current-password" class="w-full rounded border p-3" id="loginSenha" placeholder="Informe sua senha" required="" type="password"/>
+</div>
+<div class="hidden rounded bg-red-50 p-3 text-sm text-red-700" id="mensagemLogin"></div>
+<button class="w-full rounded bg-red-600 px-4 py-3 font-bold text-white hover:bg-red-700" id="botaoLogin" type="submit">
           Entrar
         </button>
-
-      </form>
-
-    </div>
-  </div>
-
-
-  <!-- =====================================================
+</form>
+</div>
+</div>
+<!-- =====================================================
        SISTEMA
        ===================================================== -->
-  <div
-    id="sistemaPrincipal"
-    class="hidden mx-auto max-w-[1600px] p-4 md:p-6"
-  >
-  <!-- AVISO PERSISTENTE DE CONFLITO DE VERSÃO -->
-<div
-  id="bannerConflitoServidor"
-  class="hidden mb-4 items-center justify-between gap-4 rounded-lg border border-red-300 bg-red-50 p-4 shadow-sm"
->
-  <div>
-    <p class="font-bold text-red-800">
+<div class="hidden mx-auto max-w-[1600px] p-4 md:p-6" id="sistemaPrincipal">
+<!-- AVISO PERSISTENTE DE CONFLITO DE VERSÃO -->
+<div class="hidden mb-4 items-center justify-between gap-4 rounded-lg border border-red-300 bg-red-50 p-4 shadow-sm" id="bannerConflitoServidor">
+<div>
+<p class="font-bold text-red-800">
       ⚠ Dados desatualizados
     </p>
-
-    <p class="mt-1 text-sm text-red-700">
+<p class="mt-1 text-sm text-red-700">
       Os dados foram alterados por outro usuário.
       Recarregue a página para continuar trabalhando com a versão mais recente.
     </p>
-  </div>
-
-  <button
-    type="button"
-    onclick="location.reload()"
-    class="shrink-0 rounded bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700"
-  >
+</div>
+<button class="shrink-0 rounded bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700" onclick="location.reload()" type="button">
     Recarregar agora
   </button>
 </div>
-    <header class="mb-6 flex flex-col justify-between gap-4 rounded border-b bg-white p-4 pb-4 shadow-sm md:flex-row md:items-center xl:flex-nowrap xl:gap-3">
-      <div class="shrink-0">
-        <h1 class="text-xl font-bold text-red-700 xl:whitespace-nowrap">Sistema de Escala de Serviço - CCI</h1>
-        <p class="text-sm text-gray-500">Gestão e geração automática de escalas de serviço</p>
-      </div>
-      <div class="flex flex-wrap items-center gap-2 md:justify-end xl:flex-nowrap">
-        <button onclick="trocarAba('gerador')" class="tab-btn whitespace-nowrap rounded bg-red-600 px-3 py-2 text-sm font-semibold text-white hover:bg-red-700">Escala Mensal</button>
-        <button onclick="trocarAba('militares')" class="somente-edicao tab-btn whitespace-nowrap rounded bg-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300">Militares</button>
-        <button onclick="trocarAba('vagas')" class="somente-edicao tab-btn whitespace-nowrap rounded bg-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300">Estrutura da Equipe</button>
-        <button onclick="trocarAba('indisponibilidades')" class="somente-edicao tab-btn whitespace-nowrap rounded bg-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300">Indisponibilidades</button>
-        <button onclick="trocarAba('backups')" class="somente-administrador tab-btn whitespace-nowrap rounded bg-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300">Backups</button>
-        <button onclick="trocarAba('usuarios')" class="somente-administrador tab-btn whitespace-nowrap rounded bg-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300">Usuários</button>
-        <div
-  id="areaUsuarioLogado"
-  class="flex shrink-0 items-center gap-3 whitespace-nowrap border-l pl-3"
->
-  <div class="text-right leading-tight">
-    <div
-      id="nomeUsuarioLogado"
-      class="text-sm font-bold text-gray-700"
-    ></div>
-
-    <div
-      id="perfilUsuarioLogado"
-      class="text-xs text-gray-500"
-    ></div>
-  </div>
-
-  <button
-    type="button"
-    onclick="sairDoSistema()"
-    class="rounded bg-gray-700 px-3 py-2 text-sm font-semibold text-white hover:bg-gray-800"
-  >
-    Sair
-  </button>
-</div>
-      </div>
-    </header>
-
-    <!-- ABA 1: GERADOR E VISUALIZAÇÃO DA ESCALA -->
-    <section id="aba-gerador" class="aba-conteudo space-y-4">
-      <div class="bg-white p-4 rounded shadow-sm flex flex-wrap gap-4 items-end justify-between">
-        <div class="flex gap-2">
-          <button onclick="exportarPDF()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold">📄 Exportar PDF</button>
-          <button onclick="exportarXLS()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-sm font-semibold">Exportar XLS</button>
-          <button id="botaoPublicarEscala" onclick="publicarEscalaAtual()" class="somente-edicao bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded text-sm font-semibold">📢 Publicar escala</button>
-          <button onclick="exportarBancoDados()" class="somente-administrador bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm font-semibold">⬇️ Exportar Dados</button>
-          <button onclick="document.getElementById('arquivoImportacao').click()" class="somente-administrador bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded text-sm font-semibold">⬆️ Importar Dados</button>
-          <input type="file" id="arquivoImportacao" accept="application/json,.json" onchange="importarBancoDados(event)" class="hidden">
-          <button onclick="limparEscala()" class="somente-edicao bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm font-semibold">Limpar</button>
-        </div>
-        <div id="statusPublicacaoEscala" class="w-full text-xs text-gray-500"></div>
-      </div>
-
-      <div class="bg-white p-4 rounded shadow-sm">
-        <div class="mb-4">
-          <label class="block text-xs font-semibold text-gray-600 mb-1">Mês/Ano</label>
-          <div class="flex flex-wrap gap-2">
-            <select id="mesEscala" onchange="atualizarMesAnoEscala()" class="border p-2 rounded text-sm" aria-label="Mês da escala">
-              <option value="01">Janeiro</option><option value="02">Fevereiro</option><option value="03">Março</option>
-              <option value="04">Abril</option><option value="05">Maio</option><option value="06">Junho</option>
-              <option value="07">Julho</option><option value="08">Agosto</option><option value="09">Setembro</option>
-              <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
-            </select>
-            <select id="anoEscala" onchange="atualizarMesAnoEscala()" class="border p-2 rounded text-sm" aria-label="Ano da escala"></select>
-            <input type="hidden" id="mesAnoEscala">
-              <div class="w-full text-[11px] text-gray-500 mt-1">
-                <span class="font-semibold text-red-600">Vermelho:</span> sem escala ·
+<header class="cci-topbar"><div class="cci-brand"><button aria-label="Abrir menu" class="cci-mobile" onclick="alternarMenuLateral()" type="button">☰</button><div class="cci-brand-mark">CCI</div><div><div class="cci-brand-title">Sistema de Escala de Serviço - CCI</div><div class="cci-brand-sub">Gestão e geração automática de escalas de serviço</div></div></div><div class="cci-user"><div class="flex shrink-0 items-center gap-3 whitespace-nowrap" id="areaUsuarioLogado"><div class="text-right leading-tight"><div class="text-sm font-bold" id="nomeUsuarioLogado"></div><div class="text-xs" id="perfilUsuarioLogado"></div></div><button class="rounded px-3 py-2 text-sm font-semibold text-white" onclick="sairDoSistema()" type="button">Sair</button></div></div></header>
+<aside class="cci-sidebar" id="menuLateralCCI"><button class="cci-toggle" data-cci-descricao="Expanda ou recolha o menu lateral para aumentar a área de trabalho." onclick="alternarMenuLateral()" title="Expanda ou recolha o menu lateral para aumentar a área de trabalho." type="button"><span class="cci-nav-icon">☰</span><span class="cci-toggle-label">Recolher menu</span></button><div class="cci-nav-title">ESCALA</div><nav class="cci-nav"><div class="cci-nav-group" data-grupo="gerador"><button class="cci-nav-btn cci-nav-parent ativo" data-aba="gerador" data-cci-descricao="Gere, consulte e acompanhe a escala mensal de serviço." onclick="alternarSubmenuCCI('gerador')" title="Gere, consulte e acompanhe a escala mensal de serviço." type="button"><span class="cci-nav-icon">▦</span><span class="cci-nav-label">Escala Mensal</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu aberto" data-submenu="gerador"><button class="cci-submenu-btn ativo" data-aba="gerador" data-cci-descricao="Selecione o período e gere automaticamente uma nova escala mensal." data-subpagina="criar" onclick="abrirSubpaginaCCI('gerador','criar')" title="Selecione o período e gere automaticamente uma nova escala mensal." type="button"><span class="cci-submenu-dot">•</span><span>Criar Escala</span></button><button class="cci-submenu-btn" data-aba="gerador" data-cci-descricao="Consulte, edite, publique e exporte a escala mensal gerada." data-subpagina="visualizacao" onclick="abrirSubpaginaCCI('gerador','visualizacao')" title="Consulte, edite, publique e exporte a escala mensal gerada." type="button"><span class="cci-submenu-dot">•</span><span>Visualizar Escala</span></button><button class="cci-submenu-btn" data-aba="gerador" data-cci-descricao="Consulte os quadrinhos, lastros e totais acumulados dos militares." data-subpagina="quadrinhos" onclick="abrirSubpaginaCCI('gerador','quadrinhos')" title="Consulte os quadrinhos, lastros e totais acumulados dos militares." type="button"><span class="cci-submenu-dot">•</span><span>Quadrinhos e Totais</span></button></div></div><div class="somente-edicao cci-nav-group" data-grupo="militares"><button class="cci-nav-btn cci-nav-parent" data-aba="militares" data-cci-descricao="Cadastre e gerencie os militares que compõem o efetivo." onclick="alternarSubmenuCCI('militares')" title="Cadastre e gerencie os militares que compõem o efetivo." type="button"><span class="cci-nav-icon">♟</span><span class="cci-nav-label">Militares</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="militares"><button class="cci-submenu-btn" data-aba="militares" data-cci-descricao="Inclua um novo militar, sua função e posição de antiguidade." data-subpagina="cadastrar" onclick="abrirSubpaginaCCI('militares','cadastrar')" title="Inclua um novo militar, sua função e posição de antiguidade." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar Militar</span></button><button class="cci-submenu-btn" data-aba="militares" data-cci-descricao="Consulte, edite e organize os militares já cadastrados." data-subpagina="efetivo" onclick="abrirSubpaginaCCI('militares','efetivo')" title="Consulte, edite e organize os militares já cadastrados." type="button"><span class="cci-submenu-dot">•</span><span>Militares Cadastrados</span></button></div></div><div class="somente-edicao cci-nav-group" data-grupo="vagas"><button class="cci-nav-btn cci-nav-parent" data-aba="vagas" data-cci-descricao="Configure as funções, vagas e regras usadas na montagem das escalas." onclick="alternarSubmenuCCI('vagas')" title="Configure as funções, vagas e regras usadas na montagem das escalas." type="button"><span class="cci-nav-icon">☷</span><span class="cci-nav-label">Estrutura da Equipe</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="vagas"><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Cadastre e mantenha as funções existentes na equipe de serviço." data-subpagina="funcoes" onclick="abrirSubpaginaCCI('vagas','funcoes')" title="Cadastre e mantenha as funções existentes na equipe de serviço." type="button"><span class="cci-submenu-dot">•</span><span>Funções da Equipe</span></button><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina quantas vagas de cada função são necessárias em cada serviço." data-subpagina="dimensionamento" onclick="abrirSubpaginaCCI('vagas','dimensionamento')" title="Defina quantas vagas de cada função são necessárias em cada serviço." type="button"><span class="cci-submenu-dot">•</span><span>Dimensionamento do Serviço</span></button><button class="cci-submenu-btn cci-submenu-parent" data-aba="vagas" data-cci-descricao="Configure a distribuição, descanso, lastro, justiça e classificação dos dias." data-submenu-pai="regras" onclick="alternarSubmenuRegrasCCI()" title="Configure a distribuição, descanso, lastro, justiça e classificação dos dias." type="button"><span class="cci-submenu-dot">•</span><span>Regras das Escalas</span><span class="cci-submenu-arrow">›</span></button><div class="cci-submenu-nivel2" data-submenu-nivel2="regras"><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina as regras de geração da escala para cada função do serviço." data-subpagina="regras" onclick="abrirSubpaginaCCI('vagas','regras')" title="Defina as regras de geração da escala para cada função do serviço." type="button"><span class="cci-submenu-dot">·</span><span>Configurações das Regras</span></button><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina quais dias são pretos ou vermelhos e cadastre exceções por data." data-subpagina="classificacao" onclick="abrirSubpaginaCCI('vagas','classificacao')" title="Defina quais dias são pretos ou vermelhos e cadastre exceções por data." type="button"><span class="cci-submenu-dot">·</span><span>Classificação dos Dias</span></button></div></div></div><div class="somente-edicao cci-nav-group" data-grupo="indisponibilidades"><button class="cci-nav-btn cci-nav-parent" data-aba="indisponibilidades" data-cci-descricao="Registre períodos e restrições em que militares não podem concorrer à escala." onclick="alternarSubmenuCCI('indisponibilidades')" title="Registre períodos e restrições em que militares não podem concorrer à escala." type="button"><span class="cci-nav-icon">⊘</span><span class="cci-nav-label">Indisponibilidades</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="indisponibilidades"><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Cadastre férias, cursos, missões, licenças e outras indisponibilidades por período." data-subpagina="periodo" onclick="abrirSubpaginaCCI('indisponibilidades','periodo')" title="Cadastre férias, cursos, missões, licenças e outras indisponibilidades por período." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar por Período</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Defina indisponibilidades recorrentes em determinados dias da semana." data-subpagina="semanal" onclick="abrirSubpaginaCCI('indisponibilidades','semanal')" title="Defina indisponibilidades recorrentes em determinados dias da semana." type="button"><span class="cci-submenu-dot">•</span><span>Indisponibilidade Semanal</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Importe várias indisponibilidades de uma só vez por arquivo CSV." data-subpagina="importar" onclick="abrirSubpaginaCCI('indisponibilidades','importar')" title="Importe várias indisponibilidades de uma só vez por arquivo CSV." type="button"><span class="cci-submenu-dot">•</span><span>Importar CSV</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Consulte e gerencie todas as indisponibilidades já cadastradas." data-subpagina="registros" onclick="abrirSubpaginaCCI('indisponibilidades','registros')" title="Consulte e gerencie todas as indisponibilidades já cadastradas." type="button"><span class="cci-submenu-dot">•</span><span>Registros Cadastrados</span></button></div></div><div class="somente-administrador cci-nav-group" data-grupo="backups"><button class="cci-nav-btn cci-nav-parent" data-aba="backups" data-cci-descricao="Proteja os dados do sistema por meio de exportação, importação e backups." onclick="alternarSubmenuCCI('backups')" title="Proteja os dados do sistema por meio de exportação, importação e backups." type="button"><span class="cci-nav-icon">↻</span><span class="cci-nav-label">Backups</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="backups"><button class="cci-submenu-btn" data-aba="backups" data-cci-descricao="Exporte, importe e gerencie as ferramentas de cópia de segurança." data-subpagina="gerenciar" onclick="abrirSubpaginaCCI('backups','gerenciar')" title="Exporte, importe e gerencie as ferramentas de cópia de segurança." type="button"><span class="cci-submenu-dot">•</span><span>Gerenciar Backups</span></button><button class="cci-submenu-btn" data-aba="backups" data-cci-descricao="Consulte, restaure e gerencie os backups armazenados." data-subpagina="lista" onclick="abrirSubpaginaCCI('backups','lista')" title="Consulte, restaure e gerencie os backups armazenados." type="button"><span class="cci-submenu-dot">•</span><span>Lista de Backups</span></button></div></div><div class="somente-administrador cci-nav-group" data-grupo="usuarios"><button class="cci-nav-btn cci-nav-parent" data-aba="usuarios" data-cci-descricao="Administre usuários, permissões de acesso e histórico de alterações." onclick="alternarSubmenuCCI('usuarios')" title="Administre usuários, permissões de acesso e histórico de alterações." type="button"><span class="cci-nav-icon">▣</span><span class="cci-nav-label">Usuários / Auditoria</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="usuarios"><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Crie um novo usuário e defina seu perfil de acesso ao sistema." data-subpagina="cadastrar" onclick="abrirSubpaginaCCI('usuarios','cadastrar')" title="Crie um novo usuário e defina seu perfil de acesso ao sistema." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar Usuário</span></button><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Consulte e gerencie os usuários cadastrados e suas permissões." data-subpagina="lista" onclick="abrirSubpaginaCCI('usuarios','lista')" title="Consulte e gerencie os usuários cadastrados e suas permissões." type="button"><span class="cci-submenu-dot">•</span><span>Usuários Cadastrados</span></button><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Consulte o histórico das alterações administrativas realizadas no sistema." data-subpagina="auditoria" onclick="abrirSubpaginaCCI('usuarios','auditoria')" title="Consulte o histórico das alterações administrativas realizadas no sistema." type="button"><span class="cci-submenu-dot">•</span><span>Auditoria do Sistema</span></button></div></div></nav></aside><div aria-hidden="true" id="cciMenuTooltip" role="tooltip"></div>
+<main class="cci-main"><div class="cci-page-heading"><div><h2 class="cci-page-title" id="tituloPaginaCCI">Escala Mensal</h2><p class="cci-page-sub" id="subtituloPaginaCCI">Geração, consulta e manutenção da escala mensal.</p></div></div>
+<!-- ABA 1: GERADOR E VISUALIZAÇÃO DA ESCALA -->
+<section class="aba-conteudo space-y-4" id="aba-gerador">
+<div class="bg-white p-4 rounded shadow-sm cci-subpage-panel" data-cci-subpagina="criar"><div class="mb-4"><h3 class="font-bold text-lg mb-1">Criar Escala Mensal</h3><p class="text-sm text-gray-600">Selecione o mês e o ano e gere a escala automática. Após a geração, a visualização será aberta automaticamente.</p></div>
+<div class="mb-4">
+<label class="block text-xs font-semibold text-gray-600 mb-1">Mês/Ano</label>
+<div class="flex flex-wrap gap-2">
+<select aria-label="Mês da escala" class="border p-2 rounded text-sm" id="mesEscala" onchange="atualizarMesAnoEscala()">
+<option value="01">Janeiro</option><option value="02">Fevereiro</option><option value="03">Março</option>
+<option value="04">Abril</option><option value="05">Maio</option><option value="06">Junho</option>
+<option value="07">Julho</option><option value="08">Agosto</option><option value="09">Setembro</option>
+<option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+</select>
+<select aria-label="Ano da escala" class="border p-2 rounded text-sm" id="anoEscala" onchange="atualizarMesAnoEscala()"></select>
+<input id="mesAnoEscala" type="hidden"/>
+<div class="w-full text-[11px] text-gray-500 mt-1">
+<span class="font-semibold text-red-600">Vermelho:</span> sem escala ·
                 <span class="font-semibold text-blue-600">Azul:</span> escala gerada ·
                 <span class="font-semibold text-green-600">Verde:</span> publicada
               </div>
-          </div>
-        </div>
-        <h3 class="font-bold text-sm mb-3">Classificação dos dias</h3>
-        <div class="somente-edicao mb-4 rounded border bg-gray-50 p-3">
-          <p class="mb-2 text-xs font-semibold text-gray-700">Regra semanal</p>
-          <p class="mb-3 text-xs text-gray-500">Defina a classificação padrão de cada dia da semana. Uma exceção cadastrada para uma data específica sempre prevalece.</p>
-          <div id="classificacaoSemanalDias" class="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7"></div>
-        </div>
-        <form onsubmit="salvarDiaEspecial(event)" class="somente-edicao flex flex-wrap gap-3 items-end mb-3">
-          <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">Data</label>
-            <input type="date" id="dataDiaEspecial" class="border p-2 rounded text-sm">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">Classificação</label>
-            <select id="corDiaEspecial" class="border p-2 rounded text-sm bg-white">
-              <option value="vermelho">Vermelho</option>
-              <option value="preto">Preto</option>
-              <option value="automatico">Automático</option>
-            </select>
-          </div>
-          <div class="flex-1 min-w-48">
-            <label class="block text-xs font-semibold text-gray-600 mb-1">Motivo</label>
-            <input type="text" id="motivoDiaEspecial" placeholder="Feriado, expediente excepcional, sem expediente..." class="border p-2 rounded text-sm w-full">
-          </div>
-          <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-semibold">Salvar classificação</button>
-        </form>
-        <p class="mb-2 text-xs text-gray-500">Você também pode clicar diretamente no número de um dia da escala já gerada para escolher entre Automático, Preto ou Vermelho. A classificação gravada no mês é preservada no histórico.</p>
-        <div id="listaDiasEspeciais" class="flex flex-wrap gap-2 text-sm"></div>
-        
-        <div class="somente-edicao mt-4 flex justify-end">
-          <button onclick="abrirModalGeracaoEscala()" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded font-bold shadow">Gerar Escala Automática</button>
-        </div>
-      </div>
-
-      <div id="areaEscalaPDF" class="bg-white p-6 rounded shadow-sm overflow-x-auto">
-        <div class="text-center mb-4">
-          <h2 class="text-xl font-bold uppercase" id="tituloEscala">Escala de Serviço - Célula Contraincêndio</h2>
-          <p class="text-xs text-gray-500" id="subtituloEscala"></p>
-          <p class="legenda-substituicao text-xs font-bold text-yellow-800">Célula amarela: militar escalado automaticamente no lugar de outro por causa das regras</p>
-          <div id="legendaCoresEscala" class="mt-2 flex flex-wrap justify-center gap-2 text-xs"></div>
-        </div>
-        <table class="w-full border-collapse border border-gray-300 text-xs">
-          <thead>
-            <tr class="bg-gray-800 text-white" id="cabecalhoTabelaEscala">
-              <th class="border border-gray-300 p-2 w-16">Dia</th>
-              <th class="border border-gray-300 p-2 w-16">Dia Sem.</th>
-            </tr>
-          </thead>
-          <tbody id="corpoTabelaEscala">
-            <tr>
-              <td colspan="10" class="text-center p-8 text-gray-400">Selecione o mês e clique em "Gerar Escala Automática".</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="bg-white p-4 rounded shadow-sm overflow-x-auto">
-        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-          <h3 class="font-bold text-lg">Quadrinhos, Lastros e Totais acumulados até o mês selecionado</h3>
-          <div class="flex flex-wrap items-center gap-3">
-            <label class="flex items-center gap-2 text-sm font-semibold text-gray-600">
-              <span>Filtrar por função:</span>
-              <select id="filtroFuncaoResumo" onchange="renderizarResumoServicos()" class="border p-2 rounded text-sm font-normal text-gray-800">
-                <option value="">Todas as funções</option>
-              </select>
-            </label>
-            <p class="text-xs text-gray-500">Q = Quadrinho (serviço efetivamente tirado) | L = Lastro | Total = Quadrinho + Lastro. A classificação preto/vermelho segue as regras do mês.</p>
-          </div>
-        </div>
-        <table class="w-full border-collapse text-sm">
-          <thead>
-            <tr class="bg-gray-100 border-b">
-              <th class="p-2 text-left">Militar</th>
-              <th class="p-2 text-left">Função</th>
-              <th class="p-2 text-center text-gray-800">Q. Preto</th>
-              <th class="p-2 text-center text-gray-600">L. Preto</th>
-              <th class="p-2 text-center font-bold text-gray-900">Total Preto</th>
-              <th class="p-2 text-center text-red-600">Q. Vermelho</th>
-              <th class="p-2 text-center text-red-400">L. Vermelho</th>
-              <th class="p-2 text-center font-bold text-red-700">Total Vermelho</th>
-              <th class="p-2 text-center font-bold">Total Geral</th>
-              <th class="p-2 text-right">Ações</th>
-            </tr>
-          </thead>
-          <tbody id="corpoResumoServicos"></tbody>
-        </table>
-      </div>
-
-    </section>
-
-    <!-- ABA 2: GESTÃO DE MILITARES -->
-    <section id="aba-militares" class="somente-edicao aba-conteudo hidden space-y-4">
-      <div class="bg-white p-4 rounded shadow-sm">
-        <h3 class="font-bold text-lg mb-3">Cadastrar Novo Militar</h3>
-        <form id="formMilitar" onsubmit="salvarMilitar(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <input type="text" id="militarNome" placeholder="Nome de Guerra / Nome" required class="border p-2 rounded text-sm">
-          <input type="text" id="militarSaram" placeholder="SARAM" required class="border p-2 rounded text-sm">
-          <select id="militarFuncao" required class="border p-2 rounded text-sm">
-            <option value="">Selecione a Função Principal</option>
-          </select>
-          <button type="submit" class="bg-red-600 text-white p-2 rounded font-semibold hover:bg-red-700">Cadastrar Militar</button>
-        </form>
-      </div>
-      <div class="bg-white p-4 rounded shadow-sm">
-        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-          <h3 class="font-bold text-lg">Efetivo Cadastrado</h3>
-          <label class="flex items-center gap-2 text-sm font-semibold text-gray-600">
-            <span>Filtrar por função:</span>
-            <select id="filtroFuncaoMilitares" onchange="renderizarMilitares()" class="border p-2 rounded text-sm font-normal text-gray-800">
-              <option value="">Todas as funções</option>
-            </select>
-          </label>
-        </div>
-        <table class="w-full text-left border-collapse text-sm">
-          <thead>
-            <tr class="bg-gray-100 border-b">
-              <th class="p-2">Nome</th>
-              <th class="p-2">SARAM</th>
-              <th class="p-2">Função Principal</th>
-              <th class="p-2">Ordem</th>
-              <th class="p-2 text-right">Ações</th>
-            </tr>
-          </thead>
-          <tbody id="tabelaMilitares"></tbody>
-        </table>
-      </div>
-
-      <div id="modalPromocao" class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-40 p-4">
-        <div class="w-full max-w-md rounded bg-white p-5 shadow-lg">
-          <h3 class="mb-3 text-lg font-bold">Promover militar</h3>
-          <p id="militarPromocaoDescricao" class="mb-3 text-sm text-gray-600"></p>
-          <label class="mb-4 block text-sm font-semibold text-gray-700">
+</div>
+</div>
+<div class="somente-edicao mt-4 flex justify-start">
+<button class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded font-bold shadow" onclick="abrirModalGeracaoEscala()">Gerar Escala Automática</button>
+</div>
+</div>
+<div class="bg-white p-6 rounded shadow-sm overflow-x-auto cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="visualizacao" id="areaEscalaPDF">
+<div class="mb-4 pb-4 border-b border-gray-200 cci-nao-exportar-pdf">
+<label class="block text-xs font-semibold text-gray-600 mb-1">Visualizar Mês/Ano</label>
+<div class="flex flex-wrap gap-2 items-center">
+<select aria-label="Mês da escala para visualização" class="border p-2 rounded text-sm" id="mesEscalaVisualizacao" onchange="atualizarPeriodoPelaVisualizacao()">
+<option value="01">Janeiro</option><option value="02">Fevereiro</option><option value="03">Março</option>
+<option value="04">Abril</option><option value="05">Maio</option><option value="06">Junho</option>
+<option value="07">Julho</option><option value="08">Agosto</option><option value="09">Setembro</option>
+<option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+</select>
+<select aria-label="Ano da escala para visualização" class="border p-2 rounded text-sm" id="anoEscalaVisualizacao" onchange="atualizarPeriodoPelaVisualizacao()"></select>
+</div>
+<div class="w-full text-[11px] text-gray-500 mt-1">
+<span class="font-semibold text-red-600">Vermelho:</span> sem escala ·
+<span class="font-semibold text-blue-600">Azul:</span> escala gerada ·
+<span class="font-semibold text-green-600">Verde:</span> publicada
+</div>
+</div>
+<div class="w-full text-xs text-gray-500 cci-nao-exportar-pdf" id="statusPublicacaoEscala"></div>
+<div class="flex gap-2 cci-nao-exportar-pdf">
+<button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold" onclick="exportarPDF()">📄 Exportar PDF</button>
+<button class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-sm font-semibold" onclick="exportarXLS()">Exportar XLS</button>
+<button class="somente-edicao bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded text-sm font-semibold" id="botaoPublicarEscala" onclick="publicarEscalaAtual()">📢 Publicar escala</button>
+<button class="somente-edicao bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm font-semibold" onclick="limparEscala()">Limpar</button>
+</div>
+<div class="text-center mb-4">
+<h2 class="text-xl font-bold uppercase" id="tituloEscala">Escala de Serviço - Célula Contraincêndio</h2>
+<p class="text-xs text-gray-500" id="subtituloEscala"></p>
+<p class="legenda-substituicao text-xs font-bold text-yellow-800">Célula amarela: militar escalado automaticamente no lugar de outro por causa das regras</p>
+<div class="mt-2 flex flex-wrap justify-center gap-2 text-xs" id="legendaCoresEscala"></div>
+</div>
+<div class="cci-escala-scroll" id="scrollTabelaEscala">
+<table class="w-full border-collapse border border-gray-300 text-xs" id="tabelaEscalaPrincipal">
+<thead>
+<tr class="bg-gray-800 text-white" id="cabecalhoTabelaEscala">
+<th class="border border-gray-300 p-2 w-16">Dia</th>
+<th class="border border-gray-300 p-2 w-16">Dia Sem.</th>
+</tr>
+</thead>
+<tbody id="corpoTabelaEscala">
+<tr>
+<td class="text-center p-8 text-gray-400" colspan="10">Selecione o mês e clique em "Gerar Escala Automática".</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div aria-label="Rolagem horizontal da escala" class="cci-escala-scrollbar-sticky" id="scrollbarEscalaSticky"><div id="scrollbarEscalaSpacer"></div></div>
+</div>
+<div class="bg-white p-4 rounded shadow-sm overflow-x-auto cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="quadrinhos">
+<div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+<h3 class="font-bold text-lg">Quadrinhos, Lastros e Totais acumulados até o mês selecionado</h3>
+<div class="flex flex-wrap items-center gap-3">
+<label class="flex items-center gap-2 text-sm font-semibold text-gray-600">
+<span>Filtrar por função:</span>
+<select class="border p-2 rounded text-sm font-normal text-gray-800" id="filtroFuncaoResumo" onchange="renderizarResumoServicos()">
+<option value="">Todas as funções</option>
+</select>
+</label>
+<p class="text-xs text-gray-500">Q = Quadrinho (serviço efetivamente tirado) | L = Lastro | Total = Quadrinho + Lastro. A classificação preto/vermelho segue as regras do mês.</p>
+</div>
+</div>
+<table class="w-full border-collapse text-sm">
+<thead>
+<tr class="bg-gray-100 border-b">
+<th class="p-2 text-left">Militar</th>
+<th class="p-2 text-left">Função</th>
+<th class="p-2 text-center text-gray-800">Q. Preto</th>
+<th class="p-2 text-center text-gray-600">L. Preto</th>
+<th class="p-2 text-center font-bold text-gray-900">Total Preto</th>
+<th class="p-2 text-center text-red-600">Q. Vermelho</th>
+<th class="p-2 text-center text-red-400">L. Vermelho</th>
+<th class="p-2 text-center font-bold text-red-700">Total Vermelho</th>
+<th class="p-2 text-center font-bold">Total Geral</th>
+<th class="p-2 text-right">Ações</th>
+</tr>
+</thead>
+<tbody id="corpoResumoServicos"></tbody>
+</table>
+</div>
+</section>
+<!-- ABA 2: GESTÃO DE MILITARES -->
+<section class="somente-edicao aba-conteudo hidden space-y-4" id="aba-militares">
+<div class="bg-white p-4 rounded shadow-sm cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="cadastrar">
+<h3 class="font-bold text-lg mb-3">Cadastrar Novo Militar</h3>
+<form class="grid grid-cols-1 md:grid-cols-4 gap-4" id="formMilitar" onsubmit="salvarMilitar(event)">
+<input class="border p-2 rounded text-sm" id="militarNome" placeholder="Nome de Guerra / Nome" required="" type="text"/>
+<input class="border p-2 rounded text-sm" id="militarSaram" placeholder="SARAM" required="" type="text"/>
+<select class="border p-2 rounded text-sm" id="militarFuncao" required="">
+<option value="">Selecione a Função Principal</option>
+</select>
+<button class="bg-red-600 text-white p-2 rounded font-semibold hover:bg-red-700" type="submit">Cadastrar Militar</button>
+</form>
+</div>
+<div class="bg-white p-4 rounded shadow-sm cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="efetivo">
+<div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+<h3 class="font-bold text-lg">Efetivo Cadastrado</h3>
+<label class="flex items-center gap-2 text-sm font-semibold text-gray-600">
+<span>Filtrar por função:</span>
+<select class="border p-2 rounded text-sm font-normal text-gray-800" id="filtroFuncaoMilitares" onchange="renderizarMilitares()">
+<option value="">Todas as funções</option>
+</select>
+</label>
+</div>
+<table class="w-full text-left border-collapse text-sm">
+<thead>
+<tr class="bg-gray-100 border-b">
+<th class="p-2">Nome</th>
+<th class="p-2">SARAM</th>
+<th class="p-2">Função Principal</th>
+<th class="p-2">Ordem</th>
+<th class="p-2 text-right">Ações</th>
+</tr>
+</thead>
+<tbody id="tabelaMilitares"></tbody>
+</table>
+</div>
+<div class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-40 p-4" id="modalPromocao">
+<div class="w-full max-w-md rounded bg-white p-5 shadow-lg">
+<h3 class="mb-3 text-lg font-bold">Promover militar</h3>
+<p class="mb-3 text-sm text-gray-600" id="militarPromocaoDescricao"></p>
+<label class="mb-4 block text-sm font-semibold text-gray-700">
             Nova função
-            <select id="novaFuncaoPromocao" class="mt-1 w-full rounded border p-2 text-sm"></select>
-          </label>
-          <div class="flex justify-end gap-2">
-            <button onclick="fecharModalPromocao()" class="rounded bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300">Cancelar</button>
-            <button onclick="confirmarPromocao()" class="rounded bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700">Confirmar promoção</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ABA 3: ESTRUTURA DA EQUIPE (VAGAS POR FUNÇÃO) -->
-    <section id="aba-vagas" class="somente-edicao aba-conteudo hidden space-y-4">
-      <div class="bg-white p-4 rounded shadow-sm">
-        <h3 class="font-bold text-lg mb-2">Funções da Equipe</h3>
-        <form id="formFuncao" onsubmit="salvarFuncao(event)" class="flex flex-wrap gap-3">
-          <input type="text" id="nomeFuncao" placeholder="Nome da nova função" required class="border p-2 rounded text-sm flex-1 min-w-52">
-          <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded font-semibold hover:bg-red-700">Cadastrar Função</button>
-        </form>
-        <div id="listaFuncoesCadastradas" class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2"></div>
-      </div>
-      <div class="bg-white p-4 rounded shadow-sm">
-        <h3 class="font-bold text-lg mb-2">Dimensionamento do Serviço Diário</h3>
-        <p class="text-sm text-gray-600 mb-4">Aumente ou diminua a quantidade de vagas necessárias por dia de serviço para cada função.</p>
-        <div id="listaVagas" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-      </div>
-      <div class="bg-white p-4 rounded shadow-sm">
-        <h3 class="font-bold text-lg mb-2">Regras das Escalas</h3>
-        <p class="text-sm text-gray-600 mb-4">Configurações preparadas para o novo motor de escalas. Nesta etapa elas são armazenadas com segurança, mantendo o comportamento atual do gerador.</p>
-        <div id="listaRegrasEscala" class="space-y-3"></div>
-      </div>
-    </section>
-
-    <!-- ABA 4: INDISPONIBILIDADES -->
-    <section id="aba-indisponibilidades" class="somente-edicao aba-conteudo hidden space-y-4">
-      <div class="bg-white p-4 rounded shadow-sm">
-        <h3 class="font-bold text-lg mb-3">Cadastrar Indisponibilidade (Férias, Missões, Licenças)</h3>
-        <form id="formIndisponibilidade" onsubmit="salvarIndisponibilidade(event)" class="grid grid-cols-1 md:grid-cols-6 gap-3">
-          <select id="indispFuncao" required onchange="renderizarMilitaresIndisponibilidade()" class="border p-2 rounded text-sm">
-            <option value="">Selecione a Função</option>
-          </select>
-          <select id="indispMilitar" required class="border p-2 rounded text-sm">
-            <option value="">Selecione o Militar</option>
-          </select>
-          <input type="date" id="indispInicio" required class="border p-2 rounded text-sm">
-          <input type="date" id="indispFim" required class="border p-2 rounded text-sm">
-          <input type="text" id="indispMotivo" placeholder="Motivo (Ex: Férias, Curso)" required class="border p-2 rounded text-sm">
-          <button type="submit" class="bg-red-600 text-white p-2 rounded font-semibold hover:bg-red-700">Registrar</button>
-        </form>
-      </div>
-
-      <div class="bg-white p-4 rounded shadow-sm">
-        <h3 class="font-bold text-lg mb-3">Cadastrar Indisponibilidade por Dia da Semana</h3>
-        <form id="formIndisponibilidadeSemanal" onsubmit="salvarIndisponibilidadeSemanal(event)" class="space-y-3">
-          <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
-            <select id="indispSemanalFuncao" required onchange="renderizarMilitaresIndisponibilidadeSemanal()" class="border p-2 rounded text-sm">
-              <option value="">Selecione a Função</option>
-            </select>
-            <select id="indispSemanalMilitar" required onchange="carregarDiasSemanaisDoMilitar()" class="border p-2 rounded text-sm">
-              <option value="">Selecione o Militar</option>
-            </select>
-            <input type="text" id="indispSemanalMotivo" placeholder="Motivo (Ex: restrição semanal)" required class="border p-2 rounded text-sm">
-          </div>
-
-          <div class="rounded border bg-gray-50 p-3">
-            <p class="mb-2 text-xs font-semibold text-gray-700">Dias em que o militar não tira serviço</p>
-            <div class="flex flex-wrap gap-2">
-              <label class="inline-flex cursor-pointer items-center gap-2 rounded border bg-white px-3 py-2 text-sm"><input type="checkbox" name="indispSemanalDias" value="0"> Domingo</label>
-              <label class="inline-flex cursor-pointer items-center gap-2 rounded border bg-white px-3 py-2 text-sm"><input type="checkbox" name="indispSemanalDias" value="1"> Segunda-feira</label>
-              <label class="inline-flex cursor-pointer items-center gap-2 rounded border bg-white px-3 py-2 text-sm"><input type="checkbox" name="indispSemanalDias" value="2"> Terça-feira</label>
-              <label class="inline-flex cursor-pointer items-center gap-2 rounded border bg-white px-3 py-2 text-sm"><input type="checkbox" name="indispSemanalDias" value="3"> Quarta-feira</label>
-              <label class="inline-flex cursor-pointer items-center gap-2 rounded border bg-white px-3 py-2 text-sm"><input type="checkbox" name="indispSemanalDias" value="4"> Quinta-feira</label>
-              <label class="inline-flex cursor-pointer items-center gap-2 rounded border bg-white px-3 py-2 text-sm"><input type="checkbox" name="indispSemanalDias" value="5"> Sexta-feira</label>
-              <label class="inline-flex cursor-pointer items-center gap-2 rounded border bg-white px-3 py-2 text-sm"><input type="checkbox" name="indispSemanalDias" value="6"> Sábado</label>
-            </div>
-            <p class="mt-2 text-xs text-gray-500">Marque todos os dias semanais em que este militar não pode ser escalado. Ao selecionar um militar, os dias já cadastrados são carregados automaticamente.</p>
-          </div>
-
-          <div class="flex justify-end">
-            <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded font-semibold hover:bg-red-700">Salvar dias semanais</button>
-          </div>
-        </form>
-      </div>
-      <!-- IMPORTAÇÃO DE INDISPONIBILIDADES POR CSV -->
-<div class="bg-white p-4 rounded shadow-sm">
-  <div class="flex flex-wrap items-center justify-between gap-3">
-    <div>
-      <h3 class="font-bold text-lg">
+            <select class="mt-1 w-full rounded border p-2 text-sm" id="novaFuncaoPromocao"></select>
+</label>
+<div class="flex justify-end gap-2">
+<button class="rounded bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300" onclick="fecharModalPromocao()">Cancelar</button>
+<button class="rounded bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700" onclick="confirmarPromocao()">Confirmar promoção</button>
+</div>
+</div>
+</div>
+</section>
+<!-- ABA 3: ESTRUTURA DA EQUIPE (VAGAS POR FUNÇÃO) -->
+<section class="somente-edicao aba-conteudo hidden space-y-4" id="aba-vagas">
+<div class="bg-white p-4 rounded shadow-sm cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="funcoes">
+<h3 class="font-bold text-lg mb-2">Funções da Equipe</h3>
+<form class="flex flex-wrap gap-3" id="formFuncao" onsubmit="salvarFuncao(event)">
+<input class="border p-2 rounded text-sm flex-1 min-w-52" id="nomeFuncao" placeholder="Nome da nova função" required="" type="text"/>
+<button class="bg-red-600 text-white px-4 py-2 rounded font-semibold hover:bg-red-700" type="submit">Cadastrar Função</button>
+</form>
+<div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2" id="listaFuncoesCadastradas"></div>
+</div>
+<div class="bg-white p-4 rounded shadow-sm cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="dimensionamento">
+<h3 class="font-bold text-lg mb-2">Dimensionamento do Serviço Diário</h3>
+<p class="text-sm text-gray-600 mb-4">Aumente ou diminua a quantidade de vagas necessárias por dia de serviço para cada função.</p>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="listaVagas"></div>
+</div>
+<div class="bg-white p-4 rounded shadow-sm cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="regras">
+<h3 class="font-bold text-lg mb-2">Regras das Escalas</h3>
+<p class="text-sm text-gray-600 mb-4">Configurações preparadas para o novo motor de escalas. Nesta etapa elas são armazenadas com segurança, mantendo o comportamento atual do gerador.</p>
+<div class="space-y-3" id="listaRegrasEscala"></div>
+</div>
+<div class="bg-white p-4 rounded shadow-sm cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="classificacao"><h3 class="font-bold text-lg mb-2">Classificação dos Dias</h3><p class="text-sm text-gray-600 mb-4">Defina a classificação semanal e exceções por data utilizadas na geração das escalas.</p><h3 class="font-bold text-sm mb-3">Classificação dos dias</h3><div class="somente-edicao mb-4 rounded border bg-gray-50 p-3">
+<p class="mb-2 text-xs font-semibold text-gray-700">Regra semanal</p>
+<p class="mb-3 text-xs text-gray-500">Defina a classificação padrão de cada dia da semana. Uma exceção cadastrada para uma data específica sempre prevalece.</p>
+<div class="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7" id="classificacaoSemanalDias"></div>
+</div><form class="somente-edicao flex flex-wrap gap-3 items-end mb-3" onsubmit="salvarDiaEspecial(event)">
+<div>
+<label class="block text-xs font-semibold text-gray-600 mb-1">Data</label>
+<input class="border p-2 rounded text-sm" id="dataDiaEspecial" type="date"/>
+</div>
+<div>
+<label class="block text-xs font-semibold text-gray-600 mb-1">Classificação</label>
+<select class="border p-2 rounded text-sm bg-white" id="corDiaEspecial">
+<option value="vermelho">Vermelho</option>
+<option value="preto">Preto</option>
+<option value="automatico">Automático</option>
+</select>
+</div>
+<div class="flex-1 min-w-48">
+<label class="block text-xs font-semibold text-gray-600 mb-1">Motivo</label>
+<input class="border p-2 rounded text-sm w-full" id="motivoDiaEspecial" placeholder="Feriado, expediente excepcional, sem expediente..." type="text"/>
+</div>
+<button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-semibold">Salvar classificação</button>
+</form><p class="mb-2 text-xs text-gray-500">Você também pode clicar diretamente no número de um dia da escala já gerada para escolher entre Automático, Preto ou Vermelho. A classificação gravada no mês é preservada no histórico.</p><div class="flex flex-wrap gap-2 text-sm" id="listaDiasEspeciais"></div>
+</div>
+</section>
+<!-- ABA 4: INDISPONIBILIDADES -->
+<section class="somente-edicao aba-conteudo hidden space-y-4" id="aba-indisponibilidades">
+<div class="bg-white p-4 rounded shadow-sm cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="periodo">
+<h3 class="font-bold text-lg mb-3">Cadastrar Indisponibilidade (Férias, Missões, Licenças)</h3>
+<form class="grid grid-cols-1 md:grid-cols-6 gap-3" id="formIndisponibilidade" onsubmit="salvarIndisponibilidade(event)">
+<select class="border p-2 rounded text-sm" id="indispFuncao" onchange="renderizarMilitaresIndisponibilidade()" required="">
+<option value="">Selecione a Função</option>
+</select>
+<select class="border p-2 rounded text-sm" id="indispMilitar" required="">
+<option value="">Selecione o Militar</option>
+</select>
+<input class="border p-2 rounded text-sm" id="indispInicio" required="" type="date"/>
+<input class="border p-2 rounded text-sm" id="indispFim" required="" type="date"/>
+<input class="border p-2 rounded text-sm" id="indispMotivo" placeholder="Motivo (Ex: Férias, Curso)" required="" type="text"/>
+<button class="bg-red-600 text-white p-2 rounded font-semibold hover:bg-red-700" type="submit">Registrar</button>
+</form>
+</div>
+<div class="bg-white p-4 rounded shadow-sm cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="semanal">
+<h3 class="font-bold text-lg mb-3">Cadastrar Indisponibilidade por Dia da Semana</h3>
+<form class="space-y-3" id="formIndisponibilidadeSemanal" onsubmit="salvarIndisponibilidadeSemanal(event)">
+<div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+<select class="border p-2 rounded text-sm" id="indispSemanalFuncao" onchange="renderizarMilitaresIndisponibilidadeSemanal()" required="">
+<option value="">Selecione a Função</option>
+</select>
+<select class="border p-2 rounded text-sm" id="indispSemanalMilitar" onchange="carregarDiasSemanaisDoMilitar()" required="">
+<option value="">Selecione o Militar</option>
+</select>
+<input class="border p-2 rounded text-sm" id="indispSemanalMotivo" placeholder="Motivo (Ex: restrição semanal)" required="" type="text"/>
+</div>
+<div class="rounded border bg-gray-50 p-3">
+<p class="mb-2 text-xs font-semibold text-gray-700">Dias em que o militar não tira serviço</p>
+<div class="flex flex-wrap gap-2">
+<label class="inline-flex cursor-pointer items-center gap-2 rounded border bg-white px-3 py-2 text-sm"><input name="indispSemanalDias" type="checkbox" value="0"/> Domingo</label>
+<label class="inline-flex cursor-pointer items-center gap-2 rounded border bg-white px-3 py-2 text-sm"><input name="indispSemanalDias" type="checkbox" value="1"/> Segunda-feira</label>
+<label class="inline-flex cursor-pointer items-center gap-2 rounded border bg-white px-3 py-2 text-sm"><input name="indispSemanalDias" type="checkbox" value="2"/> Terça-feira</label>
+<label class="inline-flex cursor-pointer items-center gap-2 rounded border bg-white px-3 py-2 text-sm"><input name="indispSemanalDias" type="checkbox" value="3"/> Quarta-feira</label>
+<label class="inline-flex cursor-pointer items-center gap-2 rounded border bg-white px-3 py-2 text-sm"><input name="indispSemanalDias" type="checkbox" value="4"/> Quinta-feira</label>
+<label class="inline-flex cursor-pointer items-center gap-2 rounded border bg-white px-3 py-2 text-sm"><input name="indispSemanalDias" type="checkbox" value="5"/> Sexta-feira</label>
+<label class="inline-flex cursor-pointer items-center gap-2 rounded border bg-white px-3 py-2 text-sm"><input name="indispSemanalDias" type="checkbox" value="6"/> Sábado</label>
+</div>
+<p class="mt-2 text-xs text-gray-500">Marque todos os dias semanais em que este militar não pode ser escalado. Ao selecionar um militar, os dias já cadastrados são carregados automaticamente.</p>
+</div>
+<div class="flex justify-end">
+<button class="bg-red-600 text-white px-4 py-2 rounded font-semibold hover:bg-red-700" type="submit">Salvar dias semanais</button>
+</div>
+</form>
+</div>
+<!-- IMPORTAÇÃO DE INDISPONIBILIDADES POR CSV -->
+<div class="bg-white p-4 rounded shadow-sm cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="importar">
+<div class="flex flex-wrap items-center justify-between gap-3">
+<div>
+<h3 class="font-bold text-lg">
         Importar Indisponibilidades
       </h3>
-
-      <p class="mt-1 text-sm text-gray-600">
+<p class="mt-1 text-sm text-gray-600">
         Importe várias indisponibilidades de uma vez através de um arquivo CSV.
       </p>
-    </div>
-
-    <div>
-      <button
-        type="button"
-        onclick="document.getElementById('arquivoImportacaoIndisponibilidades').click()"
-        class="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
-      >
+</div>
+<div>
+<button class="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700" onclick="document.getElementById('arquivoImportacaoIndisponibilidades').click()" type="button">
         📥 Importar CSV
       </button>
-
-      <input
-        type="file"
-        id="arquivoImportacaoIndisponibilidades"
-        accept=".csv,text/csv"
-        onchange="importarIndisponibilidadesCSV(event)"
-        class="hidden"
-      >
-    </div>
-  </div>
-
-  <p class="mt-3 text-xs text-gray-500">
+<input accept=".csv,text/csv" class="hidden" id="arquivoImportacaoIndisponibilidades" onchange="importarIndisponibilidadesCSV(event)" type="file"/>
+</div>
+</div>
+<p class="mt-3 text-xs text-gray-500">
   O arquivo deve conter as colunas NOME, SARAM, INICIO, TÉRMINO, MOTIVO e ESCALA.
   O SARAM deve possuir exatamente 7 dígitos e será utilizado para identificar o militar cadastrado no sistema.
 </p>
-<div id="previaImportacaoIndisponibilidades" class="hidden mt-4 border-t pt-4">
-
-  <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-    <div>
-      <h4 class="font-bold text-gray-800">
+<div class="hidden mt-4 border-t pt-4" id="previaImportacaoIndisponibilidades">
+<div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+<div>
+<h4 class="font-bold text-gray-800">
         Prévia da Importação
       </h4>
-
-      <p id="resumoImportacaoIndisponibilidades"
-         class="text-sm text-gray-600 mt-1">
-      </p>
-    </div>
-
-    <div class="flex flex-wrap gap-2">
-
-  <button
-    type="button"
-    id="botaoConfirmarImportacaoIndisponibilidades"
-    onclick="confirmarImportacaoIndisponibilidades()"
-    class="rounded bg-green-600 px-3 py-2 text-sm font-semibold text-white hover:bg-green-700"
-  >
+<p class="text-sm text-gray-600 mt-1" id="resumoImportacaoIndisponibilidades">
+</p>
+</div>
+<div class="flex flex-wrap gap-2">
+<button class="rounded bg-green-600 px-3 py-2 text-sm font-semibold text-white hover:bg-green-700" id="botaoConfirmarImportacaoIndisponibilidades" onclick="confirmarImportacaoIndisponibilidades()" type="button">
     ✓ Confirmar Importação
   </button>
-
-  <button
-    type="button"
-    onclick="cancelarImportacaoIndisponibilidades()"
-    class="rounded bg-gray-500 px-3 py-2 text-sm font-semibold text-white hover:bg-gray-600"
-  >
+<button class="rounded bg-gray-500 px-3 py-2 text-sm font-semibold text-white hover:bg-gray-600" onclick="cancelarImportacaoIndisponibilidades()" type="button">
     Cancelar
   </button>
-
-</div>
-  </div>
-
-  <div class="overflow-x-auto border rounded">
-    <table class="w-full text-left border-collapse text-sm">
-      <thead>
-        <tr class="bg-gray-100 border-b">
-          <th class="p-2">Linha</th>
-          <th class="p-2">Militar</th>
-          <th class="p-2">SARAM</th>
-          <th class="p-2">Início</th>
-          <th class="p-2">Término</th>
-          <th class="p-2">Motivo</th>
-          <th class="p-2">Escala</th>
-          <th class="p-2">Situação</th>
-        </tr>
-      </thead>
-
-      <tbody id="tabelaPreviaImportacaoIndisponibilidades">
-      </tbody>
-    </table>
-  </div>
-
 </div>
 </div>
-      <div class="bg-white p-4 rounded shadow-sm">
-        <h3 class="font-bold text-lg mb-3">Registros de Indisponibilidade</h3>
-        <table class="w-full text-left border-collapse text-sm">
-          <thead>
-            <tr class="bg-gray-100 border-b">
-              <th class="p-2">Militar</th>
-              <th class="p-2">Tipo</th>
-              <th class="p-2">Início</th>
-              <th class="p-2">Término</th>
-              <th class="p-2">Motivo</th>
-              <th class="p-2 text-right">Ações</th>
-            </tr>
-          </thead>
-          <tbody id="tabelaIndisponibilidades"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- ABA 5: BACKUPS -->
-    <section id="aba-backups" class="somente-administrador aba-conteudo hidden space-y-4">
-      <div class="bg-white p-4 rounded shadow-sm">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h3 class="font-bold text-lg">Backups do Sistema</h3>
-            <p class="mt-1 text-sm text-gray-600">Backups armazenados no Google Drive.</p>
-          </div>
-          <div class="flex flex-wrap gap-2">
-            <button type="button" onclick="criarBackupManualInterface()" class="rounded bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700">Criar Backup Manual</button>
-            <button type="button" onclick="carregarListaBackups()" class="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Atualizar Lista</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="overflow-x-auto rounded bg-white p-4 shadow-sm">
-        <div id="statusBackups" class="mb-3 text-sm text-gray-500"></div>
-        <table class="w-full border-collapse text-left text-sm">
-          <thead>
-            <tr class="border-b bg-gray-100">
-              <th class="p-2">Tipo</th>
-              <th class="p-2">Data/Hora</th>
-              <th class="p-2 text-center">Versão</th>
-              <th class="p-2 text-center">Tamanho</th>
-              <th class="p-2 text-right">Ações</th>
-            </tr>
-          </thead>
-          <tbody id="tabelaBackups">
-            <tr><td colspan="5" class="p-6 text-center text-gray-400">Abra a aba Backups para carregar a lista.</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <section id="aba-usuarios" class="somente-administrador aba-conteudo hidden space-y-4">
-      <div class="bg-white p-4 rounded shadow-sm">
-        <h3 class="font-bold text-lg mb-3">Cadastrar usuário</h3>
-        <form id="formUsuario" onsubmit="cadastrarUsuarioInterface(event)" class="grid grid-cols-1 gap-3 md:grid-cols-4">
-          <input id="usuarioNome" required type="text" placeholder="Nome" class="rounded border p-2 text-sm">
-          <input id="usuarioSaram" required type="text" placeholder="SARAM" class="rounded border p-2 text-sm">
-          <input id="usuarioSenha" required minlength="8" type="password" placeholder="Senha inicial" class="rounded border p-2 text-sm">
-          <select id="usuarioPerfil" required class="rounded border p-2 text-sm">
-            <option value="editor">Editor</option>
-            <option value="visualizador">Visualizador</option>
-            <option value="administrador">Administrador</option>
-          </select>
-          <button class="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 md:col-span-4">Cadastrar</button>
-        </form>
-      </div>
-      <div class="overflow-x-auto bg-white p-4 rounded shadow-sm">
-        <h3 class="font-bold text-lg mb-3">Usuários cadastrados</h3>
-        <table class="w-full border-collapse text-sm">
-          <thead><tr class="border-b bg-gray-100"><th class="p-2 text-left">Nome</th><th class="p-2 text-left">SARAM</th><th class="p-2 text-left">Perfil</th><th class="p-2 text-center">Ativo</th><th class="p-2 text-right">Ações</th></tr></thead>
-          <tbody id="tabelaUsuarios"></tbody>
-        </table>
-      </div>
-      <div class="bg-white rounded shadow-sm">
-
-  <details id="painelAuditoriaSistema">
-
-    <summary
-      class="cursor-pointer select-none p-4 font-bold text-lg text-gray-800 hover:bg-gray-50"
-    >
+<div class="overflow-x-auto border rounded">
+<table class="w-full text-left border-collapse text-sm">
+<thead>
+<tr class="bg-gray-100 border-b">
+<th class="p-2">Linha</th>
+<th class="p-2">Militar</th>
+<th class="p-2">SARAM</th>
+<th class="p-2">Início</th>
+<th class="p-2">Término</th>
+<th class="p-2">Motivo</th>
+<th class="p-2">Escala</th>
+<th class="p-2">Situação</th>
+</tr>
+</thead>
+<tbody id="tabelaPreviaImportacaoIndisponibilidades">
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="bg-white p-4 rounded shadow-sm cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="registros">
+<h3 class="font-bold text-lg mb-3">Registros de Indisponibilidade</h3>
+<table class="w-full text-left border-collapse text-sm">
+<thead>
+<tr class="bg-gray-100 border-b">
+<th class="p-2">Militar</th>
+<th class="p-2">Tipo</th>
+<th class="p-2">Início</th>
+<th class="p-2">Término</th>
+<th class="p-2">Motivo</th>
+<th class="p-2 text-right">Ações</th>
+</tr>
+</thead>
+<tbody id="tabelaIndisponibilidades"></tbody>
+</table>
+</div>
+</section>
+<!-- ABA 5: BACKUPS -->
+<section class="somente-administrador aba-conteudo hidden space-y-4" id="aba-backups">
+<div class="bg-white p-4 rounded shadow-sm cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="gerenciar">
+<div class="flex flex-wrap items-center justify-between gap-3">
+<div>
+<h3 class="font-bold text-lg">Backups do Sistema</h3>
+<p class="mt-1 text-sm text-gray-600">Backups armazenados no Google Drive e ferramentas para exportação e importação dos dados do sistema.</p>
+</div>
+<div class="flex flex-wrap gap-2">
+<button class="rounded bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700" onclick="criarBackupManualInterface()" type="button">Criar Backup Manual</button>
+<button class="rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700" onclick="exportarBancoDados()" type="button">⬇️ Exportar Dados</button>
+<button class="rounded bg-indigo-500 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-600" onclick="document.getElementById('arquivoImportacao').click()" type="button">⬆️ Importar Dados</button>
+<input accept="application/json,.json" class="hidden" id="arquivoImportacao" onchange="importarBancoDados(event)" type="file"/>
+</div>
+</div>
+</div>
+<div class="overflow-x-auto rounded bg-white p-4 shadow-sm cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="lista">
+<div class="mb-3 flex justify-end">
+<button class="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700" onclick="carregarListaBackups()" type="button">Atualizar Lista</button>
+</div>
+<div class="mb-3 text-sm text-gray-500" id="statusBackups"></div>
+<table class="w-full border-collapse text-left text-sm">
+<thead>
+<tr class="border-b bg-gray-100">
+<th class="p-2">Tipo</th>
+<th class="p-2">Data/Hora</th>
+<th class="p-2 text-center">Versão</th>
+<th class="p-2 text-center">Tamanho</th>
+<th class="p-2 text-right">Ações</th>
+</tr>
+</thead>
+<tbody id="tabelaBackups">
+<tr><td class="p-6 text-center text-gray-400" colspan="5">Abra a aba Backups para carregar a lista.</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+<section class="somente-administrador aba-conteudo hidden space-y-4" id="aba-usuarios">
+<div class="bg-white p-4 rounded shadow-sm cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="cadastrar">
+<h3 class="font-bold text-lg mb-3">Cadastrar usuário</h3>
+<form class="grid grid-cols-1 gap-3 md:grid-cols-4" id="formUsuario" onsubmit="cadastrarUsuarioInterface(event)">
+<input class="rounded border p-2 text-sm" id="usuarioNome" placeholder="Nome" required="" type="text"/>
+<input class="rounded border p-2 text-sm" id="usuarioSaram" placeholder="SARAM" required="" type="text"/>
+<input class="rounded border p-2 text-sm" id="usuarioSenha" minlength="8" placeholder="Senha inicial" required="" type="password"/>
+<select class="rounded border p-2 text-sm" id="usuarioPerfil" required="">
+<option value="editor">Editor</option>
+<option value="visualizador">Visualizador</option>
+<option value="administrador">Administrador</option>
+</select>
+<button class="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 md:col-span-4">Cadastrar</button>
+</form>
+</div>
+<div class="overflow-x-auto bg-white p-4 rounded shadow-sm cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="lista">
+<h3 class="font-bold text-lg mb-3">Usuários cadastrados</h3>
+<table class="w-full border-collapse text-sm">
+<thead><tr class="border-b bg-gray-100"><th class="p-2 text-left">Nome</th><th class="p-2 text-left">SARAM</th><th class="p-2 text-left">Perfil</th><th class="p-2 text-center">Ativo</th><th class="p-2 text-right">Ações</th></tr></thead>
+<tbody id="tabelaUsuarios"></tbody>
+</table>
+</div>
+<div class="bg-white rounded shadow-sm cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="auditoria">
+<details id="painelAuditoriaSistema">
+<summary class="cursor-pointer select-none p-4 font-bold text-lg text-gray-800 hover:bg-gray-50">
       Auditoria do sistema
     </summary>
-
-    <div class="border-t p-4">
-
-      <div class="mb-4 flex flex-wrap items-end gap-3">
-
-        <label class="block">
-          <span class="mb-1 block text-xs font-semibold text-gray-600">
+<div class="border-t p-4">
+<div class="mb-4 flex flex-wrap items-end gap-3">
+<label class="block">
+<span class="mb-1 block text-xs font-semibold text-gray-600">
             Tipo de modificação
           </span>
-
-          <select
-            id="filtroTipoAuditoria"
-            onchange="filtrarAuditoriaSistema()"
-            class="rounded border p-2 text-sm"
-          >
-            <option value="">Todos os tipos</option>
-          </select>
-        </label>
-
-        <label class="block">
-          <span class="mb-1 block text-xs font-semibold text-gray-600">
+<select class="rounded border p-2 text-sm" id="filtroTipoAuditoria" onchange="filtrarAuditoriaSistema()">
+<option value="">Todos os tipos</option>
+</select>
+</label>
+<label class="block">
+<span class="mb-1 block text-xs font-semibold text-gray-600">
             Data
           </span>
-
-          <input
-            type="date"
-            id="filtroDataAuditoria"
-            onchange="filtrarAuditoriaSistema()"
-            class="rounded border p-2 text-sm"
-          >
-        </label>
-
-        <button
-          type="button"
-          onclick="limparFiltrosAuditoria()"
-          class="rounded bg-gray-500 px-3 py-2 text-sm font-semibold text-white hover:bg-gray-600"
-        >
+<input class="rounded border p-2 text-sm" id="filtroDataAuditoria" onchange="filtrarAuditoriaSistema()" type="date"/>
+</label>
+<button class="rounded bg-gray-500 px-3 py-2 text-sm font-semibold text-white hover:bg-gray-600" onclick="limparFiltrosAuditoria()" type="button">
           Limpar filtros
         </button>
-
-        <button
-          type="button"
-          onclick="carregarAuditoriaInterface()"
-          class="rounded bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
-        >
+<button class="rounded bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700" onclick="carregarAuditoriaInterface()" type="button">
           Atualizar
         </button>
-
-      </div>
-
-      <div
-        id="listaAuditoriaSistema"
-        class="space-y-2 text-sm text-gray-700"
-      ></div>
-
-    </div>
-
-  </details>
-
 </div>
-    </section>
-  </div>
-
-  <div id="modalJustificativa" class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50 p-4" onclick="fecharModalJustificativa(event)">
-    <div class="flex max-h-[85vh] w-full max-w-3xl flex-col rounded bg-white shadow-xl" onclick="event.stopPropagation()">
-      <div class="flex items-center justify-between border-b px-5 py-4">
-        <h3 id="tituloModalJustificativa" class="text-lg font-bold text-gray-800">Justificativa da escala</h3>
-        <button type="button" onclick="fecharModalJustificativa()" class="rounded bg-gray-100 px-3 py-1 text-lg font-bold text-gray-600 hover:bg-gray-200" aria-label="Fechar justificativa">x</button>
-      </div>
-      <div class="overflow-y-auto px-5 py-4">
-        <pre id="textoModalJustificativa" class="whitespace-pre-wrap break-words font-sans text-sm leading-relaxed text-gray-700"></pre>
-        <div class="mt-5 border-t pt-4">
-          <h4 class="mb-3 text-sm font-bold text-gray-800">Adicionar observação e cor da célula</h4>
-          <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <label class="block text-sm font-semibold text-gray-700 md:col-span-2">
+<div class="space-y-2 text-sm text-gray-700" id="listaAuditoriaSistema"></div>
+</div>
+</details>
+</div>
+</section>
+</main>
+</div>
+<div class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50 p-4" id="modalJustificativa" onclick="fecharModalJustificativa(event)">
+<div class="flex max-h-[85vh] w-full max-w-3xl flex-col rounded bg-white shadow-xl" onclick="event.stopPropagation()">
+<div class="flex items-center justify-between border-b px-5 py-4">
+<h3 class="text-lg font-bold text-gray-800" id="tituloModalJustificativa">Justificativa da escala</h3>
+<button aria-label="Fechar justificativa" class="rounded bg-gray-100 px-3 py-1 text-lg font-bold text-gray-600 hover:bg-gray-200" onclick="fecharModalJustificativa()" type="button">x</button>
+</div>
+<div class="overflow-y-auto px-5 py-4">
+<pre class="whitespace-pre-wrap break-words font-sans text-sm leading-relaxed text-gray-700" id="textoModalJustificativa"></pre>
+<div class="mt-5 border-t pt-4">
+<h4 class="mb-3 text-sm font-bold text-gray-800">Adicionar observação e cor da célula</h4>
+<div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+<label class="block text-sm font-semibold text-gray-700 md:col-span-2">
               Observação
-              <textarea id="observacaoJustificativa" rows="3" class="mt-1 w-full rounded border p-2 text-sm font-normal" placeholder="Digite a observação"></textarea>
-            </label>
-            <label class="block text-sm font-semibold text-gray-700">
+              <textarea class="mt-1 w-full rounded border p-2 text-sm font-normal" id="observacaoJustificativa" placeholder="Digite a observação" rows="3"></textarea>
+</label>
+<label class="block text-sm font-semibold text-gray-700">
               Cor de fundo
-              <input type="hidden" id="corObservacaoJustificativa" value="#93c47d">
-              <div id="opcoesCorObservacao" class="mt-2 flex flex-wrap gap-2">
-                <button type="button" class="botao-cor-observacao selecionada" style="background-color: #93c47d;" data-cor="#93c47d" onclick="selecionarCorObservacao('#93c47d')" aria-label="Selecionar cor verde claro"></button>
-                <button type="button" class="botao-cor-observacao" style="background-color: #00b050;" data-cor="#00b050" onclick="selecionarCorObservacao('#00b050')" aria-label="Selecionar cor verde"></button>
-                <button type="button" class="botao-cor-observacao" style="background-color: #00ffff;" data-cor="#00ffff" onclick="selecionarCorObservacao('#00ffff')" aria-label="Selecionar cor ciano"></button>
-                <button type="button" class="botao-cor-observacao" style="background-color: #ea9999;" data-cor="#ea9999" onclick="selecionarCorObservacao('#ea9999')" aria-label="Selecionar cor vermelho claro"></button>
-                <button type="button" class="botao-cor-observacao" style="background-color: #b7b7b7;" data-cor="#b7b7b7" onclick="selecionarCorObservacao('#b7b7b7')" aria-label="Selecionar cor cinza"></button>
-                <button type="button" class="botao-cor-observacao" style="background-color: #f79646;" data-cor="#f79646" onclick="selecionarCorObservacao('#f79646')" aria-label="Selecionar cor laranja"></button>
-                <button type="button" class="botao-cor-observacao" style="background-color: #6fa8dc;" data-cor="#6fa8dc" onclick="selecionarCorObservacao('#6fa8dc')" aria-label="Selecionar cor azul"></button>
-                <button type="button" class="botao-cor-observacao" style="background-color: #ff0000;" data-cor="#ff0000" onclick="selecionarCorObservacao('#ff0000')" aria-label="Selecionar cor vermelho"></button>
-              </div>
-            </label>
-            <label class="block text-sm font-semibold text-gray-700">
+              <input id="corObservacaoJustificativa" type="hidden" value="#93c47d"/>
+<div class="mt-2 flex flex-wrap gap-2" id="opcoesCorObservacao">
+<button aria-label="Selecionar cor verde claro" class="botao-cor-observacao selecionada" data-cor="#93c47d" onclick="selecionarCorObservacao('#93c47d')" style="background-color: #93c47d;" type="button"></button>
+<button aria-label="Selecionar cor verde" class="botao-cor-observacao" data-cor="#00b050" onclick="selecionarCorObservacao('#00b050')" style="background-color: #00b050;" type="button"></button>
+<button aria-label="Selecionar cor ciano" class="botao-cor-observacao" data-cor="#00ffff" onclick="selecionarCorObservacao('#00ffff')" style="background-color: #00ffff;" type="button"></button>
+<button aria-label="Selecionar cor vermelho claro" class="botao-cor-observacao" data-cor="#ea9999" onclick="selecionarCorObservacao('#ea9999')" style="background-color: #ea9999;" type="button"></button>
+<button aria-label="Selecionar cor cinza" class="botao-cor-observacao" data-cor="#b7b7b7" onclick="selecionarCorObservacao('#b7b7b7')" style="background-color: #b7b7b7;" type="button"></button>
+<button aria-label="Selecionar cor laranja" class="botao-cor-observacao" data-cor="#f79646" onclick="selecionarCorObservacao('#f79646')" style="background-color: #f79646;" type="button"></button>
+<button aria-label="Selecionar cor azul" class="botao-cor-observacao" data-cor="#6fa8dc" onclick="selecionarCorObservacao('#6fa8dc')" style="background-color: #6fa8dc;" type="button"></button>
+<button aria-label="Selecionar cor vermelho" class="botao-cor-observacao" data-cor="#ff0000" onclick="selecionarCorObservacao('#ff0000')" style="background-color: #ff0000;" type="button"></button>
+</div>
+</label>
+<label class="block text-sm font-semibold text-gray-700">
               Legenda da cor
-              <input id="legendaObservacaoJustificativa" type="text" class="mt-1 w-full rounded border p-2 text-sm font-normal" placeholder="Explique o significado da cor">
-            </label>
-          </div>
-        </div>
-      </div>
-      <div class="flex flex-wrap justify-end gap-2 border-t px-5 py-3">
-        <button type="button" onclick="salvarObservacaoJustificativa()" class="somente-edicao rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Adicionar observação</button>
-        <button type="button" onclick="fecharModalJustificativa()" class="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700">Fechar</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="modalAlteracaoManual" class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50 p-4">
-    <form class="flex max-h-[90vh] w-full max-w-xl flex-col rounded bg-white shadow-xl" onsubmit="confirmarJustificativaAlteracaoManual(event)">
-      <div class="flex items-center justify-between border-b px-5 py-4">
-        <h3 class="text-lg font-bold text-gray-800">Justificar alteração manual</h3>
-        <button type="button" onclick="cancelarJustificativaAlteracaoManual()" class="rounded bg-gray-100 px-3 py-1 text-lg font-bold text-gray-600 hover:bg-gray-200" aria-label="Cancelar alteração">x</button>
-      </div>
-      <div class="space-y-4 overflow-y-auto px-5 py-4">
-        <label class="block text-sm font-semibold text-gray-700">
+              <input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="legendaObservacaoJustificativa" placeholder="Explique o significado da cor" type="text"/>
+</label>
+</div>
+</div>
+</div>
+<div class="flex flex-wrap justify-end gap-2 border-t px-5 py-3">
+<button class="somente-edicao rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700" onclick="salvarObservacaoJustificativa()" type="button">Adicionar observação</button>
+<button class="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700" onclick="fecharModalJustificativa()" type="button">Fechar</button>
+</div>
+</div>
+</div>
+<div class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50 p-4" id="modalAlteracaoManual">
+<form class="flex max-h-[90vh] w-full max-w-xl flex-col rounded bg-white shadow-xl" onsubmit="confirmarJustificativaAlteracaoManual(event)">
+<div class="flex items-center justify-between border-b px-5 py-4">
+<h3 class="text-lg font-bold text-gray-800">Justificar alteração manual</h3>
+<button aria-label="Cancelar alteração" class="rounded bg-gray-100 px-3 py-1 text-lg font-bold text-gray-600 hover:bg-gray-200" onclick="cancelarJustificativaAlteracaoManual()" type="button">x</button>
+</div>
+<div class="space-y-4 overflow-y-auto px-5 py-4">
+<label class="block text-sm font-semibold text-gray-700">
           Tipo de alteração
-          <select id="tipoAlteracaoManual" required class="mt-1 w-full rounded border p-2 text-sm font-normal">
-            <option value="troca">Militar trocou o serviço</option>
-            <option value="puxado">Militar foi puxado</option>
-            <option value="outros">Outros</option>
-          </select>
-        </label>
-        <label class="block text-sm font-semibold text-gray-700">
+          <select class="mt-1 w-full rounded border p-2 text-sm font-normal" id="tipoAlteracaoManual" required="">
+<option value="troca">Militar trocou o serviço</option>
+<option value="puxado">Militar foi puxado</option>
+<option value="outros">Outros</option>
+</select>
+</label>
+<label class="block text-sm font-semibold text-gray-700">
           Justificativa
-          <textarea id="motivoAlteracaoManual" required rows="5" class="mt-1 w-full rounded border p-2 text-sm font-normal" placeholder="Descreva o motivo da alteração"></textarea>
-        </label>
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <label class="block text-sm font-semibold text-gray-700">
+          <textarea class="mt-1 w-full rounded border p-2 text-sm font-normal" id="motivoAlteracaoManual" placeholder="Descreva o motivo da alteração" required="" rows="5"></textarea>
+</label>
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+<label class="block text-sm font-semibold text-gray-700">
             Nome do responsável
-            <input id="responsavelAlteracaoManual" required type="text" class="mt-1 w-full rounded border p-2 text-sm font-normal">
-          </label>
-          <label class="block text-sm font-semibold text-gray-700">
+            <input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="responsavelAlteracaoManual" required="" type="text"/>
+</label>
+<label class="block text-sm font-semibold text-gray-700">
             SARAM do responsável
-            <input id="saramResponsavelAlteracaoManual" required type="text" class="mt-1 w-full rounded border p-2 text-sm font-normal">
-          </label>
-        </div>
-      </div>
-      <div class="flex justify-end gap-2 border-t px-5 py-3">
-        <button type="button" onclick="cancelarJustificativaAlteracaoManual()" class="rounded bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300">Cancelar</button>
-        <button type="submit" class="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700">Confirmar alteração</button>
-      </div>
-    </form>
-  </div>
-
-  <div id="modalAjusteAcumulado" class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50 p-4">
-    <form class="flex max-h-[90vh] w-full max-w-xl flex-col rounded bg-white shadow-xl" onsubmit="confirmarAjusteAcumulado(event)">
-      <div class="flex items-center justify-between border-b px-5 py-4">
-        <h3 class="text-lg font-bold text-gray-800">Ajustar acumulado de serviços</h3>
-        <button type="button" onclick="fecharModalAjusteAcumulado()" class="rounded bg-gray-100 px-3 py-1 text-lg font-bold text-gray-600 hover:bg-gray-200" aria-label="Cancelar ajuste">x</button>
-      </div>
-      <div class="space-y-4 overflow-y-auto px-5 py-4">
-        <p id="descricaoAjusteAcumulado" class="text-sm text-gray-700"></p>
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <label class="block text-sm font-semibold text-gray-700">
+            <input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="saramResponsavelAlteracaoManual" required="" type="text"/>
+</label>
+</div>
+</div>
+<div class="flex justify-end gap-2 border-t px-5 py-3">
+<button class="rounded bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300" onclick="cancelarJustificativaAlteracaoManual()" type="button">Cancelar</button>
+<button class="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700" type="submit">Confirmar alteração</button>
+</div>
+</form>
+</div>
+<div class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50 p-4" id="modalAjusteAcumulado">
+<form class="flex max-h-[90vh] w-full max-w-xl flex-col rounded bg-white shadow-xl" onsubmit="confirmarAjusteAcumulado(event)">
+<div class="flex items-center justify-between border-b px-5 py-4">
+<h3 class="text-lg font-bold text-gray-800">Ajustar acumulado de serviços</h3>
+<button aria-label="Cancelar ajuste" class="rounded bg-gray-100 px-3 py-1 text-lg font-bold text-gray-600 hover:bg-gray-200" onclick="fecharModalAjusteAcumulado()" type="button">x</button>
+</div>
+<div class="space-y-4 overflow-y-auto px-5 py-4">
+<p class="text-sm text-gray-700" id="descricaoAjusteAcumulado"></p>
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+<label class="block text-sm font-semibold text-gray-700">
             Novo acum. preto
-            <input id="novoAcumuladoPreto" required type="number" min="0" step="1" class="mt-1 w-full rounded border p-2 text-sm font-normal">
-          </label>
-          <label class="block text-sm font-semibold text-gray-700">
+            <input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="novoAcumuladoPreto" min="0" required="" step="1" type="number"/>
+</label>
+<label class="block text-sm font-semibold text-gray-700">
             Novo acum. vermelho
-            <input id="novoAcumuladoVermelho" required type="number" min="0" step="1" class="mt-1 w-full rounded border p-2 text-sm font-normal">
-          </label>
-        </div>
-        <label class="block text-sm font-semibold text-gray-700">
+            <input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="novoAcumuladoVermelho" min="0" required="" step="1" type="number"/>
+</label>
+</div>
+<label class="block text-sm font-semibold text-gray-700">
           Justificativa do ajuste
-          <textarea id="motivoAjusteAcumulado" required rows="4" class="mt-1 w-full rounded border p-2 text-sm font-normal" placeholder="Explique por que o acumulado precisa ser ajustado"></textarea>
-        </label>
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <label class="block text-sm font-semibold text-gray-700">
+          <textarea class="mt-1 w-full rounded border p-2 text-sm font-normal" id="motivoAjusteAcumulado" placeholder="Explique por que o acumulado precisa ser ajustado" required="" rows="4"></textarea>
+</label>
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+<label class="block text-sm font-semibold text-gray-700">
             Nome do responsável
-            <input id="responsavelAjusteAcumulado" required type="text" class="mt-1 w-full rounded border p-2 text-sm font-normal">
-          </label>
-          <label class="block text-sm font-semibold text-gray-700">
+            <input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="responsavelAjusteAcumulado" required="" type="text"/>
+</label>
+<label class="block text-sm font-semibold text-gray-700">
             SARAM do responsável
-            <input id="saramResponsavelAjusteAcumulado" required type="text" class="mt-1 w-full rounded border p-2 text-sm font-normal">
-          </label>
-        </div>
-      </div>
-      <div class="flex justify-end gap-2 border-t px-5 py-3">
-        <button type="button" onclick="fecharModalAjusteAcumulado()" class="rounded bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300">Cancelar</button>
-        <button type="submit" class="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700">Salvar ajuste</button>
-      </div>
-    </form>
-  </div>
-
-  <div id="modalAuditoriaAcumulado" class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50 p-4" onclick="fecharModalAuditoriaAcumulado(event)">
-    <div class="flex max-h-[85vh] w-full max-w-3xl flex-col rounded bg-white shadow-xl" onclick="event.stopPropagation()">
-      <div class="flex items-center justify-between border-b px-5 py-4">
-        <h3 id="tituloModalAuditoriaAcumulado" class="text-lg font-bold text-gray-800">Auditoria de acumulado</h3>
-        <button type="button" onclick="fecharModalAuditoriaAcumulado()" class="rounded bg-gray-100 px-3 py-1 text-lg font-bold text-gray-600 hover:bg-gray-200" aria-label="Fechar auditoria">x</button>
-      </div>
-      <div id="conteudoModalAuditoriaAcumulado" class="space-y-3 overflow-y-auto px-5 py-4 text-sm text-gray-700"></div>
-      <div class="flex justify-end border-t px-5 py-3">
-        <button type="button" onclick="fecharModalAuditoriaAcumulado()" class="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700">Fechar</button>
-      </div>
-    </div>
-  </div>
-  <!-- MODAL DE GERAÇÃO DA ESCALA -->
-  <div id="modalGeracaoEscala" class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50 p-4">
-    <form class="w-full max-w-lg rounded bg-white shadow-xl" onsubmit="confirmarGeracaoEscala(event)">
-      <div class="flex items-center justify-between border-b px-5 py-4">
-        <h3 class="text-lg font-bold text-gray-800">Gerar Escala Automática</h3>
-        <button type="button" onclick="fecharModalGeracaoEscala()" class="rounded bg-gray-100 px-3 py-1 text-lg font-bold text-gray-600 hover:bg-gray-200">x</button>
-      </div>
-      <div class="space-y-4 px-5 py-4">
-        <label class="block text-sm font-semibold text-gray-700">
+            <input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="saramResponsavelAjusteAcumulado" required="" type="text"/>
+</label>
+</div>
+</div>
+<div class="flex justify-end gap-2 border-t px-5 py-3">
+<button class="rounded bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300" onclick="fecharModalAjusteAcumulado()" type="button">Cancelar</button>
+<button class="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700" type="submit">Salvar ajuste</button>
+</div>
+</form>
+</div>
+<div class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50 p-4" id="modalAuditoriaAcumulado" onclick="fecharModalAuditoriaAcumulado(event)">
+<div class="flex max-h-[85vh] w-full max-w-3xl flex-col rounded bg-white shadow-xl" onclick="event.stopPropagation()">
+<div class="flex items-center justify-between border-b px-5 py-4">
+<h3 class="text-lg font-bold text-gray-800" id="tituloModalAuditoriaAcumulado">Auditoria de acumulado</h3>
+<button aria-label="Fechar auditoria" class="rounded bg-gray-100 px-3 py-1 text-lg font-bold text-gray-600 hover:bg-gray-200" onclick="fecharModalAuditoriaAcumulado()" type="button">x</button>
+</div>
+<div class="space-y-3 overflow-y-auto px-5 py-4 text-sm text-gray-700" id="conteudoModalAuditoriaAcumulado"></div>
+<div class="flex justify-end border-t px-5 py-3">
+<button class="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700" onclick="fecharModalAuditoriaAcumulado()" type="button">Fechar</button>
+</div>
+</div>
+</div>
+<!-- MODAL DE GERAÇÃO DA ESCALA -->
+<div class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50 p-4" id="modalGeracaoEscala">
+<form class="w-full max-w-lg rounded bg-white shadow-xl" onsubmit="confirmarGeracaoEscala(event)">
+<div class="flex items-center justify-between border-b px-5 py-4">
+<h3 class="text-lg font-bold text-gray-800">Gerar Escala Automática</h3>
+<button class="rounded bg-gray-100 px-3 py-1 text-lg font-bold text-gray-600 hover:bg-gray-200" onclick="fecharModalGeracaoEscala()" type="button">x</button>
+</div>
+<div class="space-y-4 px-5 py-4">
+<label class="block text-sm font-semibold text-gray-700">
           Função
-          <select id="funcaoGeracaoEscala" class="mt-1 w-full rounded border p-2 text-sm font-normal"></select>
-        </label>
-        <label class="flex items-center gap-2 text-sm font-semibold text-gray-700">
-          <input id="mesInteiroGeracaoEscala" type="checkbox" checked onchange="atualizarPeriodoModalGeracao()">
+          <select class="mt-1 w-full rounded border p-2 text-sm font-normal" id="funcaoGeracaoEscala"></select>
+</label>
+<label class="flex items-center gap-2 text-sm font-semibold text-gray-700">
+<input checked="" id="mesInteiroGeracaoEscala" onchange="atualizarPeriodoModalGeracao()" type="checkbox"/>
           Recriar o mês inteiro
         </label>
-        <div id="periodoGeracaoEscala" class="grid grid-cols-2 gap-3 opacity-50">
-          <label class="block text-sm font-semibold text-gray-700">
+<div class="grid grid-cols-2 gap-3 opacity-50" id="periodoGeracaoEscala">
+<label class="block text-sm font-semibold text-gray-700">
             Dia inicial
-            <input id="diaInicioGeracaoEscala" type="number" min="1" disabled class="mt-1 w-full rounded border p-2 text-sm font-normal">
-          </label>
-          <label class="block text-sm font-semibold text-gray-700">
+            <input class="mt-1 w-full rounded border p-2 text-sm font-normal" disabled="" id="diaInicioGeracaoEscala" min="1" type="number"/>
+</label>
+<label class="block text-sm font-semibold text-gray-700">
             Dia final
-            <input id="diaFimGeracaoEscala" type="number" min="1" disabled class="mt-1 w-full rounded border p-2 text-sm font-normal">
-          </label>
-        </div>
-        <p class="rounded bg-amber-50 p-3 text-xs text-amber-800">Somente a função e o período selecionados serão recriados. As demais funções e os dias fora do período serão preservados.</p>
-      </div>
-      <div class="flex justify-end gap-2 border-t px-5 py-3">
-        <button type="button" onclick="fecharModalGeracaoEscala()" class="rounded bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300">Cancelar</button>
-        <button type="submit" class="rounded bg-green-600 px-4 py-2 text-sm font-bold text-white hover:bg-green-700">Gerar escala</button>
-      </div>
-    </form>
-  </div>
-
-  <!-- OVERLAY DE PROCESSAMENTO -->
-<div
-  id="overlayProcessamento"
-  class="hidden fixed inset-0 z-[9999] items-center justify-center bg-black/50"
->
-  <div class="flex min-w-64 flex-col items-center rounded-lg bg-white px-8 py-6 shadow-2xl">
-
-    <div
-      class="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-red-600"
-    ></div>
-
-    <p
-      id="mensagemProcessamento"
-      class="mt-4 text-center text-sm font-semibold text-gray-700"
-    >
+            <input class="mt-1 w-full rounded border p-2 text-sm font-normal" disabled="" id="diaFimGeracaoEscala" min="1" type="number"/>
+</label>
+</div>
+<p class="rounded bg-amber-50 p-3 text-xs text-amber-800">Somente a função e o período selecionados serão recriados. As demais funções e os dias fora do período serão preservados.</p>
+</div>
+<div class="flex justify-end gap-2 border-t px-5 py-3">
+<button class="rounded bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300" onclick="fecharModalGeracaoEscala()" type="button">Cancelar</button>
+<button class="rounded bg-green-600 px-4 py-2 text-sm font-bold text-white hover:bg-green-700" type="submit">Gerar escala</button>
+</div>
+</form>
+</div>
+<!-- OVERLAY DE PROCESSAMENTO -->
+<div class="hidden fixed inset-0 z-[9999] items-center justify-center bg-black/50" id="overlayProcessamento">
+<div class="flex min-w-64 flex-col items-center rounded-lg bg-white px-8 py-6 shadow-2xl">
+<div class="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-red-600"></div>
+<p class="mt-4 text-center text-sm font-semibold text-gray-700" id="mensagemProcessamento">
       Processando, aguarde...
     </p>
-
-  </div>
 </div>
-
-  <script>
+</div>
+<script>
     let botaoAcaoAtual = null;
     let requisicoesBotaoPendentes = 0;
     let temporizadorBotaoAcao = null;
@@ -1236,57 +1210,6 @@ escala: {},
 
 });
 
-    const DB_NOME = 'cci_escala_db';
-    const DB_VERSAO = 1;
-    const DB_STORE = 'dados';
-    const DB_CHAVE_ESTADO = 'estado_principal';
-
-    function abrirBancoDados() {
-      return new Promise((resolve, reject) => {
-        const requisicao = indexedDB.open(DB_NOME, DB_VERSAO);
-        requisicao.onupgradeneeded = evento => {
-          const banco = evento.target.result;
-          if (!banco.objectStoreNames.contains(DB_STORE)) {
-            banco.createObjectStore(DB_STORE);
-          }
-        };
-        requisicao.onsuccess = () => resolve(requisicao.result);
-        requisicao.onerror = () => reject(requisicao.error);
-      });
-    }
-
-    async function lerEstadoIndexedDB() {
-      const banco = await abrirBancoDados();
-      return new Promise((resolve, reject) => {
-        const transacao = banco.transaction(DB_STORE, 'readonly');
-        const store = transacao.objectStore(DB_STORE);
-        const requisicao = store.get(DB_CHAVE_ESTADO);
-        requisicao.onsuccess = () => resolve(requisicao.result || null);
-        requisicao.onerror = () => reject(requisicao.error);
-        transacao.oncomplete = () => banco.close();
-        transacao.onerror = () => {
-          banco.close();
-          reject(transacao.error);
-        };
-      });
-    }
-
-    async function gravarEstadoIndexedDB(dados) {
-      const banco = await abrirBancoDados();
-      return new Promise((resolve, reject) => {
-        const transacao = banco.transaction(DB_STORE, 'readwrite');
-        const store = transacao.objectStore(DB_STORE);
-        store.put(dados, DB_CHAVE_ESTADO);
-        transacao.oncomplete = () => {
-          banco.close();
-          resolve();
-        };
-        transacao.onerror = () => {
-          banco.close();
-          reject(transacao.error);
-        };
-      });
-    }
     function normalizarEstadoAtual() {
       if (!Array.isArray(estado.funcoes)) estado.funcoes = [...FUNCOES_PADRAO];
       if (!Array.isArray(estado.militares)) estado.militares = [];
@@ -1827,46 +1750,14 @@ async function salvarEstadoNoServidor(
       };
     }
 
-    function contarMilitaresAtivosPorFuncao(funcao) {
-      return estado.militares.filter(militar => militar.funcao === funcao && militar.ativo !== false).length;
-    }
-
     function obterTipoPadraoFuncao(funcao) {
       return 'semanaFimSemana';
-    }
-
-    function validarTipoEscalaManual(seletor) {
-      const funcao = seletor.dataset.funcao;
-      garantirRegrasEscalaFuncao(funcao).distribuicao = seletor.value;
-      if (seletor.value !== 'corrida' || contarMilitaresAtivosPorFuncao(funcao) !== 7) return;
-
-      const confirmar = confirm(
-        `A funcao "${funcao}" possui exatamente 7 militares ativos.\n\n` +
-        'Usar escala corrida pode ocasionar vicio da escala, ficando sempre o mesmo militar na segunda-feira, o mesmo nas tercas-feiras, e assim sucessivamente.\n\n' +
-        'Deseja manter a escala corrida mesmo assim?'
-      );
-      if (!confirmar) {
-        seletor.value = 'semanaFimSemana';
-        garantirRegrasEscalaFuncao(funcao).distribuicao = 'semanaFimSemana';
-      }
-    }
-
-    function renderizarTiposEscala(tiposSalvos) {
-      const container = document.getElementById('listaTiposEscala');
-      if (!container) return;
-
-      const tipos = tiposSalvos || obterTiposEscalaSelecionados();
-      container.innerHTML = estado.funcoes.map((funcao, indice) => `
-        
-      `).join('');
     }
 
     function obterTiposEscalaSelecionados() {
       return estado.funcoes.reduce((tipos, funcao) => {
         const regra = garantirRegrasEscalaFuncao(funcao);
-        const seletor = Array.from(document.querySelectorAll('#listaTiposEscala select'))
-          .find(item => item.dataset.funcao === funcao);
-        tipos[funcao] = regra.distribuicao || seletor?.value || obterTipoPadraoFuncao(funcao);
+        tipos[funcao] = regra.distribuicao || obterTipoPadraoFuncao(funcao);
         return tipos;
       }, {});
     }
@@ -1895,21 +1786,11 @@ async function salvarEstadoNoServidor(
               || garantirRegrasEscalaFuncao(funcao).distribuicao;
             escala.regrasEscalaSnapshot[funcao] = obterResumoRegrasFuncao(funcao, tipo);
           });
-          escala.snapshotMigradoEtapa6 = true;
         }
 
         escala.lastrosIndisponibilidade ||= {};
         escala.diasVermelhos ||= [];
       });
-    }
-
-    function obterResumoContagemMilitarFuncao(militarId, funcao, mesReferencia = '') {
-      const contagem = criarContagemQuadrinhoLastro();
-      const mapa = { [militarId]: contagem };
-      Object.values(estado.escalas || {})
-        .filter(escala => escala?.mesAno && (!mesReferencia || escala.mesAno <= mesReferencia))
-        .forEach(escala => obterContagemSeparadaEscala(escala, mapa, funcao));
-      return obterTotaisQuadrinhoLastro(contagem);
     }
 
     function obterRegrasEscalaPadrao() {
@@ -1948,68 +1829,112 @@ async function salvarEstadoNoServidor(
     function renderizarRegrasEscala() {
       const container = document.getElementById('listaRegrasEscala');
       if (!container) return;
-      container.innerHTML = estado.funcoes.map((funcao, indice) => {
+      container.innerHTML = estado.funcoes.map(funcao => {
         const r = garantirRegrasEscalaFuncao(funcao);
+        const f = encodeURIComponent(funcao);
         return `
-          <details class="rounded border bg-gray-50 p-3">
-            <summary class="cursor-pointer font-semibold text-sm">${funcao}</summary>
-            <p class="mt-2 text-[11px] text-gray-500">Passe o mouse sobre qualquer opção para ver uma explicação rápida da regra.</p>
-            <div class="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-              <label class="text-xs font-semibold text-gray-700">Distribuição
-                <select data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="distribuicao" title="Separar preto/vermelho mantém controles e rotações distintos conforme a classificação do dia. Corrida usa uma única sequência para todos os dias." class="mt-1 w-full rounded border bg-white p-2 text-sm">
-                  <option title="Usa a classificação dos dias para controlar e distribuir serviços pretos e vermelhos separadamente." value="semanaFimSemana" ${r.distribuicao === 'semanaFimSemana' ? 'selected' : ''}>Separar preto/vermelho</option>
-                  <option title="Usa uma única sequência de rotação para os serviços, sem separar a distribuição por preto e vermelho." value="corrida" ${r.distribuicao === 'corrida' ? 'selected' : ''}>Corrida</option>
-                </select>
-              </label>
-              <label class="text-xs font-semibold text-gray-700">Folgas antes
-                <input type="number" min="0" max="30" value="${r.descanso.folgasAntes}" data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="folgasAntes" title="Quantidade de dias de folga exigida antes deste serviço para o militar ser considerado em condição normal." class="mt-1 w-full rounded border p-2 text-sm">
-              </label>
-              <label class="text-xs font-semibold text-gray-700">Folgas depois
-                <input type="number" min="0" max="30" value="${r.descanso.folgasDepois}" data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="folgasDepois" title="Quantidade de dias de folga exigida depois deste serviço para o militar ser considerado em condição normal." class="mt-1 w-full rounded border p-2 text-sm">
-              </label>
-              <label class="flex items-center gap-2 text-xs font-semibold text-gray-700">
-                <input type="checkbox" ${r.descanso.reduzido.permitido ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="reduzidoPermitido" title="Marcado: permite usar candidatos com descanso abaixo do normal, desde que atinjam os mínimos reduzidos. Desmarcado: esses candidatos ficam impedidos.">
-                Permitir descanso reduzido
-              </label>
-              <label class="text-xs font-semibold text-gray-700">Folgas mínimas antes (reduzido)
-                <input type="number" min="0" max="30" value="${r.descanso.reduzido.folgasAntes}" data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="reduzidoFolgasAntes" title="Mínimo de folgas antes do serviço aceito quando o descanso reduzido estiver habilitado." class="mt-1 w-full rounded border p-2 text-sm">
-              </label>
-              <label class="text-xs font-semibold text-gray-700">Folgas mínimas depois (reduzido)
-                <input type="number" min="0" max="30" value="${r.descanso.reduzido.folgasDepois}" data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="reduzidoFolgasDepois" title="Mínimo de folgas depois do serviço aceito quando o descanso reduzido estiver habilitado." class="mt-1 w-full rounded border p-2 text-sm">
-              </label>
-              <label class="flex items-center gap-2 text-xs font-semibold text-gray-700">
-                <input type="checkbox" ${r.vermelho.permitirConsecutivos ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="vermelhosConsecutivos" title="Marcado: permite ao mesmo militar tirar serviços vermelhos consecutivos dentro das demais regras. Desmarcado: o sistema procura evitar essa sequência.">
-                Permitir vermelhos consecutivos
-              </label>
-              <label class="flex items-center gap-2 text-xs font-semibold text-gray-700">
-                <input type="checkbox" ${r.lastro.habilitado ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="lastroHabilitado" title="Marcado: indisponibilidades longas podem gerar crédito virtual de lastro. Desmarcado: nenhuma indisponibilidade gera lastro para esta função.">
-                Utilizar lastro
-              </label>
-              <label class="text-xs font-semibold text-gray-700">Mínimo para lastro (dias)
-                <input type="number" min="1" max="365" value="${r.lastro.minimoDiasIndisponibilidade}" data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="lastroMinimo" title="Número mínimo de dias de indisponibilidade para que o período possa gerar lastro." class="mt-1 w-full rounded border p-2 text-sm">
-              </label>
-              <label class="flex items-center gap-2 text-xs font-semibold text-gray-700">
-                <input type="checkbox" ${r.descanso.reduzido.exigirConfirmacao !== false ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="reduzidoConfirmacao" title="Marcado: o sistema solicita confirmação antes de utilizar descanso reduzido. Desmarcado: pode utilizá-lo automaticamente quando necessário e permitido.">
-                Confirmar antes de usar descanso reduzido
-              </label>
-              <label class="flex items-center gap-2 text-xs font-semibold text-gray-700">
-                <input type="checkbox" ${r.justica.considerarTotal !== false ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="justicaConsiderarTotal" title="Marcado: a comparação de justiça considera Quadrinho + Lastro. Desmarcado: o lastro não entra nessa comparação.">
-                Justiça considera Quadrinho + Lastro
-              </label>
-              <label class="flex items-center gap-2 text-xs font-semibold text-gray-700">
-                <input type="checkbox" ${r.justica.separarPretoVermelho !== false ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="justicaSepararCores" title="Marcado: serviços pretos e vermelhos são equilibrados separadamente. Desmarcado: a justiça não separa o acumulado por cor.">
-                Equalizar preto e vermelho separadamente
-              </label>
-              <label class="flex items-center gap-2 text-xs font-semibold text-gray-700">
-                <input type="checkbox" ${r.justica.usarRotacaoDesempate !== false ? 'checked' : ''} data-regra-funcao="${encodeURIComponent(funcao)}" data-regra-campo="justicaRotacao" title="Marcado: quando candidatos ficam empatados pelos critérios anteriores, a posição na rotação decide a prioridade. Desmarcado: a rotação não é usada como critério de desempate.">
-                Usar rotação como desempate
-              </label>
-            </div>
-            <div class="mt-3 flex justify-end">
-              <button type="button" onclick="salvarRegrasEscalaFuncao('${encodeURIComponent(funcao)}')" class="rounded bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700">Salvar regras</button>
+          <details class="rounded border bg-gray-50" data-regra-detalhe="${f}">
+            <summary class="cursor-pointer select-none px-3 py-2.5 font-semibold text-sm">${funcao}</summary>
+            <div class="border-t bg-white px-3 py-3">
+              <p class="mb-3 text-[11px] text-gray-500">Passe o mouse sobre qualquer opção para ver uma explicação rápida da regra.</p>
+
+              <div class="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(220px,0.8fr)_minmax(330px,1.25fr)_minmax(330px,1.25fr)]">
+                <fieldset class="min-w-0 rounded border bg-gray-50 p-3">
+                  <legend class="px-1 text-[11px] font-bold uppercase tracking-wide text-gray-500">Distribuição</legend>
+                  <label class="block text-xs font-semibold text-gray-700">Tipo de escala
+                    <select data-regra-funcao="${f}" data-regra-campo="distribuicao" onchange="atualizarDisponibilidadeEqualizacaoCores('${f}')" title="Separar preto/vermelho mantém controles e rotações distintos conforme a classificação do dia. Corrida usa uma única sequência para todos os dias." class="mt-1 w-full max-w-64 rounded border bg-white px-2 py-1.5 text-sm">
+                      <option title="Usa a classificação dos dias para controlar e distribuir serviços pretos e vermelhos separadamente." value="semanaFimSemana" ${r.distribuicao === 'semanaFimSemana' ? 'selected' : ''}>Separar preto/vermelho</option>
+                      <option title="Usa uma única sequência de rotação para os serviços, sem separar a distribuição por preto e vermelho." value="corrida" ${r.distribuicao === 'corrida' ? 'selected' : ''}>Corrida</option>
+                    </select>
+                  </label>
+                  <label class="mt-3 flex items-start gap-2 text-xs font-medium text-gray-700">
+                    <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.vermelho.permitirConsecutivos ? 'checked' : ''} data-regra-funcao="${f}" data-regra-campo="vermelhosConsecutivos" title="Marcado: permite ao mesmo militar tirar serviços vermelhos consecutivos dentro das demais regras. Desmarcado: o sistema procura evitar essa sequência.">
+                    <span>Permitir vermelhos consecutivos</span>
+                  </label>
+                </fieldset>
+
+                <fieldset class="min-w-0 rounded border bg-gray-50 p-3">
+                  <legend class="px-1 text-[11px] font-bold uppercase tracking-wide text-gray-500">Descanso</legend>
+                  <div class="flex flex-wrap items-end gap-x-4 gap-y-3">
+                    <label class="text-xs font-semibold text-gray-700">Folgas antes
+                      <input type="number" min="0" max="30" value="${r.descanso.folgasAntes}" data-regra-funcao="${f}" data-regra-campo="folgasAntes" title="Quantidade de dias de folga exigida antes deste serviço para o militar ser considerado em condição normal." class="mt-1 block w-20 rounded border px-2 py-1.5 text-center text-sm">
+                    </label>
+                    <label class="text-xs font-semibold text-gray-700">Folgas depois
+                      <input type="number" min="0" max="30" value="${r.descanso.folgasDepois}" data-regra-funcao="${f}" data-regra-campo="folgasDepois" title="Quantidade de dias de folga exigida depois deste serviço para o militar ser considerado em condição normal." class="mt-1 block w-20 rounded border px-2 py-1.5 text-center text-sm">
+                    </label>
+                  </div>
+                  <div class="mt-3 border-t pt-3">
+                    <label class="flex items-start gap-2 text-xs font-medium text-gray-700">
+                      <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.descanso.reduzido.permitido ? 'checked' : ''} data-regra-funcao="${f}" data-regra-campo="reduzidoPermitido" title="Marcado: permite usar candidatos com descanso abaixo do normal, desde que atinjam os mínimos reduzidos. Desmarcado: esses candidatos ficam impedidos.">
+                      <span>Permitir descanso reduzido</span>
+                    </label>
+                    <div class="mt-2 flex flex-wrap items-end gap-x-4 gap-y-2">
+                      <label class="text-xs font-semibold text-gray-700">Mín. antes
+                        <input type="number" min="0" max="30" value="${r.descanso.reduzido.folgasAntes}" data-regra-funcao="${f}" data-regra-campo="reduzidoFolgasAntes" title="Mínimo de folgas antes do serviço aceito quando o descanso reduzido estiver habilitado." class="mt-1 block w-20 rounded border px-2 py-1.5 text-center text-sm">
+                      </label>
+                      <label class="text-xs font-semibold text-gray-700">Mín. depois
+                        <input type="number" min="0" max="30" value="${r.descanso.reduzido.folgasDepois}" data-regra-funcao="${f}" data-regra-campo="reduzidoFolgasDepois" title="Mínimo de folgas depois do serviço aceito quando o descanso reduzido estiver habilitado." class="mt-1 block w-20 rounded border px-2 py-1.5 text-center text-sm">
+                      </label>
+                    </div>
+                    <label class="mt-3 flex items-start gap-2 text-xs font-medium text-gray-700">
+                      <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.descanso.reduzido.exigirConfirmacao !== false ? 'checked' : ''} data-regra-funcao="${f}" data-regra-campo="reduzidoConfirmacao" title="Marcado: o sistema solicita confirmação antes de utilizar descanso reduzido. Desmarcado: pode utilizá-lo automaticamente quando necessário e permitido.">
+                      <span>Confirmar antes de usar descanso reduzido</span>
+                    </label>
+                  </div>
+                </fieldset>
+
+                <fieldset class="min-w-0 rounded border bg-gray-50 p-3">
+                  <legend class="px-1 text-[11px] font-bold uppercase tracking-wide text-gray-500">Lastro e justiça</legend>
+                  <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
+                    <label class="flex items-center gap-2 text-xs font-medium text-gray-700">
+                      <input class="h-4 w-4 shrink-0" type="checkbox" ${r.lastro.habilitado ? 'checked' : ''} data-regra-funcao="${f}" data-regra-campo="lastroHabilitado" title="Marcado: indisponibilidades longas podem gerar crédito virtual de lastro. Desmarcado: nenhuma indisponibilidade gera lastro para esta função.">
+                      <span>Utilizar lastro</span>
+                    </label>
+                    <label class="text-xs font-semibold text-gray-700">Mín. lastro (dias)
+                      <input type="number" min="1" max="365" value="${r.lastro.minimoDiasIndisponibilidade}" data-regra-funcao="${f}" data-regra-campo="lastroMinimo" title="Número mínimo de dias de indisponibilidade para que o período possa gerar lastro." class="ml-1 w-20 rounded border px-2 py-1.5 text-center text-sm">
+                    </label>
+                  </div>
+                  <div class="mt-3 grid grid-cols-1 gap-2 border-t pt-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+                    <label class="flex items-start gap-2 text-xs font-medium text-gray-700">
+                      <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.justica.considerarTotal !== false ? 'checked' : ''} data-regra-funcao="${f}" data-regra-campo="justicaConsiderarTotal" title="Marcado: a comparação de justiça considera Quadrinho + Lastro. Desmarcado: o lastro não entra nessa comparação.">
+                      <span>Justiça considera Quadrinho + Lastro</span>
+                    </label>
+                    <div data-regra-grupo="equalizacaoCores" class="${r.distribuicao === 'corrida' ? 'opacity-50' : ''}">
+                      <label class="flex items-start gap-2 text-xs font-medium text-gray-700">
+                        <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.justica.separarPretoVermelho !== false ? 'checked' : ''} ${r.distribuicao === 'corrida' ? 'disabled' : ''} data-regra-funcao="${f}" data-regra-campo="justicaSepararCores" title="Marcado: em Separar preto/vermelho, prioriza quem possui menor quantidade acumulada da cor do serviço. Desmarcado: preto e vermelho mantêm rotações independentes, sem priorização pelo menor acumulado da cor.">
+                        <span>Priorizar menor quantidade da cor do serviço</span>
+                      </label>
+                      <p data-regra-aviso="equalizacaoCores" class="mt-1 pl-6 text-[10px] ${r.distribuicao === 'corrida' ? 'text-amber-700' : 'hidden text-gray-500'}">Disponível apenas em “Separar preto/vermelho”.</p>
+                    </div>
+                    <label class="flex items-start gap-2 text-xs font-medium text-gray-700 sm:col-span-2 xl:col-span-1 2xl:col-span-2">
+                      <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.justica.usarRotacaoDesempate !== false ? 'checked' : ''} data-regra-funcao="${f}" data-regra-campo="justicaRotacao" title="Marcado: quando candidatos ficam empatados pelos critérios anteriores, a posição na rotação decide a prioridade. Desmarcado: a rotação não é usada como critério de desempate.">
+                      <span>Usar rotação por antiguidade como desempate</span>
+                    </label>
+                  </div>
+                </fieldset>
+              </div>
+
+              <div class="mt-3 flex justify-end border-t pt-3">
+                <button type="button" onclick="salvarRegrasEscalaFuncao('${f}')" class="rounded bg-blue-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-blue-700">Salvar regras</button>
+              </div>
             </div>
           </details>`;
       }).join('');
+    }
+
+    function atualizarDisponibilidadeEqualizacaoCores(funcaoCodificada) {
+      const distribuicao = document.querySelector(`[data-regra-funcao="${funcaoCodificada}"][data-regra-campo="distribuicao"]`);
+      const checkbox = document.querySelector(`[data-regra-funcao="${funcaoCodificada}"][data-regra-campo="justicaSepararCores"]`);
+      const grupo = checkbox?.closest('[data-regra-grupo="equalizacaoCores"]');
+      const aviso = grupo?.querySelector('[data-regra-aviso="equalizacaoCores"]');
+      if (!distribuicao || !checkbox || !grupo || !aviso) return;
+
+      const corrida = distribuicao.value === 'corrida';
+      checkbox.disabled = corrida;
+      grupo.classList.toggle('opacity-50', corrida);
+      aviso.classList.toggle('hidden', !corrida);
+      aviso.classList.toggle('text-amber-700', corrida);
+      aviso.classList.toggle('text-gray-500', !corrida);
     }
 
     async function salvarRegrasEscalaFuncao(funcaoCodificada) {
@@ -2030,13 +1955,13 @@ async function salvarEstadoNoServidor(
       r.justica.separarPretoVermelho = Boolean(obter('justicaSepararCores')?.checked);
       r.justica.usarRotacaoDesempate = Boolean(obter('justicaRotacao')?.checked);
 
-      // Mantém o seletor legado sincronizado durante a transição.
-      const seletorTipo = document.querySelector(`#listaTiposEscala select[data-funcao="${CSS.escape(funcao)}"]`);
-      if (seletorTipo) seletorTipo.value = r.distribuicao;
-
       estado.regrasEscala[funcao] = r;
       const salvou = await salvarEstado();
-      if (salvou !== false) alert(`Regras de "${funcao}" salvas. Nesta etapa, o gerador atual ainda não foi substituído pelo novo motor configurável.`);
+      if (salvou !== false) {
+        alert(`Regras de "${funcao}" salvas com sucesso.`);
+        const painelRegra = document.querySelector(`details[data-regra-detalhe="${funcaoCodificada}"]`);
+        if (painelRegra) painelRegra.open = false;
+      }
     }
 
     function renderizarClassificacaoSemanal() {
@@ -2263,35 +2188,37 @@ async function salvarEstadoNoServidor(
         selectAno.appendChild(option);
       }
       selectAno.value = String(anoSelecionado);
+
+      const selectAnoVisualizacao = document.getElementById('anoEscalaVisualizacao');
+      if (selectAnoVisualizacao) {
+        selectAnoVisualizacao.innerHTML = selectAno.innerHTML;
+        selectAnoVisualizacao.value = String(anoSelecionado);
+      }
     }
 
     function atualizarCoresMesesEscala() {
-      const selectMes = document.getElementById('mesEscala');
-      const ano = document.getElementById('anoEscala')?.value || '';
-      if (!selectMes || !ano) return;
+      const aplicarCores = (selectMes, ano) => {
+        if (!selectMes || !ano) return;
+        [...selectMes.options].forEach(option => {
+          const mesAno = `${ano}-${option.value}`;
+          const escala = estado.escalas?.[mesAno];
+          const temEscala = !!(escala?.dados && Object.keys(escala.dados).length);
+          const publicada = temEscala && !!escala.publicadaEm;
+          const status = publicada ? 'publicada' : (temEscala ? 'gerada' : 'sem-escala');
+          option.dataset.status = status;
+          option.style.color = publicada ? '#16a34a' : (temEscala ? '#2563eb' : '#dc2626');
+          option.style.fontWeight = publicada ? '700' : '600';
+          option.title = publicada ? 'Escala gerada e publicada' : (temEscala ? 'Escala gerada' : 'Sem escala gerada');
+        });
+        const selecionada = selectMes.selectedOptions?.[0];
+        if (selecionada) {
+          selectMes.style.color = selecionada.style.color || '';
+          selectMes.style.fontWeight = selecionada.style.fontWeight || '';
+        }
+      };
 
-      [...selectMes.options].forEach(option => {
-        const mesAno = `${ano}-${option.value}`;
-        const escala = estado.escalas?.[mesAno];
-        const temEscala = !!(escala?.dados && Object.keys(escala.dados).length);
-        const publicada = temEscala && !!escala.publicadaEm;
-
-        const status = publicada ? 'publicada' : (temEscala ? 'gerada' : 'sem-escala');
-        option.dataset.status = status;
-
-        // Estilo inline melhora a compatibilidade dos <option> nos navegadores desktop.
-        option.style.color = publicada ? '#16a34a' : (temEscala ? '#2563eb' : '#dc2626');
-        option.style.fontWeight = publicada ? '700' : '600';
-        option.title = publicada
-          ? 'Escala gerada e publicada'
-          : (temEscala ? 'Escala gerada' : 'Sem escala gerada');
-      });
-
-      const selecionada = selectMes.selectedOptions?.[0];
-      if (selecionada) {
-        selectMes.style.color = selecionada.style.color || '';
-        selectMes.style.fontWeight = selecionada.style.fontWeight || '';
-      }
+      aplicarCores(document.getElementById('mesEscala'), document.getElementById('anoEscala')?.value || '');
+      aplicarCores(document.getElementById('mesEscalaVisualizacao'), document.getElementById('anoEscalaVisualizacao')?.value || '');
     }
 
     function atualizarMesAnoEscala() {
@@ -2299,9 +2226,24 @@ async function salvarEstadoNoServidor(
       const ano = document.getElementById('anoEscala')?.value || '';
       const campo = document.getElementById('mesAnoEscala');
       if (campo) campo.value = (ano && mes) ? `${ano}-${mes}` : '';
+      const mesVisualizacao = document.getElementById('mesEscalaVisualizacao');
+      const anoVisualizacao = document.getElementById('anoEscalaVisualizacao');
+      if (mesVisualizacao) mesVisualizacao.value = mes;
+      if (anoVisualizacao) anoVisualizacao.value = ano;
       atualizarCoresMesesEscala();
       renderizarDiasEspeciais();
       renderizarTabelaEscala();
+    }
+
+    function atualizarPeriodoPelaVisualizacao() {
+      const mes = document.getElementById('mesEscalaVisualizacao')?.value || '';
+      const ano = document.getElementById('anoEscalaVisualizacao')?.value || '';
+      if (!mes || !ano) return;
+      const selectMes = document.getElementById('mesEscala');
+      const selectAno = document.getElementById('anoEscala');
+      if (selectMes) selectMes.value = mes;
+      if (selectAno) selectAno.value = ano;
+      atualizarMesAnoEscala();
     }
 
     function definirMesAnoEscala(valor) {
@@ -2314,6 +2256,10 @@ async function salvarEstadoNoServidor(
       if (selectAno) selectAno.value = ano;
       const campo = document.getElementById('mesAnoEscala');
       if (campo) campo.value = valor;
+      const mesVisualizacao = document.getElementById('mesEscalaVisualizacao');
+      const anoVisualizacao = document.getElementById('anoEscalaVisualizacao');
+      if (mesVisualizacao) mesVisualizacao.value = mes;
+      if (anoVisualizacao) anoVisualizacao.value = ano;
       atualizarCoresMesesEscala();
     }
 
@@ -2326,7 +2272,6 @@ async function salvarEstadoNoServidor(
   }
 
   migrarEstruturasEtapa6();
-    renderizarTiposEscala();
   renderizarClassificacaoSemanal();
   renderizarDiasEspeciais();
   renderizarSelectFuncoes();
@@ -2383,13 +2328,68 @@ async function inicializar() {
   }
 }
 
-    function trocarAba(nomeAba) {
+    const PAGINAS_CCI={gerador:['Escala Mensal','Geração, consulta e manutenção da escala mensal.'],militares:['Militares','Cadastro, organização e gerenciamento do efetivo.'],vagas:['Estrutura da Equipe','Funções, dimensionamento diário e regras de geração.'],indisponibilidades:['Indisponibilidades','Férias, missões, licenças e restrições semanais.'],backups:['Backups','Cópias de segurança e recuperação dos dados do sistema.'],usuarios:['Usuários e Auditoria','Controle de acesso e histórico administrativo.']};
+    function alternarMenuLateral(){if(innerWidth<768){document.body.classList.toggle('cci-menu-mobile-aberto');return}document.body.classList.toggle('cci-menu-recolhido');try{localStorage.setItem('cci_menu_recolhido',document.body.classList.contains('cci-menu-recolhido')?'1':'0')}catch(_){}}
+    function atualizarNavegacaoCCI(nomeAba){document.querySelectorAll('.cci-nav-btn[data-aba]').forEach(b=>b.classList.toggle('ativo',b.dataset.aba===nomeAba));const info=PAGINAS_CCI[nomeAba]||[nomeAba,''];const t=document.getElementById('tituloPaginaCCI'),st=document.getElementById('subtituloPaginaCCI');if(t)t.textContent=info[0];if(st)st.textContent=info[1];if(innerWidth<768)document.body.classList.remove('cci-menu-mobile-aberto')}
+    try{if(localStorage.getItem('cci_menu_recolhido')==='1'&&innerWidth>=768)document.body.classList.add('cci-menu-recolhido')}catch(_){}
+
+
+    const SUBPAGINAS_CCI = {
+      gerador: { padrao:'criar', titulos:{criar:['Escala Mensal — Criar Escala','Selecione o período e gere a escala automática.'],visualizacao:['Escala Mensal — Visualizar Escala','Consulta, edição, exportação e publicação da escala mensal gerada.'],quadrinhos:['Escala Mensal — Quadrinhos e Totais','Lastros e totais acumulados até o mês selecionado.']}},
+      militares: { padrao:'cadastrar', titulos:{cadastrar:['Militares — Cadastrar','Inclusão de um novo militar no efetivo.'],efetivo:['Militares — Efetivo Cadastrado','Consulta, organização e gerenciamento dos militares cadastrados.']}},
+      vagas: { padrao:'funcoes', titulos:{funcoes:['Estrutura da Equipe — Funções','Cadastro e manutenção das funções da equipe.'],dimensionamento:['Estrutura da Equipe — Dimensionamento','Quantidade de vagas necessárias por função em cada serviço.'],regras:['Estrutura da Equipe — Regras das Escalas','Configurações utilizadas pelo motor de geração das escalas.'],classificacao:['Regras das Escalas — Classificação dos Dias','Classificação semanal e exceções por data utilizadas na geração das escalas.']}},
+      indisponibilidades: { padrao:'periodo', titulos:{periodo:['Indisponibilidades — Por Período','Férias, missões, cursos, licenças e outros períodos.'],semanal:['Indisponibilidades — Semanal','Restrições recorrentes por dia da semana.'],importar:['Indisponibilidades — Importar CSV','Importação em lote de indisponibilidades.'],registros:['Indisponibilidades — Registros','Consulta e manutenção das indisponibilidades cadastradas.']}},
+      backups: { padrao:'gerenciar', titulos:{gerenciar:['Backups — Gerenciar','Criação e atualização das cópias de segurança.'],lista:['Backups — Lista','Consulta, restauração e manutenção dos backups armazenados.']}},
+      usuarios: { padrao:'cadastrar', titulos:{cadastrar:['Usuários — Cadastrar','Criação de usuários e definição do perfil de acesso.'],lista:['Usuários — Cadastrados','Consulta e manutenção dos usuários do sistema.'],auditoria:['Usuários — Auditoria','Histórico das modificações administrativas realizadas no sistema.']}}
+    };
+    const ultimaSubpaginaCCI = {};
+    function alternarSubmenuCCI(aba){
+      const grupo=document.querySelector(`.cci-nav-group[data-grupo="${aba}"]`), menu=document.querySelector(`.cci-submenu[data-submenu="${aba}"]`);
+      if(!grupo||!menu)return;
+      const cfgSub=SUBPAGINAS_CCI[aba];
+      if(cfgSub?.padrao) trocarAba(aba,cfgSub.padrao);
+      document.querySelectorAll('.cci-submenu').forEach(x=>x.classList.remove('aberto'));
+      document.querySelectorAll('.cci-nav-group').forEach(x=>x.classList.remove('submenu-aberto'));
+      menu.classList.add('aberto');
+      grupo.classList.add('submenu-aberto');
+    }
+    function alternarSubmenuRegrasCCI(){
+      abrirSubpaginaCCI('vagas','regras');
+      const nivel2=document.querySelector('.cci-submenu-nivel2[data-submenu-nivel2="regras"]');
+      const pai=document.querySelector('.cci-submenu-parent[data-submenu-pai="regras"]');
+      if(nivel2) nivel2.classList.add('aberto');
+      if(pai) pai.classList.add('aberto');
+    }
+    function mostrarSubpaginaCCI(aba,subpagina){
+      const sec=document.getElementById(`aba-${aba}`); if(!sec)return;
+      sec.querySelectorAll(':scope > .cci-subpage-panel').forEach(p=>p.classList.toggle('cci-subpage-oculta',p.dataset.cciSubpagina!==subpagina));
+      document.querySelectorAll('.cci-submenu-btn').forEach(b=>b.classList.toggle('ativo',b.dataset.aba===aba&&b.dataset.subpagina===subpagina));
+      const regrasAtiva=aba==='vagas'&&(subpagina==='regras'||subpagina==='classificacao');
+      const paiRegras=document.querySelector('.cci-submenu-parent[data-submenu-pai="regras"]');
+      const nivel2Regras=document.querySelector('.cci-submenu-nivel2[data-submenu-nivel2="regras"]');
+      if(paiRegras) paiRegras.classList.toggle('ativo',regrasAtiva);
+      if(regrasAtiva){if(paiRegras)paiRegras.classList.add('aberto');if(nivel2Regras)nivel2Regras.classList.add('aberto');}
+      ultimaSubpaginaCCI[aba]=subpagina;
+      const info=SUBPAGINAS_CCI[aba]?.titulos?.[subpagina];
+      if(info){const t=document.getElementById('tituloPaginaCCI'),s=document.getElementById('subtituloPaginaCCI');if(t)t.textContent=info[0];if(s)s.textContent=info[1]}
+    }
+    function abrirSubpaginaCCI(aba,subpagina){
+      trocarAba(aba,subpagina);
+      const menu=document.querySelector(`.cci-submenu[data-submenu="${aba}"]`),grupo=document.querySelector(`.cci-nav-group[data-grupo="${aba}"]`);
+      document.querySelectorAll('.cci-submenu').forEach(x=>x.classList.remove('aberto'));document.querySelectorAll('.cci-nav-group').forEach(x=>x.classList.remove('submenu-aberto'));
+      if(menu)menu.classList.add('aberto');if(grupo)grupo.classList.add('submenu-aberto');
+    }
+
+    function trocarAba(nomeAba, subpaginaSolicitada) {
       if (['militares', 'vagas', 'indisponibilidades'].includes(nomeAba) && !podeEditarSistema()) return;
       if (['backups', 'usuarios'].includes(nomeAba) && obterPerfilAtual() !== 'administrador') return;
       document.querySelectorAll('.aba-conteudo').forEach(el => el.classList.add('hidden'));
       const aba = document.getElementById(`aba-${nomeAba}`);
       if (!aba) return;
       aba.classList.remove('hidden');
+      atualizarNavegacaoCCI(nomeAba);
+      const cfgSub = SUBPAGINAS_CCI[nomeAba];
+      if (cfgSub) mostrarSubpaginaCCI(nomeAba, subpaginaSolicitada || ultimaSubpaginaCCI[nomeAba] || cfgSub.padrao);
       if (nomeAba === 'backups') carregarListaBackups();
       if (nomeAba === 'usuarios') {
         carregarUsuariosInterface();
@@ -2420,6 +2420,7 @@ async function inicializar() {
       excluirUsuario: ['usuarioId', 'token'],
       listarAuditoria: ['token', 'limite'],
       publicarEscala: ['publicacao', 'token'],
+      excluirEscalaPublicada: ['mesAno', 'token'],
       carregarEscalaPublicada: [],
       inicializarBanco_: [],
       inicializarUsuarios_: ['nome', 'saram', 'senha']
@@ -2548,6 +2549,11 @@ function mostrarSistema() {
   if (usuarioLogado) {
 
     aplicarPermissoesInterface();
+
+    // UI/UX ETAPA 5: ao entrar no sistema existe sempre uma única subpágina ativa.
+    // Escala Mensal inicia em "Criar Escala"; os demais painéis permanecem ocultos
+    // até que o usuário selecione explicitamente um submenu.
+    abrirSubpaginaCCI('gerador', 'criar');
 
     document
       .getElementById(
@@ -3983,7 +3989,6 @@ ${m.ativo === false
       document.getElementById('formFuncao').reset();
       renderizarFuncoes();
       renderizarSelectFuncoes();
-      renderizarTiposEscala();
       renderizarVagas();
       renderizarRegrasEscala();
     }
@@ -4001,7 +4006,6 @@ ${m.ativo === false
       salvarEstado();
       renderizarFuncoes();
       renderizarSelectFuncoes();
-      renderizarTiposEscala();
       renderizarVagas();
       renderizarRegrasEscala();
     }
@@ -4613,8 +4617,6 @@ for (let i = 1; i < linhas.length; i++) {
         converterDataCSV(fimOriginal);
 
       const erros = [];
-      const avisos = [];
-
       if (!nome) {
         erros.push('Nome não informado');
       }
@@ -4716,16 +4718,6 @@ if (
     jaCadastrado ||
     repetidoNoCSV;
 
-  if (jaCadastrado) {
-    avisos.push(
-      'Indisponibilidade já cadastrada'
-    );
-  } else if (repetidoNoCSV) {
-    avisos.push(
-      'Registro duplicado no próprio arquivo CSV'
-    );
-  }
-
   // Só registramos a chave depois de analisar a linha atual.
   // Assim, a primeira ocorrência permanece válida.
   chavesVistas.add(chaveDuplicidade);
@@ -4735,8 +4727,6 @@ if (
         linha: numeroLinha,
         nome,
         saram,
-        inicioOriginal,
-        fimOriginal,
         inicio,
         fim,
         motivo,
@@ -4746,8 +4736,7 @@ if (
         militarNomeSistema:
           militar ? militar.nome : null,
         duplicado,
-        erros,
-        avisos
+        erros
       });
     }
 
@@ -5167,6 +5156,7 @@ if (existeEscala && !confirm(mensagemConfirmacao)) return;
 
       fecharModalGeracaoEscala();
       await gerarEscalaAutomatica({ funcao, diaInicio, diaFim });
+      abrirSubpaginaCCI('gerador', 'visualizacao');
     }
 
     async function gerarEscalaAutomatica(configuracao = null) {
@@ -5831,9 +5821,9 @@ try {
               explicacao.push(`A funcao esta configurada como corrida, mas nesta data havia ${efetivoDisponivelFuncao} militares aptos por indisponibilidade cadastrada, indisponibilidade por dia da semana ou inicio de indisponibilidade no dia seguinte; por isso foram aplicados temporariamente os criterios da escala diferenciada.`);
             }
             if (tipoFuncao === 'semanaFimSemana') {
-              explicacao.push(`Prioridade da escolha: menor acumulado ${servicoVermelho ? 'vermelho' : 'preto'}; em empate, sequencia da rotacao.`);
+              explicacao.push(`Prioridade da escolha: menor acumulado ${servicoVermelho ? 'vermelho' : 'preto'}; em empate, rotação por antiguidade.`);
             } else {
-              explicacao.push('Prioridade da escolha: sequencia da rotacao entre os militares que atendem as regras do servico.');
+              explicacao.push('Prioridade da escolha: rotação por antiguidade entre os militares que atendem as regras do serviço.');
             }
             const houvePulosAutomaticos = militaresPuladosPorAdiantamento.length > 0 || militaresPuladosPorIndisponibilidade.length > 0;
             if (houvePulosAutomaticos) {
@@ -5881,12 +5871,12 @@ try {
                   explicacao.push('A indisponibilidade nao gera pendencia explicita de rotacao. Quando nao houver lastro, eventual diferenca no acumulado dos quadrinhos sera considerada nas escolhas posteriores.');
                 }
                 explicacao.push(tipoFuncao === 'semanaFimSemana'
-                  ? `Por isso, o sistema escolheu o candidato valido com menor acumulado de servico ${servicoVermelho ? 'vermelho' : 'preto'}; em empate, usou a sequencia da rotacao.`
-                  : 'Por isso, o sistema avancou na lista e escolheu o primeiro candidato valido conforme a sequencia da rotacao.');
+                  ? `Por isso, o sistema escolheu o candidato valido com menor acumulado de servico ${servicoVermelho ? 'vermelho' : 'preto'}; em empate, usou a rotação por antiguidade.`
+                  : 'Por isso, o sistema avancou na lista e escolheu o primeiro candidato valido conforme a rotação por antiguidade.');
               } else {
                 explicacao.push(tipoFuncao === 'semanaFimSemana'
                   ? 'O proximo da rotacao estava valido, mas outro candidato foi escolhido por ter menor acumulado de servicos desta cor nesta funcao.'
-                  : 'O proximo da rotacao estava valido, mas outro candidato foi escolhido conforme a sequencia registrada da rotacao.');
+                  : 'O proximo da rotacao estava valido, mas outro candidato foi escolhido conforme a rotação por antiguidade registrada.');
               }
             }
             if (excecaoVermelhaConsecutiva && ultimoServicoFoiVermelhoPorMilitar[escolhido.id]) {
@@ -6262,7 +6252,6 @@ if (salvou) {
         || escalaAnterior?.compensacoesFimSemana
         || {};
       const ultimosMilitaresPorFuncao = obterUltimosMilitaresPorFuncao(escalaAnterior);
-      const ultimosMilitaresPorFuncaoECor = obterUltimosMilitaresPorFuncaoECor(escalaAnterior);
       const ultimosEventosAnteriores = obterMilitaresNoUltimoEvento(escalaAnterior, tiposEscala);
       const ultimasDatasAnteriores = obterUltimasDatasServicos(escalaAnterior, tiposEscala);
       const ultimosTiposAnteriores = obterUltimoServicoFoiVermelhoPorMilitar(escalaAnterior);
@@ -6652,17 +6641,26 @@ if (salvou) {
       const mesAno = document.getElementById('mesAnoEscala').value;
       const cabecalho = document.getElementById('cabecalhoTabelaEscala');
       const corpo = document.getElementById('corpoTabelaEscala');
-
-      const tiposSelecionados = obterTiposEscalaSelecionados();
       if (mesAno && estado.escalas[mesAno]) {
         estado.escala = estado.escalas[mesAno];
       } else {
         estado.escala = {};
       }
-      const tiposEscalaRender = estado.escala.mesAno === mesAno
-        ? obterTiposEscalaDaEscala(estado.escala)
-        : tiposSelecionados;
-      renderizarTiposEscala(tiposEscalaRender);
+
+      // Mantém os dados de publicação sempre sincronizados com a escala exibida.
+      // Ao limpar uma escala (ou trocar para um mês não publicado), data e hora desaparecem.
+      const statusPublicacao = document.getElementById('statusPublicacaoEscala');
+      if (statusPublicacao) {
+        const publicadaEm = estado.escala?.publicadaEm;
+        if (mesAno && publicadaEm) {
+          const dataPublicacao = new Date(publicadaEm);
+          statusPublicacao.textContent = Number.isNaN(dataPublicacao.getTime())
+            ? ''
+            : `✓ ${formatarMesAno(mesAno)} publicada em ${dataPublicacao.toLocaleString('pt-BR')}.`;
+        } else {
+          statusPublicacao.textContent = '';
+        }
+      }
 
       if (!mesAno || !estado.escala.dados || estado.escala.mesAno !== mesAno) {
         corpo.innerHTML = `<tr><td colspan="12" class="text-center p-6 text-gray-400">Nenhuma escala gerada para este mês.</td></tr>`;
@@ -7639,14 +7637,6 @@ const opcoes = militaresOrdenadosTroca
       });
     }
 
-    function obterContagemSeparadaMilitarFuncaoAte(militarId, funcao, mesReferencia = '') {
-      const contagem = criarContagemQuadrinhoLastro();
-      const mapa = { [militarId]: contagem };
-      Object.values(estado.escalas)
-        .filter(escala => escala.mesAno && (!mesReferencia || escala.mesAno <= mesReferencia))
-        .forEach(escala => obterContagemSeparadaEscala(escala, mapa, funcao));
-      return contagem;
-    }
 
     function obterContagemEscala(escala, contagem, filtroFuncao = '') {
       if (!escala || !escala.dados || !escala.mesAno) return;
@@ -7853,8 +7843,6 @@ const opcoes = militaresOrdenadosTroca
     function abrirModalAuditoriaAcumulado(militarId, funcaoCodificada) {
       const funcao = decodeURIComponent(funcaoCodificada);
       const militar = estado.militares.find(m => m.id === militarId);
-      const funcaoAuditoria = decodeURIComponent(funcaoCodificada);
-      const mesAuditoria = document.getElementById('mesAnoEscala')?.value || '';
 if (!militar) return;
 
       const auditorias = (militar.auditoriaAjustesAcumulado || [])
@@ -7962,6 +7950,13 @@ try {
   // Permite que o navegador exiba o spinner antes de iniciar a operação.
   await new Promise(resolve => setTimeout(resolve, 50));
 
+  // Remove também as publicações dos meses que serão excluídos da escala.
+  // Assim, uma escala limpa no sistema deixa de aparecer na página pública de visualização.
+  const mesesParaExcluir = [mesAnoAtual, ...mesesFuturosGerados];
+  for (const mesEscala of mesesParaExcluir) {
+    await executarAppsScript('excluirEscalaPublicada', mesEscala, tokenSessao);
+  }
+
   delete estado.escalas[mesAnoAtual];
       mesesFuturosGerados.forEach(mesEscala => {
         delete estado.escalas[mesEscala];
@@ -8062,7 +8057,6 @@ if (salvou) {
           renderizarSelectFuncoes();
           renderizarMilitares();
           renderizarFuncoes();
-          renderizarTiposEscala();
           renderizarDiasEspeciais();
           renderizarVagas();
           renderizarIndisponibilidades();
@@ -8078,19 +8072,6 @@ if (salvou) {
     }
 
     // EXPORTAÇÃO PARA PDF
-    function obterLinhasResumoQuadrinhoLastroExportacao() {
-  const mesSelecionado = document.getElementById('mesAnoEscala')?.value || '';
-  return estado.militares.map(militar => {
-    const total = obterResumoContagemMilitarFuncao(militar.id, militar.funcao, mesSelecionado);
-    return {
-      militar: `${militar.nome} (${militar.saram})`,
-      funcao: militar.funcao,
-      preto: `${total.quadrinhosPreto} Q + ${total.lastrosPreto} L = ${total.totalPreto}`,
-      vermelho: `${total.quadrinhosVermelho} Q + ${total.lastrosVermelho} L = ${total.totalVermelho}`,
-      total: total.totalGeral
-    };
-  });
-}
 
 async function exportarPDF() {
       const elemento = document.getElementById('areaEscalaPDF');
@@ -8099,6 +8080,8 @@ async function exportarPDF() {
       copia.style.padding = '0';
       copia.style.borderRadius = '0';
       copia.querySelector('.legenda-substituicao')?.remove();
+      // Elementos de navegação/ação pertencem somente à tela e não ao documento PDF.
+      copia.querySelectorAll('.cci-nao-exportar-pdf, .cci-escala-scrollbar-sticky').forEach(el => el.remove());
       copia.querySelectorAll('td').forEach(celula => {
         celula.classList.remove('bg-yellow-200', 'font-bold');
         const seletor = celula.querySelector('select');
@@ -8210,7 +8193,7 @@ async function exportarPDF() {
     // Inicializar app
     window.onload = inicializar;
   </script>
-  <footer class="mt-8 border-t border-gray-200 py-4 text-center text-xs text-gray-500">
+<footer class="mt-8 border-t border-gray-200 py-4 text-center text-xs text-gray-500">
   Desenvolvido por Sgt R.Cunha ®
 </footer>
 <script>
@@ -8233,5 +8216,77 @@ async function exportarPDF() {
     });
   }
 </script>
-</body>
+<script>
+(function configurarRolagemEscalaFixa(){
+  const scrollTabela = document.getElementById('scrollTabelaEscala');
+  const barra = document.getElementById('scrollbarEscalaSticky');
+  const spacer = document.getElementById('scrollbarEscalaSpacer');
+  const tabela = document.getElementById('tabelaEscalaPrincipal');
+  if (!scrollTabela || !barra || !spacer || !tabela) return;
+  let sincronizando = false;
+  function atualizarLarguraBarra(){
+    spacer.style.width = Math.max(tabela.scrollWidth, scrollTabela.scrollWidth) + 'px';
+    barra.scrollLeft = scrollTabela.scrollLeft;
+  }
+  scrollTabela.addEventListener('scroll', function(){
+    if (sincronizando) return;
+    sincronizando = true; barra.scrollLeft = scrollTabela.scrollLeft; sincronizando = false;
+  }, {passive:true});
+  barra.addEventListener('scroll', function(){
+    if (sincronizando) return;
+    sincronizando = true; scrollTabela.scrollLeft = barra.scrollLeft; sincronizando = false;
+  }, {passive:true});
+  if ('ResizeObserver' in window) new ResizeObserver(atualizarLarguraBarra).observe(tabela);
+  window.addEventListener('resize', atualizarLarguraBarra, {passive:true});
+  setTimeout(atualizarLarguraBarra, 0);
+})();
+</script>
+<script>
+// ETAPA 21 — tooltip descritivo para todas as opções do menu lateral
+(function inicializarDescricoesMenuCCI(){
+  const menu = document.getElementById('menuLateralCCI');
+  const tooltip = document.getElementById('cciMenuTooltip');
+  if (!menu || !tooltip) return;
+  let alvoAtual = null;
+  function esconder(){
+    alvoAtual = null;
+    tooltip.classList.remove('visivel');
+    tooltip.setAttribute('aria-hidden','true');
+  }
+  function mostrar(alvo){
+    const texto = alvo && alvo.dataset ? alvo.dataset.cciDescricao : '';
+    if (!texto) return esconder();
+    alvoAtual = alvo;
+    tooltip.textContent = texto;
+    tooltip.classList.add('visivel');
+    tooltip.setAttribute('aria-hidden','false');
+    const r = alvo.getBoundingClientRect();
+    const largura = tooltip.offsetWidth || 280;
+    const margem = 10;
+    let left = r.right + margem;
+    if (left + largura > window.innerWidth - margem) left = Math.max(margem, r.left - largura - margem);
+    let top = r.top + r.height / 2;
+    const h = tooltip.offsetHeight || 44;
+    top = Math.max(h/2 + margem, Math.min(window.innerHeight - h/2 - margem, top));
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = top + 'px';
+  }
+  menu.addEventListener('mouseover', e => {
+    const alvo = e.target.closest('[data-cci-descricao]');
+    if (alvo && menu.contains(alvo) && alvo !== alvoAtual) mostrar(alvo);
+  });
+  menu.addEventListener('mouseout', e => {
+    if (!alvoAtual) return;
+    const relacionado = e.relatedTarget;
+    if (!relacionado || !alvoAtual.contains(relacionado)) esconder();
+  });
+  menu.addEventListener('focusin', e => {
+    const alvo = e.target.closest('[data-cci-descricao]');
+    if (alvo) mostrar(alvo);
+  });
+  menu.addEventListener('focusout', esconder);
+  window.addEventListener('resize', esconder);
+  window.addEventListener('scroll', esconder, true);
+})();
+</script></body>
 </html>

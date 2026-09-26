@@ -32,7 +32,13 @@
               <option value="">Carregando...</option>
             </select>
           </label>
-          <button type="button" onclick="atualizarPaginaEscalas()" class="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700">Atualizar</button>
+          <button id="btnAtualizar" type="button" onclick="atualizarPaginaEscalas()" class="inline-flex min-w-[112px] items-center justify-center gap-2 rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:cursor-wait disabled:opacity-70">
+            <svg id="spinnerAtualizar" class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+            <span id="textoBtnAtualizar">Atualizar</span>
+          </button>
         </div>
       </div>
       <div id="legendaCores" class="mt-3 flex flex-wrap gap-2 text-xs"></div>
@@ -151,6 +157,11 @@ async function carregarListaEscalasPublicadas(mesPreferido = '') {
   if (!escalas.length) {
     seletor.innerHTML = '<option value="">Nenhuma escala publicada</option>';
     seletor.disabled = true;
+    document.getElementById('areaTabela')?.classList.add('hidden');
+    const corpo = document.getElementById('corpo');
+    if (corpo) corpo.innerHTML = '';
+    const legenda = document.getElementById('legendaCores');
+    if (legenda) legenda.innerHTML = '';
     return '';
   }
 
@@ -211,14 +222,35 @@ async function carregarEscalaPublicada(mesAno = '') {
 }
 
 async function atualizarPaginaEscalas() {
+  const botao = document.getElementById('btnAtualizar');
+  const spinner = document.getElementById('spinnerAtualizar');
+  const texto = document.getElementById('textoBtnAtualizar');
+
+  if (botao?.disabled) return;
+
+  if (botao) botao.disabled = true;
+  if (spinner) spinner.classList.remove('hidden');
+  if (texto) texto.textContent = 'Carregando';
+
   try {
     const mesSelecionado = document.getElementById('seletorEscala')?.value || '';
     const escolhido = await carregarListaEscalasPublicadas(mesSelecionado);
-    if (escolhido) await carregarEscalaPublicada(escolhido);
+    if (escolhido) {
+      await carregarEscalaPublicada(escolhido);
+    } else {
+      document.getElementById('mensagem').classList.remove('hidden');
+      document.getElementById('mensagem').textContent = 'Nenhuma escala foi publicada até o momento.';
+      document.getElementById('mesPublicacao').textContent = 'Escala ainda não publicada';
+      document.getElementById('ultimaAtualizacao').textContent = '';
+    }
   } catch (erro) {
     console.error(erro);
     document.getElementById('mensagem').textContent =
       'Não foi possível atualizar a lista de escalas publicadas.';
+  } finally {
+    if (spinner) spinner.classList.add('hidden');
+    if (texto) texto.textContent = 'Atualizar';
+    if (botao) botao.disabled = false;
   }
 }
 
