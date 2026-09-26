@@ -1,4 +1,5 @@
-﻿<html lang="pt-BR">
+﻿
+<html lang="pt-BR">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -16,7 +17,7 @@ if (location.protocol === 'http:' || location.protocol === 'https:') {
 }
 </script>
 <link href="./icons/icon-192.png" rel="apple-touch-icon"/>
-<title>SESCI - Sistema de Escala Automática - CCI</title>
+<title>SESCI-Sistema de Escala Automática - CCI</title>
 <!-- Tailwind CSS CDN -->
 <script src="https://cdn.tailwindcss.com"></script>
 <!-- Bibliotecas para exportacao de PDF em pagina unica -->
@@ -306,6 +307,16 @@ body.cci-menu-recolhido .cci-nav-arrow{display:none}
 /* ETAPA 21 — descrições contextuais do menu lateral */
 #cciMenuTooltip{position:fixed;z-index:99999;max-width:280px;padding:8px 10px;border-radius:6px;background:#111827;color:#fff;font-size:12px;line-height:1.35;box-shadow:0 8px 24px rgba(0,0,0,.24);pointer-events:none;opacity:0;visibility:hidden;transform:translateY(-50%);transition:opacity .12s ease;white-space:normal;}
 #cciMenuTooltip.visivel{opacity:1;visibility:visible;}
+
+/* Aviso persistente de escalas geradas ainda não publicadas */
+#avisoEscalasNaoPublicadas{position:fixed;right:18px;bottom:18px;z-index:1300;width:min(390px,calc(100vw - 28px));border:1px solid #f59e0b;border-left:5px solid #d97706;background:#fff7ed;color:#7c2d12;box-shadow:0 10px 30px rgba(120,53,15,.22);border-radius:8px;padding:12px 14px}
+#avisoEscalasNaoPublicadas .aviso-pendencias-titulo{display:flex;align-items:flex-start;gap:9px;font-weight:700;color:#9a3412;font-size:13px}
+#avisoEscalasNaoPublicadas .aviso-pendencias-icone{font-size:19px;line-height:1}
+#avisoEscalasNaoPublicadas .aviso-pendencias-texto{margin-top:6px;font-size:12px;line-height:1.4;color:#9a3412}
+#avisoEscalasNaoPublicadas .aviso-pendencias-lista{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+#avisoEscalasNaoPublicadas .aviso-pendencias-mes{border:1px solid #fdba74;background:#ffedd5;color:#9a3412;border-radius:9999px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer}
+#avisoEscalasNaoPublicadas .aviso-pendencias-mes:hover{background:#fed7aa}
+@media(max-width:767px){#avisoEscalasNaoPublicadas{right:10px;bottom:10px;width:calc(100vw - 20px)}}
 </style></head>
 <body class="bg-gray-100 font-sans text-gray-800">
 <!-- =====================================================
@@ -360,8 +371,14 @@ body.cci-menu-recolhido .cci-nav-arrow{display:none}
     Recarregar agora
   </button>
 </div>
+<!-- AVISO PERSISTENTE DE ESCALAS GERADAS AINDA NÃO PUBLICADAS -->
+<div class="hidden" id="avisoEscalasNaoPublicadas" role="status" aria-live="polite">
+  <div class="aviso-pendencias-titulo"><span class="aviso-pendencias-icone">⚠</span><span id="tituloAvisoEscalasNaoPublicadas">Escala aguardando publicação</span></div>
+  <div class="aviso-pendencias-texto" id="textoAvisoEscalasNaoPublicadas"></div>
+  <div class="aviso-pendencias-lista" id="listaAvisoEscalasNaoPublicadas"></div>
+</div>
 <header class="cci-topbar"><div class="cci-brand"><button aria-label="Abrir menu" class="cci-mobile" onclick="alternarMenuLateral()" type="button">☰</button><div class="cci-brand-mark">SESCI</div><div><div class="cci-brand-title">Sistema de Escala de Serviço - CCI</div><div class="cci-brand-sub">Gestão e geração automática de escalas de serviço</div></div></div><div class="cci-user"><div class="flex shrink-0 items-center gap-3 whitespace-nowrap" id="areaUsuarioLogado"><div class="text-right leading-tight"><div class="text-sm font-bold" id="nomeUsuarioLogado"></div><div class="text-xs" id="perfilUsuarioLogado"></div></div><button class="rounded px-3 py-2 text-sm font-semibold text-white" onclick="sairDoSistema()" type="button">Sair</button></div></div></header>
-<aside class="cci-sidebar" id="menuLateralCCI"><button class="cci-toggle" data-cci-descricao="Expanda ou recolha o menu lateral para aumentar a área de trabalho." onclick="alternarMenuLateral()" title="Expanda ou recolha o menu lateral para aumentar a área de trabalho." type="button"><span class="cci-nav-icon">☰</span><span class="cci-toggle-label">Recolher menu</span></button><div class="cci-nav-title">ESCALA</div><nav class="cci-nav"><div class="cci-nav-group" data-grupo="gerador"><button class="cci-nav-btn cci-nav-parent ativo" data-aba="gerador" data-cci-descricao="Gere, consulte e acompanhe a escala mensal de serviço." onclick="alternarSubmenuCCI('gerador')" title="Gere, consulte e acompanhe a escala mensal de serviço." type="button"><span class="cci-nav-icon">▦</span><span class="cci-nav-label">Escala Mensal</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu aberto" data-submenu="gerador"><button class="cci-submenu-btn ativo" data-aba="gerador" data-cci-descricao="Selecione o período e gere automaticamente uma nova escala mensal." data-subpagina="criar" onclick="abrirSubpaginaCCI('gerador','criar')" title="Selecione o período e gere automaticamente uma nova escala mensal." type="button"><span class="cci-submenu-dot">•</span><span>Criar Escala</span></button><button class="cci-submenu-btn" data-aba="gerador" data-cci-descricao="Consulte, edite, publique e exporte a escala mensal gerada." data-subpagina="visualizacao" onclick="abrirSubpaginaCCI('gerador','visualizacao')" title="Consulte, edite, publique e exporte a escala mensal gerada." type="button"><span class="cci-submenu-dot">•</span><span>Visualizar Escala</span></button><button class="cci-submenu-btn" data-aba="gerador" data-cci-descricao="Consulte os quadrinhos, lastros e totais acumulados dos militares." data-subpagina="quadrinhos" onclick="abrirSubpaginaCCI('gerador','quadrinhos')" title="Consulte os quadrinhos, lastros e totais acumulados dos militares." type="button"><span class="cci-submenu-dot">•</span><span>Quadrinhos e Totais</span></button></div></div><div class="somente-edicao cci-nav-group" data-grupo="militares"><button class="cci-nav-btn cci-nav-parent" data-aba="militares" data-cci-descricao="Cadastre e gerencie os militares que compõem o efetivo." onclick="alternarSubmenuCCI('militares')" title="Cadastre e gerencie os militares que compõem o efetivo." type="button"><span class="cci-nav-icon">♟</span><span class="cci-nav-label">Militares</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="militares"><button class="cci-submenu-btn" data-aba="militares" data-cci-descricao="Inclua um novo militar, sua função e posição de antiguidade." data-subpagina="cadastrar" onclick="abrirSubpaginaCCI('militares','cadastrar')" title="Inclua um novo militar, sua função e posição de antiguidade." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar Militar</span></button><button class="cci-submenu-btn" data-aba="militares" data-cci-descricao="Consulte, edite e organize os militares já cadastrados." data-subpagina="efetivo" onclick="abrirSubpaginaCCI('militares','efetivo')" title="Consulte, edite e organize os militares já cadastrados." type="button"><span class="cci-submenu-dot">•</span><span>Militares Cadastrados</span></button></div></div><div class="somente-edicao cci-nav-group" data-grupo="vagas"><button class="cci-nav-btn cci-nav-parent" data-aba="vagas" data-cci-descricao="Configure as funções, vagas e regras usadas na montagem das escalas." onclick="alternarSubmenuCCI('vagas')" title="Configure as funções, vagas e regras usadas na montagem das escalas." type="button"><span class="cci-nav-icon">☷</span><span class="cci-nav-label">Estrutura da Equipe</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="vagas"><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Cadastre e mantenha as funções existentes na equipe de serviço." data-subpagina="funcoes" onclick="abrirSubpaginaCCI('vagas','funcoes')" title="Cadastre e mantenha as funções existentes na equipe de serviço." type="button"><span class="cci-submenu-dot">•</span><span>Funções da Equipe</span></button><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina quantas vagas de cada função são necessárias em cada serviço." data-subpagina="dimensionamento" onclick="abrirSubpaginaCCI('vagas','dimensionamento')" title="Defina quantas vagas de cada função são necessárias em cada serviço." type="button"><span class="cci-submenu-dot">•</span><span>Dimensionamento do Serviço</span></button><button class="cci-submenu-btn cci-submenu-parent" data-aba="vagas" data-cci-descricao="Configure a distribuição, descanso, lastro, justiça e classificação dos dias." data-submenu-pai="regras" onclick="alternarSubmenuRegrasCCI()" title="Configure a distribuição, descanso, lastro, justiça e classificação dos dias." type="button"><span class="cci-submenu-dot">•</span><span>Regras das Escalas</span><span class="cci-submenu-arrow">›</span></button><div class="cci-submenu-nivel2" data-submenu-nivel2="regras"><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina as regras de geração da escala para cada função do serviço." data-subpagina="regras" onclick="abrirSubpaginaCCI('vagas','regras')" title="Defina as regras de geração da escala para cada função do serviço." type="button"><span class="cci-submenu-dot">·</span><span>Configurações das Regras</span></button><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina quais dias são pretos ou vermelhos e cadastre exceções por data." data-subpagina="classificacao" onclick="abrirSubpaginaCCI('vagas','classificacao')" title="Defina quais dias são pretos ou vermelhos e cadastre exceções por data." type="button"><span class="cci-submenu-dot">·</span><span>Classificação dos Dias</span></button></div></div></div><div class="somente-edicao cci-nav-group" data-grupo="indisponibilidades"><button class="cci-nav-btn cci-nav-parent" data-aba="indisponibilidades" data-cci-descricao="Registre períodos e restrições em que militares não podem concorrer à escala." onclick="alternarSubmenuCCI('indisponibilidades')" title="Registre períodos e restrições em que militares não podem concorrer à escala." type="button"><span class="cci-nav-icon">⊘</span><span class="cci-nav-label">Indisponibilidades</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="indisponibilidades"><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Cadastre férias, cursos, missões, licenças e outras indisponibilidades por período." data-subpagina="periodo" onclick="abrirSubpaginaCCI('indisponibilidades','periodo')" title="Cadastre férias, cursos, missões, licenças e outras indisponibilidades por período." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar por Período</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Defina indisponibilidades recorrentes em determinados dias da semana." data-subpagina="semanal" onclick="abrirSubpaginaCCI('indisponibilidades','semanal')" title="Defina indisponibilidades recorrentes em determinados dias da semana." type="button"><span class="cci-submenu-dot">•</span><span>Indisponibilidade Semanal</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Importe várias indisponibilidades de uma só vez por arquivo CSV." data-subpagina="importar" onclick="abrirSubpaginaCCI('indisponibilidades','importar')" title="Importe várias indisponibilidades de uma só vez por arquivo CSV." type="button"><span class="cci-submenu-dot">•</span><span>Importar CSV</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Consulte e gerencie todas as indisponibilidades já cadastradas." data-subpagina="registros" onclick="abrirSubpaginaCCI('indisponibilidades','registros')" title="Consulte e gerencie todas as indisponibilidades já cadastradas." type="button"><span class="cci-submenu-dot">•</span><span>Registros Cadastrados</span></button></div></div><div class="somente-administrador cci-nav-group" data-grupo="backups"><button class="cci-nav-btn cci-nav-parent" data-aba="backups" data-cci-descricao="Proteja os dados do sistema por meio de exportação, importação e backups." onclick="alternarSubmenuCCI('backups')" title="Proteja os dados do sistema por meio de exportação, importação e backups." type="button"><span class="cci-nav-icon">↻</span><span class="cci-nav-label">Backups</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="backups"><button class="cci-submenu-btn" data-aba="backups" data-cci-descricao="Exporte, importe e gerencie as ferramentas de cópia de segurança." data-subpagina="gerenciar" onclick="abrirSubpaginaCCI('backups','gerenciar')" title="Exporte, importe e gerencie as ferramentas de cópia de segurança." type="button"><span class="cci-submenu-dot">•</span><span>Gerenciar Backups</span></button><button class="cci-submenu-btn" data-aba="backups" data-cci-descricao="Consulte, restaure e gerencie os backups armazenados." data-subpagina="lista" onclick="abrirSubpaginaCCI('backups','lista')" title="Consulte, restaure e gerencie os backups armazenados." type="button"><span class="cci-submenu-dot">•</span><span>Lista de Backups</span></button></div></div><div class="somente-administrador cci-nav-group" data-grupo="usuarios"><button class="cci-nav-btn cci-nav-parent" data-aba="usuarios" data-cci-descricao="Administre usuários, permissões de acesso e histórico de alterações." onclick="alternarSubmenuCCI('usuarios')" title="Administre usuários, permissões de acesso e histórico de alterações." type="button"><span class="cci-nav-icon">▣</span><span class="cci-nav-label">Usuários / Auditoria</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="usuarios"><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Crie um novo usuário e defina seu perfil de acesso ao sistema." data-subpagina="cadastrar" onclick="abrirSubpaginaCCI('usuarios','cadastrar')" title="Crie um novo usuário e defina seu perfil de acesso ao sistema." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar Usuário</span></button><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Consulte e gerencie os usuários cadastrados e suas permissões." data-subpagina="lista" onclick="abrirSubpaginaCCI('usuarios','lista')" title="Consulte e gerencie os usuários cadastrados e suas permissões." type="button"><span class="cci-submenu-dot">•</span><span>Usuários Cadastrados</span></button><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Consulte o histórico das alterações administrativas realizadas no sistema." data-subpagina="auditoria" onclick="abrirSubpaginaCCI('usuarios','auditoria')" title="Consulte o histórico das alterações administrativas realizadas no sistema." type="button"><span class="cci-submenu-dot">•</span><span>Auditoria do Sistema</span></button></div></div></nav></aside><div aria-hidden="true" id="cciMenuTooltip" role="tooltip"></div>
+<aside class="cci-sidebar" id="menuLateralCCI"><button class="cci-toggle" data-cci-descricao="Expanda ou recolha o menu lateral para aumentar a área de trabalho." onclick="alternarMenuLateral()" title="Expanda ou recolha o menu lateral para aumentar a área de trabalho." type="button"><span class="cci-nav-icon">☰</span><span class="cci-toggle-label">Recolher menu</span></button><div class="cci-nav-title">ESCALA</div><nav class="cci-nav"><div class="cci-nav-group" data-grupo="gerador"><button class="cci-nav-btn cci-nav-parent ativo" data-aba="gerador" data-cci-descricao="Gere, consulte e acompanhe a escala mensal de serviço." onclick="alternarSubmenuCCI('gerador')" title="Gere, consulte e acompanhe a escala mensal de serviço." type="button"><span class="cci-nav-icon">▦</span><span class="cci-nav-label">Escala Mensal</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu aberto" data-submenu="gerador"><button class="cci-submenu-btn ativo" data-aba="gerador" data-cci-descricao="Selecione o período e gere automaticamente uma nova escala mensal." data-subpagina="criar" onclick="abrirSubpaginaCCI('gerador','criar')" title="Selecione o período e gere automaticamente uma nova escala mensal." type="button"><span class="cci-submenu-dot">•</span><span>Criar Escala</span></button><button class="cci-submenu-btn" data-aba="gerador" data-cci-descricao="Consulte, edite, publique e exporte a escala mensal gerada." data-subpagina="visualizacao" onclick="abrirSubpaginaCCI('gerador','visualizacao')" title="Consulte, edite, publique e exporte a escala mensal gerada." type="button"><span class="cci-submenu-dot">•</span><span>Visualizar Escala</span></button><button class="cci-submenu-btn" data-aba="gerador" data-cci-descricao="Consulte os quadrinhos, lastros e totais acumulados dos militares." data-subpagina="quadrinhos" onclick="abrirSubpaginaCCI('gerador','quadrinhos')" title="Consulte os quadrinhos, lastros e totais acumulados dos militares." type="button"><span class="cci-submenu-dot">•</span><span>Quadrinhos e Totais</span></button></div></div><div class="somente-edicao cci-nav-group" data-grupo="militares"><button class="cci-nav-btn cci-nav-parent" data-aba="militares" data-cci-descricao="Cadastre e gerencie os militares que compõem as escalas." onclick="alternarSubmenuCCI('militares')" title="Cadastre e gerencie os militares que compõem as escalas." type="button"><span class="cci-nav-icon">♟</span><span class="cci-nav-label">Militares</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="militares"><button class="cci-submenu-btn" data-aba="militares" data-cci-descricao="Inclua um novo militar, sua função e posição de antiguidade." data-subpagina="cadastrar" onclick="abrirSubpaginaCCI('militares','cadastrar')" title="Inclua um novo militar, sua função e posição de antiguidade." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar Militar</span></button><button class="cci-submenu-btn" data-aba="militares" data-cci-descricao="Consulte, edite e organize os militares já cadastrados." data-subpagina="efetivo" onclick="abrirSubpaginaCCI('militares','efetivo')" title="Consulte, edite e organize os militares já cadastrados." type="button"><span class="cci-submenu-dot">•</span><span>Militares Cadastrados</span></button></div></div><div class="somente-edicao cci-nav-group" data-grupo="vagas"><button class="cci-nav-btn cci-nav-parent" data-aba="vagas" data-cci-descricao="Configure as funções, vagas e regras usadas na montagem das escalas." onclick="alternarSubmenuCCI('vagas')" title="Configure as funções, vagas e regras usadas na montagem das escalas." type="button"><span class="cci-nav-icon">☷</span><span class="cci-nav-label">Estrutura da Equipe</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="vagas"><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Cadastre e mantenha as funções existentes na equipe de serviço." data-subpagina="funcoes" onclick="abrirSubpaginaCCI('vagas','funcoes')" title="Cadastre e mantenha as funções existentes na equipe de serviço." type="button"><span class="cci-submenu-dot">•</span><span>Funções da Equipe</span></button><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina quantas vagas de cada função são necessárias em cada serviço." data-subpagina="dimensionamento" onclick="abrirSubpaginaCCI('vagas','dimensionamento')" title="Defina quantas vagas de cada função são necessárias em cada serviço." type="button"><span class="cci-submenu-dot">•</span><span>Dimensionamento do Serviço</span></button><button class="cci-submenu-btn cci-submenu-parent" data-aba="vagas" data-cci-descricao="Configure a distribuição, descanso, lastro, justiça e classificação dos dias." data-submenu-pai="regras" onclick="alternarSubmenuRegrasCCI()" title="Configure a distribuição, descanso, lastro, justiça e classificação dos dias." type="button"><span class="cci-submenu-dot">•</span><span>Regras das Escalas</span><span class="cci-submenu-arrow">›</span></button><div class="cci-submenu-nivel2" data-submenu-nivel2="regras"><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina as regras de geração da escala para cada função do serviço." data-subpagina="regras" onclick="abrirSubpaginaCCI('vagas','regras')" title="Defina as regras de geração da escala para cada função do serviço." type="button"><span class="cci-submenu-dot">·</span><span>Configurações das Regras</span></button><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina as cores dos dias da semana e cadastre exceções por data." data-subpagina="classificacao" onclick="abrirSubpaginaCCI('vagas','classificacao')" title="Defina as cores dos dias da semana e cadastre exceções por data." type="button"><span class="cci-submenu-dot">·</span><span>Classificação dos Dias</span></button></div></div></div><div class="somente-edicao cci-nav-group" data-grupo="indisponibilidades"><button class="cci-nav-btn cci-nav-parent" data-aba="indisponibilidades" data-cci-descricao="Registre períodos e restrições em que militares não podem concorrer à escala." onclick="alternarSubmenuCCI('indisponibilidades')" title="Registre períodos e restrições em que militares não podem concorrer à escala." type="button"><span class="cci-nav-icon">⊘</span><span class="cci-nav-label">Indisponibilidades</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="indisponibilidades"><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Cadastre férias, cursos, missões, licenças e outras indisponibilidades por período." data-subpagina="periodo" onclick="abrirSubpaginaCCI('indisponibilidades','periodo')" title="Cadastre férias, cursos, missões, licenças e outras indisponibilidades por período." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar por Período</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Defina indisponibilidades recorrentes em determinados dias da semana." data-subpagina="semanal" onclick="abrirSubpaginaCCI('indisponibilidades','semanal')" title="Defina indisponibilidades recorrentes em determinados dias da semana." type="button"><span class="cci-submenu-dot">•</span><span>Indisponibilidade Semanal</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Importe várias indisponibilidades de uma só vez por arquivo CSV." data-subpagina="importar" onclick="abrirSubpaginaCCI('indisponibilidades','importar')" title="Importe várias indisponibilidades de uma só vez por arquivo CSV." type="button"><span class="cci-submenu-dot">•</span><span>Importar CSV</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Consulte e gerencie todas as indisponibilidades já cadastradas." data-subpagina="registros" onclick="abrirSubpaginaCCI('indisponibilidades','registros')" title="Consulte e gerencie todas as indisponibilidades já cadastradas." type="button"><span class="cci-submenu-dot">•</span><span>Registros Cadastrados</span></button></div></div><div class="somente-administrador cci-nav-group" data-grupo="backups"><button class="cci-nav-btn cci-nav-parent" data-aba="backups" data-cci-descricao="Proteja os dados do sistema por meio de exportação, importação e backups." onclick="alternarSubmenuCCI('backups')" title="Proteja os dados do sistema por meio de exportação, importação e backups." type="button"><span class="cci-nav-icon">↻</span><span class="cci-nav-label">Backups</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="backups"><button class="cci-submenu-btn" data-aba="backups" data-cci-descricao="Exporte, importe e gerencie as ferramentas de cópia de segurança." data-subpagina="gerenciar" onclick="abrirSubpaginaCCI('backups','gerenciar')" title="Exporte, importe e gerencie as ferramentas de cópia de segurança." type="button"><span class="cci-submenu-dot">•</span><span>Gerenciar Backups</span></button><button class="cci-submenu-btn" data-aba="backups" data-cci-descricao="Consulte, restaure e gerencie os backups armazenados." data-subpagina="lista" onclick="abrirSubpaginaCCI('backups','lista')" title="Consulte, restaure e gerencie os backups armazenados." type="button"><span class="cci-submenu-dot">•</span><span>Lista de Backups</span></button></div></div><div class="somente-administrador cci-nav-group" data-grupo="usuarios"><button class="cci-nav-btn cci-nav-parent" data-aba="usuarios" data-cci-descricao="Administre usuários, permissões de acesso e histórico de alterações." onclick="alternarSubmenuCCI('usuarios')" title="Administre usuários, permissões de acesso e histórico de alterações." type="button"><span class="cci-nav-icon">▣</span><span class="cci-nav-label">Usuários / Auditoria</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="usuarios"><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Crie um novo usuário e defina seu perfil de acesso ao sistema." data-subpagina="cadastrar" onclick="abrirSubpaginaCCI('usuarios','cadastrar')" title="Crie um novo usuário e defina seu perfil de acesso ao sistema." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar Usuário</span></button><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Consulte e gerencie os usuários cadastrados e suas permissões." data-subpagina="lista" onclick="abrirSubpaginaCCI('usuarios','lista')" title="Consulte e gerencie os usuários cadastrados e suas permissões." type="button"><span class="cci-submenu-dot">•</span><span>Usuários Cadastrados</span></button><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Consulte o histórico das alterações administrativas realizadas no sistema." data-subpagina="auditoria" onclick="abrirSubpaginaCCI('usuarios','auditoria')" title="Consulte o histórico das alterações administrativas realizadas no sistema." type="button"><span class="cci-submenu-dot">•</span><span>Auditoria do Sistema</span></button></div></div></nav></aside><div aria-hidden="true" id="cciMenuTooltip" role="tooltip"></div>
 <main class="cci-main"><div class="cci-page-heading"><div><h2 class="cci-page-title" id="tituloPaginaCCI">Escala Mensal</h2><p class="cci-page-sub" id="subtituloPaginaCCI">Geração, consulta e manutenção da escala mensal.</p></div></div>
 <!-- ABA 1: GERADOR E VISUALIZAÇÃO DA ESCALA -->
 <section class="aba-conteudo space-y-4" id="aba-gerador">
@@ -441,12 +458,22 @@ body.cci-menu-recolhido .cci-nav-arrow{display:none}
 <h3 class="font-bold text-lg">Quadrinhos, Lastros e Totais acumulados até o mês selecionado</h3>
 <div class="flex flex-wrap items-center gap-3">
 <label class="flex items-center gap-2 text-sm font-semibold text-gray-600">
+<span>Mês de referência:</span>
+<select aria-label="Mês de referência dos quadrinhos" class="border p-2 rounded text-sm font-normal text-gray-800" id="mesEscalaQuadrinhos" onchange="atualizarPeriodoPelosQuadrinhos()">
+<option value="01">Janeiro</option><option value="02">Fevereiro</option><option value="03">Março</option>
+<option value="04">Abril</option><option value="05">Maio</option><option value="06">Junho</option>
+<option value="07">Julho</option><option value="08">Agosto</option><option value="09">Setembro</option>
+<option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+</select>
+<select aria-label="Ano de referência dos quadrinhos" class="border p-2 rounded text-sm font-normal text-gray-800" id="anoEscalaQuadrinhos" onchange="atualizarPeriodoPelosQuadrinhos()"></select>
+</label>
+<label class="flex items-center gap-2 text-sm font-semibold text-gray-600">
 <span>Filtrar por função:</span>
 <select class="border p-2 rounded text-sm font-normal text-gray-800" id="filtroFuncaoResumo" onchange="renderizarResumoServicos()">
 <option value="">Todas as funções</option>
 </select>
 </label>
-<p class="text-xs text-gray-500">Q = Quadrinho (serviço efetivamente tirado) | L = Lastro | Total = Quadrinho + Lastro. A classificação preto/vermelho segue as regras do mês.</p>
+<p class="text-xs text-gray-500">Q = Quadrinho (serviço efetivamente tirado) | L = Lastro | Total = Quadrinho + Lastro. Cada cor definida possui contagem própria de quadrinhos e lastros na escala diferenciada.</p>
 </div>
 </div>
 <table class="w-full border-collapse text-sm">
@@ -543,7 +570,19 @@ body.cci-menu-recolhido .cci-nav-arrow{display:none}
 <p class="mb-2 text-xs font-semibold text-gray-700">Regra semanal</p>
 <p class="mb-3 text-xs text-gray-500">Defina a classificação padrão de cada dia da semana. Uma exceção cadastrada para uma data específica sempre prevalece.</p>
 <div class="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7" id="classificacaoSemanalDias"></div>
-</div><form class="somente-edicao flex flex-wrap gap-3 items-end mb-3" onsubmit="salvarDiaEspecial(event)">
+</div>
+<div class="somente-edicao mb-4 rounded border bg-white p-3">
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <div><p class="text-xs font-semibold text-gray-700">Cores adicionais da escala diferenciada</p><p class="mt-1 text-xs text-gray-500">Crie categorias como Âmbar ou Verde. Cada cor passa a ter rotação, quadrinhos e lastros próprios.</p></div>
+  </div>
+  <form class="mt-3 flex flex-wrap items-end gap-2" onsubmit="salvarCorServicoPersonalizada(event)">
+    <label class="text-xs font-semibold text-gray-600">Nome<input id="nomeNovaCorServico" class="mt-1 block w-40 rounded border p-2 text-sm" placeholder="Ex.: Âmbar" required></label>
+    <label class="text-xs font-semibold text-gray-600">Cor<input id="hexNovaCorServico" type="color" value="#f59e0b" class="mt-1 block h-9 w-16 rounded border p-1"></label>
+    <button class="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Adicionar cor</button>
+  </form>
+  <div id="listaCoresServicoPersonalizadas" class="mt-3 space-y-2"></div>
+</div>
+<form class="somente-edicao flex flex-wrap gap-3 items-end mb-3" onsubmit="salvarDiaEspecial(event)">
 <div>
 <label class="block text-xs font-semibold text-gray-600 mb-1">Data</label>
 <input class="border p-2 rounded text-sm" id="dataDiaEspecial" type="date"/>
@@ -561,7 +600,7 @@ body.cci-menu-recolhido .cci-nav-arrow{display:none}
 <input class="border p-2 rounded text-sm w-full" id="motivoDiaEspecial" placeholder="Feriado, expediente excepcional, sem expediente..." type="text"/>
 </div>
 <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-semibold">Salvar classificação</button>
-</form><p class="mb-2 text-xs text-gray-500">Você também pode clicar diretamente no número de um dia da escala já gerada para escolher entre Automático, Preto ou Vermelho. A classificação gravada no mês é preservada no histórico.</p><div class="flex flex-wrap gap-2 text-sm" id="listaDiasEspeciais"></div>
+</form><p class="mb-2 text-xs text-gray-500">Você também pode clicar diretamente no número de um dia da escala já gerada para escolher entre Automático e qualquer cor cadastrada. A classificação gravada no mês é preservada no histórico.</p><div class="flex flex-wrap gap-2 text-sm" id="listaDiasEspeciais"></div>
 </div>
 </section>
 <!-- ABA 4: INDISPONIBILIDADES -->
@@ -694,7 +733,7 @@ body.cci-menu-recolhido .cci-nav-arrow{display:none}
 <div class="flex flex-wrap items-center justify-between gap-3">
 <div>
 <h3 class="font-bold text-lg">Backups do Sistema</h3>
-<p class="mt-1 text-sm text-gray-600">Backups armazenados no Google Drive e ferramentas para exportação e importação dos dados do sistema.</p>
+<p class="mt-1 text-sm text-gray-600">Backups armazenados no Servidor e ferramentas para exportação e importação dos dados do sistema.</p>
 </div>
 <div class="flex flex-wrap gap-2">
 <button class="rounded bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700" onclick="criarBackupManualInterface()" type="button">Criar Backup Manual</button>
@@ -1159,6 +1198,8 @@ let usuarioLogado = null;
         0: 'vermelho', 1: 'preto', 2: 'preto', 3: 'preto', 4: 'preto', 5: 'preto', 6: 'vermelho'
       }),
       excecoesClassificacaoDias: lerLocalStorageJSON('cci_excecoes_classificacao_dias', {}),
+      coresServicoPersonalizadas: lerLocalStorageJSON('cci_cores_servico_personalizadas', []),
+      regrasCoresServico: lerLocalStorageJSON('cci_regras_cores_servico', {}),
       regrasEscala: lerLocalStorageJSON('cci_regras_escala', {}),
       versaoEsquemaCCI: 6,
       // Escala atualmente aberta na interface.
@@ -1496,7 +1537,7 @@ async function salvarEstadoNoServidor(
       alert(falhaLogica
         ? (mensagemErro || 'O servidor recusou o salvamento.')
         : 'Não foi possível confirmar o salvamento no servidor.\n\n' +
-          'Sua alteração continua visível nesta página, mas pode não ter sido salva no Google Drive.\n\n' +
+          'Sua alteração continua visível nesta página, mas pode não ter sido salva no Servidor.\n\n' +
           'Verifique sua conexão e tente salvar novamente antes de fechar ou atualizar a página.');
 
       const erroComunicacao = erro instanceof Error ? erro : new Error(String(erro || 'Falha de comunicação.'));
@@ -1678,7 +1719,9 @@ async function salvarEstadoNoServidor(
     }
 
     function obterContagemEscalasMilitarFuncaoAte(militarId, funcao, mesReferencia = '') {
-      const contagem = { preto: 0, vermelho: 0 };
+      // MULTICORES: mantém uma chave independente para toda cor realmente usada,
+      // inclusive cores sem dia semanal fixo (ex.: Roxo somente em 24/25 de dezembro).
+      const contagem = Object.fromEntries(obterCoresServico().map(c => [c.id, 0]));
       Object.values(estado.escalas)
         .filter(escala => escala.mesAno && (!mesReferencia || escala.mesAno <= mesReferencia))
         .forEach(escala => {
@@ -1686,16 +1729,17 @@ async function salvarEstadoNoServidor(
           const [ano, mes] = escala.mesAno.split('-').map(Number);
           Object.entries(escala.dados).forEach(([dia, vagas]) => {
             const data = new Date(ano, mes - 1, Number(dia));
-            const cor = escalaTemDiaVermelho(escala, data, Number(dia)) ? 'vermelho' : 'preto';
+            const cor = obterCorDiaEscala(escala, data, Number(dia));
+            if (!(cor in contagem)) contagem[cor] = 0;
             Object.entries(vagas).forEach(([chave, idSalvo]) => {
-              if (idSalvo === militarId && obterFuncaoDaChave(chave) === funcao) {
-                contagem[cor]++;
-              }
+              if (idSalvo === militarId && obterFuncaoDaChave(chave) === funcao) contagem[cor]++;
             });
           });
           Object.values(escala.lastrosIndisponibilidade || {}).flat().forEach(lastro => {
             if (lastro.militarId === militarId && lastro.funcao === funcao) {
-              contagem[lastro.cor === 'vermelho' ? 'vermelho' : 'preto']++;
+              const cor = lastro.cor || 'preto';
+              if (!(cor in contagem)) contagem[cor] = 0;
+              contagem[cor]++;
             }
           });
         });
@@ -1841,14 +1885,14 @@ async function salvarEstadoNoServidor(
                 <fieldset class="min-w-0 rounded border bg-gray-50 p-3">
                   <legend class="px-1 text-[11px] font-bold uppercase tracking-wide text-gray-500">Distribuição</legend>
                   <label class="block text-xs font-semibold text-gray-700">Tipo de escala
-                    <select data-regra-funcao="${f}" data-regra-campo="distribuicao" onchange="atualizarDisponibilidadeEqualizacaoCores('${f}')" title="Separar preto/vermelho mantém controles e rotações distintos conforme a classificação do dia. Corrida usa uma única sequência para todos os dias." class="mt-1 w-full max-w-64 rounded border bg-white px-2 py-1.5 text-sm">
-                      <option title="Usa a classificação dos dias para controlar e distribuir serviços pretos e vermelhos separadamente." value="semanaFimSemana" ${r.distribuicao === 'semanaFimSemana' ? 'selected' : ''}>Separar preto/vermelho</option>
+                    <select data-regra-funcao="${f}" data-regra-campo="distribuicao" onchange="atualizarDisponibilidadeEqualizacaoCores('${f}')" title="Quadrinhos mantém controles, contagens e rotações distintas conforme a cor/classificação do dia. Corrida usa uma única sequência para todos os dias." class="mt-1 w-full max-w-64 rounded border bg-white px-2 py-1.5 text-sm">
+                      <option title="Usa a classificação dos dias para controlar e distribuir serviços pretos e vermelhos separadamente." value="semanaFimSemana" ${r.distribuicao === 'semanaFimSemana' ? 'selected' : ''}>Quadrinhos</option>
                       <option title="Usa uma única sequência de rotação para os serviços, sem separar a distribuição por preto e vermelho." value="corrida" ${r.distribuicao === 'corrida' ? 'selected' : ''}>Corrida</option>
                     </select>
                   </label>
                   <div data-regra-grupo="somenteDiferenciada" class="${r.distribuicao === 'corrida' ? 'opacity-50' : ''}">
                     <label class="mt-3 flex items-start gap-2 text-xs font-medium text-gray-700">
-                      <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.vermelho.permitirConsecutivos ? 'checked' : ''} ${r.distribuicao === 'corrida' ? 'disabled' : ''} data-regra-funcao="${f}" data-regra-campo="vermelhosConsecutivos" title="Disponível apenas em Separar preto/vermelho. Marcado: permite ao mesmo militar tirar serviços vermelhos consecutivos dentro das demais regras.">
+                      <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.vermelho.permitirConsecutivos ? 'checked' : ''} ${r.distribuicao === 'corrida' ? 'disabled' : ''} data-regra-funcao="${f}" data-regra-campo="vermelhosConsecutivos" title="Disponível apenas em Quadrinhos. Marcado: permite ao mesmo militar tirar serviços vermelhos consecutivos dentro das demais regras.">
                       <span>Permitir vermelhos consecutivos</span>
                     </label>
                     <p data-regra-aviso="somenteDiferenciada" class="mt-1 pl-6 text-[10px] ${r.distribuicao === 'corrida' ? 'text-amber-700' : 'hidden text-gray-500'}">Não se aplica à escala corrida.</p>
@@ -1904,10 +1948,10 @@ async function salvarEstadoNoServidor(
                     </label>
                     <div data-regra-grupo="equalizacaoCores" class="${r.distribuicao === 'corrida' ? 'opacity-50' : ''}">
                       <label class="flex items-start gap-2 text-xs font-medium text-gray-700">
-                        <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.justica.separarPretoVermelho !== false ? 'checked' : ''} ${r.distribuicao === 'corrida' ? 'disabled' : ''} data-regra-funcao="${f}" data-regra-campo="justicaSepararCores" title="Marcado: em Separar preto/vermelho, prioriza quem possui menor quantidade acumulada da cor do serviço. Desmarcado: preto e vermelho mantêm rotações independentes, sem priorização pelo menor acumulado da cor.">
+                        <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.justica.separarPretoVermelho !== false ? 'checked' : ''} ${r.distribuicao === 'corrida' ? 'disabled' : ''} data-regra-funcao="${f}" data-regra-campo="justicaSepararCores" title="Marcado: em Quadrinhos, prioriza quem possui menor quantidade acumulada da cor do serviço. Desmarcado: preto e vermelho mantêm rotações independentes, sem priorização pelo menor acumulado da cor.">
                         <span>Priorizar menor quantidade da cor do serviço</span>
                       </label>
-                      <p data-regra-aviso="equalizacaoCores" class="mt-1 pl-6 text-[10px] ${r.distribuicao === 'corrida' ? 'text-amber-700' : 'hidden text-gray-500'}">Disponível apenas em “Separar preto/vermelho”.</p>
+                      <p data-regra-aviso="equalizacaoCores" class="mt-1 pl-6 text-[10px] ${r.distribuicao === 'corrida' ? 'text-amber-700' : 'hidden text-gray-500'}">Disponível apenas em “Quadrinhos”.</p>
                     </div>
                     <label class="flex items-start gap-2 text-xs font-medium text-gray-700 sm:col-span-2 xl:col-span-1 2xl:col-span-2">
                       <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.justica.usarRotacaoDesempate !== false ? 'checked' : ''} ${r.distribuicao === 'corrida' ? 'disabled' : ''} data-regra-funcao="${f}" data-regra-campo="justicaRotacao" title="Marcado: quando candidatos ficam empatados pelos critérios anteriores, a posição na rotação decide a prioridade. Desmarcado: a rotação não é usada como critério de desempate.">
@@ -1995,6 +2039,202 @@ async function salvarEstadoNoServidor(
       }
     }
 
+    function normalizarIdCorServico(valor) {
+      return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+    }
+
+    function obterCoresServico() {
+      const base = [
+        { id: 'preto', nome: 'Preto', hex: '#374151', padrao: true },
+        { id: 'vermelho', nome: 'Vermelho', hex: '#dc2626', padrao: true }
+      ];
+      const extras = (estado.coresServicoPersonalizadas || []).filter(c => c?.id && !['preto','vermelho'].includes(c.id));
+      return [...base, ...extras];
+    }
+
+    function obterCorServicoPorId(id) {
+      return obterCoresServico().find(c => c.id === id) || obterCoresServico()[0];
+    }
+
+    function obterOpcoesCoresServico(corAtual = '', incluirAutomatico = false) {
+      const automatico = incluirAutomatico ? `<option value="automatico"${corAtual === 'automatico' ? ' selected' : ''}>Automático</option>` : '';
+      return automatico + obterCoresServico().map(c => `<option value="${c.id}"${corAtual === c.id ? ' selected' : ''}>${c.nome}</option>`).join('');
+    }
+
+    function garantirRegrasCorServico(corId) {
+      estado.regrasCoresServico ||= {};
+      estado.regrasCoresServico[corId] ||= { evitarConsecutivos: false, confirmarExcecao: true };
+      return estado.regrasCoresServico[corId];
+    }
+
+    function renderizarCoresServicoPersonalizadas() {
+      const lista = document.getElementById('listaCoresServicoPersonalizadas');
+      if (!lista) return;
+      const extras = estado.coresServicoPersonalizadas || [];
+      lista.innerHTML = extras.length ? extras.map(c => {
+        const regra = garantirRegrasCorServico(c.id);
+        return `<div class="flex flex-wrap items-center gap-3 rounded border bg-gray-50 p-2">
+          <span class="h-5 w-5 rounded-full border" style="background:${c.hex}"></span>
+          <span class="min-w-24 text-sm font-semibold">${c.nome}</span>
+          <label class="flex items-center gap-2 text-xs text-gray-700"><input type="checkbox" ${regra.evitarConsecutivos ? 'checked' : ''} onchange="alterarRegraCorServico('${c.id}','evitarConsecutivos',this.checked)">Não permitir duas ocorrências consecutivas desta cor para o mesmo militar</label>
+          <label class="flex items-center gap-2 text-xs text-gray-700"><input type="checkbox" ${regra.confirmarExcecao !== false ? 'checked' : ''} onchange="alterarRegraCorServico('${c.id}','confirmarExcecao',this.checked)">Perguntar antes de quebrar a regra quando for impossível cumpri-la</label>
+          <button type="button" onclick="removerCorServicoPersonalizada('${c.id}')" class="ml-auto text-xs font-semibold text-red-600 hover:underline">Excluir</button>
+        </div>`;
+      }).join('') : '<p class="text-xs text-gray-400">Nenhuma cor adicional cadastrada.</p>';
+    }
+
+    async function salvarCorServicoPersonalizada(evento) {
+      evento.preventDefault();
+      const nome = document.getElementById('nomeNovaCorServico')?.value.trim();
+      const hex = document.getElementById('hexNovaCorServico')?.value || '#f59e0b';
+      let id = normalizarIdCorServico(nome);
+      if (!nome || !id) return alert('Informe um nome válido para a cor.');
+      if (['preto','vermelho','automatico'].includes(id) || obterCoresServico().some(c => c.id === id)) return alert('Já existe uma cor com esse nome.');
+      estado.coresServicoPersonalizadas ||= [];
+      estado.coresServicoPersonalizadas.push({ id, nome, hex });
+      garantirRegrasCorServico(id);
+      document.getElementById('nomeNovaCorServico').value = '';
+      await salvarEstado();
+      renderizarClassificacaoSemanal();
+      renderizarCoresServicoPersonalizadas();
+      const sel = document.getElementById('corDiaEspecial'); if (sel) sel.innerHTML = obterOpcoesCoresServico(sel.value || 'vermelho', true);
+      renderizarResumoServicos();
+    }
+
+    async function alterarRegraCorServico(corId, campo, valor) {
+      garantirRegrasCorServico(corId)[campo] = Boolean(valor);
+      await salvarEstado();
+    }
+
+    async function removerCorServicoPersonalizada(corId) {
+      const cor = obterCorServicoPorId(corId);
+      if (!cor || cor.padrao) return alert('As cores padrão Preto e Vermelho não podem ser excluídas.');
+
+      const diasSemanaEmUso = Object.entries(estado.classificacaoSemanal || {})
+        .filter(([, valor]) => valor === corId)
+        .map(([dia]) => Number(dia));
+      const excecoesEmUso = Object.entries(estado.excecoesClassificacaoDias || {})
+        .filter(([, valor]) => valor?.cor === corId)
+        .map(([data]) => data);
+
+      let referenciasEscalas = 0;
+      let referenciasLastros = 0;
+      Object.values(estado.escalas || {}).forEach(escala => {
+        referenciasEscalas += Object.values(escala?.coresDias || {}).filter(valor => valor === corId).length;
+        Object.values(escala?.lastrosIndisponibilidade || {}).forEach(lastros => {
+          if (Array.isArray(lastros)) referenciasLastros += lastros.filter(l => l?.cor === corId).length;
+          else if (lastros && typeof lastros === 'object') {
+            referenciasLastros += Object.values(lastros).filter(l => l?.cor === corId).length;
+          }
+        });
+      });
+
+      const totalReferencias = diasSemanaEmUso.length + excecoesEmUso.length + referenciasEscalas + referenciasLastros;
+      if (totalReferencias > 0) {
+        const nomesDias = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+        const detalhes = [];
+        if (diasSemanaEmUso.length) detalhes.push(`regra semanal: ${diasSemanaEmUso.map(d => nomesDias[d]).join(', ')}`);
+        if (excecoesEmUso.length) detalhes.push(`${excecoesEmUso.length} data(s) específica(s)`);
+        if (referenciasEscalas) detalhes.push(`${referenciasEscalas} dia(s) gravado(s) em escala(s)`);
+        if (referenciasLastros) detalhes.push(`${referenciasLastros} lastro(s)`);
+
+        const substituir = confirm(
+          `A cor ${cor.nome} ainda possui referência(s) em ${detalhes.join('; ')}.\n\n` +
+          `Deseja substituir todas essas referências por Preto e excluir a cor ${cor.nome}?`
+        );
+        if (!substituir) return;
+      } else if (!confirm(`Excluir a cor ${cor.nome}?`)) {
+        return;
+      }
+
+      mostrarProcessamento(`Excluindo a cor ${cor.nome}, aguarde...`);
+      try {
+        // Ao excluir uma cor, qualquer referência remanescente é migrada para
+        // Preto para impedir IDs órfãos que bloqueiem futuras exclusões ou
+        // contaminem quadrinhos, lastros e classificações.
+        Object.keys(estado.classificacaoSemanal || {}).forEach(dia => {
+          if (estado.classificacaoSemanal[dia] === corId) estado.classificacaoSemanal[dia] = 'preto';
+        });
+        Object.values(estado.excecoesClassificacaoDias || {}).forEach(excecao => {
+          if (excecao?.cor === corId) excecao.cor = 'preto';
+        });
+
+        Object.values(estado.escalas || {}).forEach(escala => {
+          if (!escala) return;
+          Object.keys(escala.coresDias || {}).forEach(data => {
+            if (escala.coresDias[data] === corId) escala.coresDias[data] = 'preto';
+          });
+          Object.values(escala.lastrosIndisponibilidade || {}).forEach(lastros => {
+            if (Array.isArray(lastros)) {
+              lastros.forEach(l => { if (l?.cor === corId) l.cor = 'preto'; });
+            } else if (lastros && typeof lastros === 'object') {
+              Object.values(lastros).forEach(l => { if (l?.cor === corId) l.cor = 'preto'; });
+            }
+          });
+        });
+
+        if (estado.escala && typeof estado.escala === 'object') {
+          Object.keys(estado.escala.coresDias || {}).forEach(data => {
+            if (estado.escala.coresDias[data] === corId) estado.escala.coresDias[data] = 'preto';
+          });
+        }
+
+        estado.coresServicoPersonalizadas = (estado.coresServicoPersonalizadas || []).filter(c => c.id !== corId);
+        delete estado.regrasCoresServico?.[corId];
+
+        const salvou = await salvarEstado();
+        if (salvou === false) throw new Error('O servidor não confirmou o salvamento.');
+
+        renderizarClassificacaoSemanal();
+        renderizarCoresServicoPersonalizadas();
+        renderizarDiasEspeciais();
+        renderizarResumoServicos();
+        renderizarTabelaEscala();
+        const sel = document.getElementById('corDiaEspecial');
+        if (sel) sel.innerHTML = obterOpcoesCoresServico('automatico', true);
+      } catch (erro) {
+        console.error('Erro ao excluir cor personalizada:', erro);
+        alert(`Não foi possível excluir a cor ${cor.nome}. ${erro?.message || erro}`);
+      } finally {
+        ocultarProcessamento();
+      }
+    }
+
+    function obterCorDiaEscala(escala, data, diaNumero = data.getDate()) {
+      const dataStr = `${data.getFullYear()}-${String(data.getMonth()+1).padStart(2,'0')}-${String(diaNumero).padStart(2,'0')}`;
+      if (escala?.coresDias?.[dataStr]) return escala.coresDias[dataStr];
+      if (escala?.diasVermelhos?.includes(dataStr)) return 'vermelho';
+      if (escala?.mesAno && escala !== estado.escala && !escala.coresDias) return 'preto';
+      return obterClassificacaoDia(data).cor;
+    }
+
+    function obterUltimoMilitarDaCorAntes(militarId, funcao, corId, dataAtual, novaEscala, mesAnoAtual) {
+      let ultimoTempo = -Infinity;
+      let achou = false;
+      Object.values(estado.escalas || {}).forEach(esc => {
+        if (!esc?.dados || !esc.mesAno || esc.mesAno > mesAnoAtual) return;
+        const [a,m] = esc.mesAno.split('-').map(Number);
+        Object.entries(esc.dados).forEach(([d,vagas]) => {
+          const dt = new Date(a,m-1,Number(d)); const t=dt.getTime();
+          if (t >= dataAtual.getTime() || obterCorDiaEscala(esc,dt,Number(d)) !== corId) return;
+          Object.entries(vagas||{}).forEach(([ch,id]) => { if (id===militarId && obterFuncaoDaChave(ch)===funcao && t>ultimoTempo) { ultimoTempo=t; achou=true; } });
+        });
+      });
+      const [aa,mm]=mesAnoAtual.split('-').map(Number);
+      Object.entries(novaEscala || {}).forEach(([d,vagas]) => {
+        const dt=new Date(aa,mm-1,Number(d)); const t=dt.getTime();
+        if (t>=dataAtual.getTime() || obterClassificacaoDia(dt).cor!==corId) return;
+        Object.entries(vagas||{}).forEach(([ch,id]) => { if (id===militarId && obterFuncaoDaChave(ch)===funcao && t>ultimoTempo) { ultimoTempo=t; achou=true; } });
+      });
+      if (!achou) return false;
+      // É consecutivo se não existe ocorrência desta cor entre o último serviço do militar e a data atual.
+      let existeOcorrenciaIntermediaria=false;
+      for (let t=ultimoTempo+86400000; t<dataAtual.getTime(); t+=86400000) {
+        const dt=new Date(t); if (obterClassificacaoDia(dt).cor===corId) { existeOcorrenciaIntermediaria=true; break; }
+      }
+      return !existeOcorrenciaIntermediaria;
+    }
+
     function renderizarClassificacaoSemanal() {
       const container = document.getElementById('classificacaoSemanalDias');
       if (!container) return;
@@ -2002,17 +2242,17 @@ async function salvarEstadoNoServidor(
       container.innerHTML = nomes.map((nome, diaSemana) => {
         const cor = estado.classificacaoSemanal?.[diaSemana] || (diaSemana === 0 || diaSemana === 6 ? 'vermelho' : 'preto');
         return `<label class="text-xs font-semibold text-gray-700">${nome}
-          <select onchange="alterarClassificacaoSemanal(${diaSemana}, this.value)" class="mt-1 w-full rounded border bg-white p-2 text-xs">
-            <option value="preto" ${cor === 'preto' ? 'selected' : ''}>Preto</option>
-            <option value="vermelho" ${cor === 'vermelho' ? 'selected' : ''}>Vermelho</option>
-          </select>
+          <select onchange="alterarClassificacaoSemanal(${diaSemana}, this.value)" class="mt-1 w-full rounded border bg-white p-2 text-xs">${obterOpcoesCoresServico(cor)}</select>
         </label>`;
       }).join('');
+      renderizarCoresServicoPersonalizadas();
+      const seletorEspecial = document.getElementById('corDiaEspecial');
+      if (seletorEspecial) seletorEspecial.innerHTML = obterOpcoesCoresServico(seletorEspecial.value || 'vermelho', true);
     }
 
     async function alterarClassificacaoSemanal(diaSemana, cor) {
       estado.classificacaoSemanal ||= {};
-      estado.classificacaoSemanal[diaSemana] = cor === 'vermelho' ? 'vermelho' : 'preto';
+      estado.classificacaoSemanal[diaSemana] = obterCoresServico().some(c => c.id === cor) ? cor : 'preto';
       await salvarEstado();
       renderizarTabelaEscala();
       renderizarResumoServicos();
@@ -2029,7 +2269,7 @@ async function salvarEstadoNoServidor(
     function obterClassificacaoDia(data) {
       const dataStr = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}-${String(data.getDate()).padStart(2, '0')}`;
       const excecao = estado.excecoesClassificacaoDias?.[dataStr];
-      if (excecao?.cor === 'preto' || excecao?.cor === 'vermelho') {
+      if (excecao?.cor && obterCoresServico().some(c => c.id === excecao.cor)) {
         return { cor: excecao.cor, origem: 'excecao_manual', motivo: excecao.motivo || '' };
       }
       return obterClassificacaoAutomaticaDia(data);
@@ -2052,11 +2292,7 @@ async function salvarEstadoNoServidor(
       caixa.className = 'dropdown-cor-dia';
 
       const select = document.createElement('select');
-      select.innerHTML = `
-        <option value="automatico"${atual === 'automatico' ? ' selected' : ''}>Automático</option>
-        <option value="preto"${atual === 'preto' ? ' selected' : ''}>Preto</option>
-        <option value="vermelho"${atual === 'vermelho' ? ' selected' : ''}>Vermelho</option>
-      `;
+      select.innerHTML = obterOpcoesCoresServico(atual, true);
 
       caixa.appendChild(select);
       document.body.appendChild(caixa);
@@ -2117,35 +2353,67 @@ async function salvarEstadoNoServidor(
 
     async function alterarClassificacaoDiaNaEscala(dataStr, novaCor) {
       if (!podeEditarSistema()) return;
-      if (!['automatico', 'preto', 'vermelho'].includes(novaCor)) return;
+      if (novaCor !== 'automatico' && !obterCoresServico().some(c => c.id === novaCor)) return;
 
-      const [ano, mes, dia] = dataStr.split('-').map(Number);
-      const data = new Date(ano, mes - 1, dia);
+      mostrarProcessamento('Alterando classificação do dia, aguarde...');
+      // Dá ao navegador a oportunidade de desenhar o spinner antes de salvar.
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
-      estado.excecoesClassificacaoDias ||= {};
-      if (novaCor === 'automatico') {
-        delete estado.excecoesClassificacaoDias[dataStr];
-      } else {
-        estado.excecoesClassificacaoDias[dataStr] = {
-          cor: novaCor,
-          motivo: 'Alteração direta na escala'
-        };
-      }
+      try {
+        const [ano, mes, dia] = dataStr.split('-').map(Number);
+        const data = new Date(ano, mes - 1, dia);
+        const mesAno = `${ano}-${String(mes).padStart(2, '0')}`;
 
-      const escala = estado.escalas?.[`${ano}-${String(mes).padStart(2, '0')}`];
-      if (escala) {
-        escala.diasVermelhos ||= [];
-        escala.diasVermelhos = escala.diasVermelhos.filter(d => d !== dataStr);
-        if (obterClassificacaoDia(data).cor === 'vermelho') {
-          escala.diasVermelhos.push(dataStr);
+        estado.excecoesClassificacaoDias ||= {};
+        if (novaCor === 'automatico') {
+          delete estado.excecoesClassificacaoDias[dataStr];
+        } else {
+          estado.excecoesClassificacaoDias[dataStr] = {
+            cor: novaCor,
+            motivo: 'Alteração direta na escala'
+          };
         }
-        escala.diasVermelhos.sort();
-      }
 
-      await salvarEstado();
-      renderizarDiasEspeciais();
-      renderizarTabelaEscala();
-      renderizarResumoServicos();
+        // A escala gerada congela a classificação em coresDias. Portanto,
+        // alterar somente a exceção global não basta: é necessário atualizar
+        // também o snapshot do próprio mês para a mudança aparecer imediatamente
+        // e participar dos quadrinhos, lastros e regras daquela cor.
+        const corEfetiva = novaCor === 'automatico'
+          ? obterClassificacaoAutomaticaDia(data).cor
+          : novaCor;
+
+        const escala = estado.escalas?.[mesAno];
+        if (escala) {
+          escala.coresDias ||= {};
+          escala.coresDias[dataStr] = corEfetiva;
+
+          escala.diasVermelhos ||= [];
+          escala.diasVermelhos = escala.diasVermelhos.filter(d => d !== dataStr);
+          if (corEfetiva === 'vermelho') escala.diasVermelhos.push(dataStr);
+          escala.diasVermelhos.sort();
+        }
+
+        // Garante a atualização também quando estado.escala não compartilha a
+        // mesma referência do item armazenado em estado.escalas.
+        if (estado.escala?.mesAno === mesAno) {
+          estado.escala.coresDias ||= {};
+          estado.escala.coresDias[dataStr] = corEfetiva;
+          estado.escala.diasVermelhos ||= [];
+          estado.escala.diasVermelhos = estado.escala.diasVermelhos.filter(d => d !== dataStr);
+          if (corEfetiva === 'vermelho') estado.escala.diasVermelhos.push(dataStr);
+          estado.escala.diasVermelhos.sort();
+        }
+
+        await salvarEstado();
+        renderizarDiasEspeciais();
+        renderizarTabelaEscala();
+        renderizarResumoServicos();
+      } catch (erro) {
+        console.error('Erro ao alterar classificação do dia:', erro);
+        alert(`Não foi possível alterar a classificação do dia. ${erro?.message || erro}`);
+      } finally {
+        ocultarProcessamento();
+      }
     }
 
     function salvarDiaEspecial(evento) {
@@ -2161,7 +2429,7 @@ async function salvarEstadoNoServidor(
       if (cor === 'automatico') {
         delete estado.excecoesClassificacaoDias[data];
       } else {
-        estado.excecoesClassificacaoDias[data] = { cor, motivo: motivo || (cor === 'vermelho' ? 'Dia considerado vermelho' : 'Dia considerado preto') };
+        estado.excecoesClassificacaoDias[data] = { cor, motivo: motivo || `Dia considerado ${obterCorServicoPorId(cor).nome}` };
       }
       salvarEstado();
       document.getElementById('dataDiaEspecial').value = '';
@@ -2194,11 +2462,10 @@ async function salvarEstadoNoServidor(
 
       container.innerHTML = dias.map(([data, info]) => {
         const [ano, mes, dia] = data.split('-');
-        const cor = info?.cor === 'preto' ? 'Preto' : 'Vermelho';
-        const classes = info?.cor === 'preto'
-          ? 'border-gray-300 bg-gray-100 text-gray-800'
-          : 'border-red-200 bg-red-50 text-red-800';
-        return `<span class="inline-flex items-center gap-2 rounded border px-3 py-1 ${classes}">
+        const definicaoCor = obterCorServicoPorId(info?.cor || 'preto');
+        const cor = definicaoCor.nome;
+        const classes = 'border-gray-300 bg-gray-50 text-gray-800';
+        return `<span class="inline-flex items-center gap-2 rounded border px-3 py-1 ${classes}" style="border-left:4px solid ${definicaoCor.hex}">
           <span>${dia}/${mes}/${ano} - ${cor}${info?.motivo ? ` - ${info.motivo}` : ''}</span>
           <button type="button" onclick="removerDiaEspecial('${data}')" class="somente-edicao font-bold hover:opacity-70">x</button>
         </span>`;
@@ -2225,6 +2492,54 @@ async function salvarEstadoNoServidor(
         selectAnoVisualizacao.innerHTML = selectAno.innerHTML;
         selectAnoVisualizacao.value = String(anoSelecionado);
       }
+      const selectAnoQuadrinhos = document.getElementById('anoEscalaQuadrinhos');
+      if (selectAnoQuadrinhos) {
+        selectAnoQuadrinhos.innerHTML = selectAno.innerHTML;
+        selectAnoQuadrinhos.value = String(anoSelecionado);
+      }
+    }
+
+    function obterEscalasGeradasNaoPublicadas() {
+      return Object.entries(estado.escalas || {})
+        .filter(([mesAno, escala]) => /^\d{4}-\d{2}$/.test(mesAno)
+          && escala?.dados
+          && Object.keys(escala.dados).length > 0
+          && !escala.publicadaEm)
+        .map(([mesAno]) => mesAno)
+        .sort();
+    }
+
+    function abrirEscalaPendentePublicacao(mesAno) {
+      if (!/^\d{4}-\d{2}$/.test(mesAno || '')) return;
+      definirMesAnoEscala(mesAno);
+      renderizarTabelaEscala();
+      abrirSubpaginaCCI('gerador', 'visualizacao');
+    }
+
+    function atualizarAvisoEscalasNaoPublicadas() {
+      const aviso = document.getElementById('avisoEscalasNaoPublicadas');
+      const titulo = document.getElementById('tituloAvisoEscalasNaoPublicadas');
+      const texto = document.getElementById('textoAvisoEscalasNaoPublicadas');
+      const lista = document.getElementById('listaAvisoEscalasNaoPublicadas');
+      if (!aviso || !titulo || !texto || !lista) return;
+
+      const pendentes = obterEscalasGeradasNaoPublicadas();
+      if (!pendentes.length) {
+        aviso.classList.add('hidden');
+        lista.innerHTML = '';
+        return;
+      }
+
+      titulo.textContent = pendentes.length === 1
+        ? 'Há 1 escala criada aguardando publicação'
+        : `Há ${pendentes.length} escalas criadas aguardando publicação`;
+      texto.textContent = pendentes.length === 1
+        ? 'Esta escala foi criada, mas ainda não foi publicada. O aviso permanecerá até a publicação.'
+        : 'Estas escalas foram criadas, mas ainda não foram publicadas. O aviso permanecerá até que todas sejam publicadas.';
+      lista.innerHTML = pendentes.map(mesAno =>
+        `<button type="button" class="aviso-pendencias-mes" onclick="abrirEscalaPendentePublicacao('${mesAno}')" title="Abrir ${formatarMesAno(mesAno)} para publicação">${formatarMesAno(mesAno)}</button>`
+      ).join('');
+      aviso.classList.remove('hidden');
     }
 
     function atualizarCoresMesesEscala() {
@@ -2250,6 +2565,8 @@ async function salvarEstadoNoServidor(
 
       aplicarCores(document.getElementById('mesEscala'), document.getElementById('anoEscala')?.value || '');
       aplicarCores(document.getElementById('mesEscalaVisualizacao'), document.getElementById('anoEscalaVisualizacao')?.value || '');
+      aplicarCores(document.getElementById('mesEscalaQuadrinhos'), document.getElementById('anoEscalaQuadrinhos')?.value || '');
+      atualizarAvisoEscalasNaoPublicadas();
     }
 
     function atualizarMesAnoEscala() {
@@ -2259,16 +2576,32 @@ async function salvarEstadoNoServidor(
       if (campo) campo.value = (ano && mes) ? `${ano}-${mes}` : '';
       const mesVisualizacao = document.getElementById('mesEscalaVisualizacao');
       const anoVisualizacao = document.getElementById('anoEscalaVisualizacao');
+      const mesQuadrinhos = document.getElementById('mesEscalaQuadrinhos');
+      const anoQuadrinhos = document.getElementById('anoEscalaQuadrinhos');
       if (mesVisualizacao) mesVisualizacao.value = mes;
       if (anoVisualizacao) anoVisualizacao.value = ano;
+      if (mesQuadrinhos) mesQuadrinhos.value = mes;
+      if (anoQuadrinhos) anoQuadrinhos.value = ano;
       atualizarCoresMesesEscala();
       renderizarDiasEspeciais();
       renderizarTabelaEscala();
+      renderizarResumoServicos();
     }
 
     function atualizarPeriodoPelaVisualizacao() {
       const mes = document.getElementById('mesEscalaVisualizacao')?.value || '';
       const ano = document.getElementById('anoEscalaVisualizacao')?.value || '';
+      if (!mes || !ano) return;
+      const selectMes = document.getElementById('mesEscala');
+      const selectAno = document.getElementById('anoEscala');
+      if (selectMes) selectMes.value = mes;
+      if (selectAno) selectAno.value = ano;
+      atualizarMesAnoEscala();
+    }
+
+    function atualizarPeriodoPelosQuadrinhos() {
+      const mes = document.getElementById('mesEscalaQuadrinhos')?.value || '';
+      const ano = document.getElementById('anoEscalaQuadrinhos')?.value || '';
       if (!mes || !ano) return;
       const selectMes = document.getElementById('mesEscala');
       const selectAno = document.getElementById('anoEscala');
@@ -2289,8 +2622,12 @@ async function salvarEstadoNoServidor(
       if (campo) campo.value = valor;
       const mesVisualizacao = document.getElementById('mesEscalaVisualizacao');
       const anoVisualizacao = document.getElementById('anoEscalaVisualizacao');
+      const mesQuadrinhos = document.getElementById('mesEscalaQuadrinhos');
+      const anoQuadrinhos = document.getElementById('anoEscalaQuadrinhos');
       if (mesVisualizacao) mesVisualizacao.value = mes;
       if (anoVisualizacao) anoVisualizacao.value = ano;
+      if (mesQuadrinhos) mesQuadrinhos.value = mes;
+      if (anoQuadrinhos) anoQuadrinhos.value = ano;
       atualizarCoresMesesEscala();
     }
 
@@ -2343,6 +2680,12 @@ async function inicializar() {
     return;
   }
 
+  // Após a autenticação, mantém a interface coberta até que o estado seja
+  // carregado e todos os seletores estejam sincronizados com o mês corrente.
+  mostrarProcessamento('Carregando sistema e atualizando mês atual...');
+
+  // Garante que o navegador desenhe o overlay antes das próximas operações.
+  await new Promise(resolve => requestAnimationFrame(() => resolve()));
 
   try {
 
@@ -2350,12 +2693,24 @@ async function inicializar() {
 
     inicializarInterface(true);
 
+    // Reforça a sincronização dos três seletores (Criar, Visualizar e
+    // Quadrinhos) antes de liberar a tela ao usuário.
+    const agora = new Date();
+    const mesAtual = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`;
+    definirMesAnoEscala(mesAtual);
+    atualizarMesAnoEscala();
+
+    // Aguarda uma pintura com o valor correto já aplicado nos dropdowns.
+    await new Promise(resolve => requestAnimationFrame(() => resolve()));
+
   } catch (erro) {
 
     console.error(
       'Não foi possível inicializar o sistema:',
       erro
     );
+  } finally {
+    ocultarProcessamento();
   }
 }
 
@@ -3601,7 +3956,7 @@ async function sairDoSistema() {
 
       const id = botao.dataset.backupId;
       const nome = botao.dataset.backupNome;
-      if (!confirm(`Excluir este backup?\n\n${nome}\n\nO arquivo será enviado para a lixeira do Google Drive.`)) return;
+      if (!confirm(`Excluir este backup?\n\n${nome}\n\nO arquivo será enviado para a lixeira do Servidor.`)) return;
 
       botao.disabled = true;
       try {
@@ -3609,7 +3964,7 @@ async function sairDoSistema() {
         const resultado = await executarAppsScript('excluirBackup', id, versaoServidor,tokenSessao);
         if (resultado?.conflito) return alertarConflitoBackup(resultado.mensagem);
         if (!resultado?.sucesso) throw new Error(resultado?.mensagem || 'Falha ao excluir backup.');
-        alert('Backup enviado para a lixeira do Google Drive.');
+        alert('Backup enviado para a lixeira do Servidor.');
         await carregarListaBackups();
       } catch (erro) {
         console.error('Erro ao excluir backup:', erro);
@@ -5000,7 +5355,7 @@ if (
         .sort((a, b) => Number(a) - Number(b))
         .forEach(dia => {
           const dataObj = new Date(anoAnterior, mesAnterior - 1, Number(dia));
-          const corServico = escalaTemDiaVermelho(escalaAnterior, dataObj, Number(dia)) ? 'vermelho' : 'preto';
+          const corServico = obterCorDiaEscala(escalaAnterior, dataObj, Number(dia));
 
           Object.entries(escalaAnterior.dados[dia]).forEach(([chave, militarId]) => {
             if (!militarId) return;
@@ -5024,7 +5379,7 @@ if (
 
       Object.keys(escalaAnterior.dados).sort((a, b) => Number(a) - Number(b)).forEach(dia => {
         const dataObj = new Date(anoAnterior, mesAnterior - 1, Number(dia));
-        const ehFimDeSemana = escalaTemDiaVermelho(escalaAnterior, dataObj, Number(dia));
+        const corServico = obterCorDiaEscala(escalaAnterior, dataObj, Number(dia));
 
         Object.entries(escalaAnterior.dados[dia]).forEach(([chave, militarId]) => {
           if (!militarId) return;
@@ -5034,7 +5389,7 @@ if (
           const funcao = chave.slice(0, separador);
           const tipoFuncao = tiposAnteriores[funcao] || 'corrida';
           const chaveRotacao = tipoFuncao === 'semanaFimSemana'
-            ? `${funcao}:${ehFimDeSemana ? 'fimSemana' : 'semana'}`
+            ? `${funcao}:cor:${corServico}`
             : `${funcao}:todos`;
           const numeroDia = Number(dia);
 
@@ -5057,7 +5412,7 @@ if (
       const tiposAnteriores = tiposEscala || obterTiposEscalaDaEscala(escalaAnterior);
       Object.keys(escalaAnterior.dados).sort((a, b) => Number(a) - Number(b)).forEach(dia => {
         const dataObj = new Date(anoAnterior, mesAnterior - 1, Number(dia));
-        const ehFimDeSemana = escalaTemDiaVermelho(escalaAnterior, dataObj, Number(dia));
+        const corServico = obterCorDiaEscala(escalaAnterior, dataObj, Number(dia));
 
         Object.entries(escalaAnterior.dados[dia]).forEach(([chave, militarId]) => {
           if (!militarId) return;
@@ -5066,7 +5421,7 @@ if (
           const funcao = chave.slice(0, separador);
           const tipoFuncao = tiposAnteriores[funcao] || 'corrida';
           const chaveRotacao = tipoFuncao === 'semanaFimSemana'
-            ? `${funcao}:${ehFimDeSemana ? 'fimSemana' : 'semana'}`
+            ? `${funcao}:cor:${corServico}`
             : `${funcao}:todos`;
           ultimasDatas[`${militarId}:${chaveRotacao}`] = dataObj.getTime();
           ultimasDatas[militarId] = dataObj.getTime();
@@ -5220,6 +5575,7 @@ try {
       let alteracoesManuais = {};
       const estruturaGerada = { funcoes: [...estado.funcoes], vagas: { ...estado.vagas } };
       const diasVermelhos = [];
+      const coresDias = {};
       let historicoServicos = {}; 
       let diasDaSemanaServico = {}; 
       let contadorEventosRotacao = {};
@@ -5287,16 +5643,28 @@ try {
         .filter(escala => escala.mesAno && escala.mesAno < mesAno)
         .forEach(escala => obterContagemEscalaPorFuncao(escala, contagemAnoGeracao));
 
+      // MULTICORES — carrega o histórico real de Quadrinhos + Lastros de cada
+      // cor e função antes de iniciar o mês. Assim a justiça de Âmbar, Verde
+      // ou qualquer nova cor não recomeça do zero a cada geração.
+      estruturaGerada.funcoes.forEach(funcao => {
+        const contagemFuncao = Object.fromEntries(
+          estado.militares.map(m => [m.id, contagemSeparadaGeracao[m.id][funcao]])
+        );
+        Object.values(estado.escalas || {})
+          .filter(escala => escala?.mesAno && escala.mesAno < mesAno)
+          .sort((a,b) => a.mesAno.localeCompare(b.mesAno))
+          .forEach(escala => obterContagemSeparadaEscala(escala, contagemFuncao, funcao));
+      });
+
       estruturaGerada.funcoes.forEach(funcao => {
         const ultimoMilitar = ultimosMilitaresPorFuncao[funcao];
         const tipoFuncao = tiposEscala[funcao] || 'corrida';
         ultimoMilitarPorRotacao[`${funcao}:todos`] = ultimoMilitar;
-        ultimoMilitarPorRotacao[`${funcao}:semana`] = ultimoMilitar;
-        ultimoMilitarPorRotacao[`${funcao}:fimSemana`] = null;
         contadorEventosRotacao[`${funcao}:todos`] = 0;
-        contadorEventosRotacao[`${funcao}:semana`] = 0;
-        contadorEventosRotacao[`${funcao}:fimSemana`] = 0;
-        [`${funcao}:semana`, `${funcao}:fimSemana`].forEach(chaveRotacao => {
+        obterCoresServico().forEach(cor => {
+          const chaveRotacao = `${funcao}:cor:${cor.id}`;
+          ultimoMilitarPorRotacao[chaveRotacao] = ultimosMilitaresPorFuncaoECor[`${funcao}:${cor.id}`] || null;
+          contadorEventosRotacao[chaveRotacao] = 0;
           militaresAdiantadosRotacao[chaveRotacao] = new Set(compensacoesAnteriores[chaveRotacao]?.adiantados || []);
           bloqueiosRotacao[chaveRotacao] = { ...(compensacoesAnteriores[chaveRotacao]?.bloqueios || {}) };
           if (compensacoesAnteriores[chaveRotacao]?.pendente) {
@@ -5345,7 +5713,9 @@ try {
         const dataObj = new Date(ano, mes - 1, dia);
         const diaSemana = dataObj.getDay(); 
         const ehFimDeSemana = diaSemana === 0 || diaSemana === 6;
-        const servicoVermelho = ehServicoVermelho(dataObj);
+        const corServico = obterClassificacaoDia(dataObj).cor;
+        const servicoVermelho = corServico === 'vermelho';
+        coresDias[dataStr] = corServico;
         if (servicoVermelho) diasVermelhos.push(dataStr);
 
         novaEscala[dia] = {};
@@ -5394,8 +5764,12 @@ try {
             && efetivoDisponivelFuncao <= 7;
           if (usarDiferenciadaTemporaria && !diferenciadaTemporariaAtivaPorFuncao[col.funcao]) {
             const ultimoCorrida = ultimoMilitarPorRotacao[`${col.funcao}:todos`];
-            ultimoMilitarPorRotacao[`${col.funcao}:semana`] = ultimoMilitarPorFuncaoECor[`${col.funcao}:preto`] || ultimoCorrida;
-            ultimoMilitarPorRotacao[`${col.funcao}:fimSemana`] = ultimoMilitarPorFuncaoECor[`${col.funcao}:vermelho`] || null;
+            obterCoresServico().forEach(cor => {
+              const chaveCor = `${col.funcao}:cor:${cor.id}`;
+              if (ultimoMilitarPorRotacao[chaveCor] === undefined || ultimoMilitarPorRotacao[chaveCor] === null) {
+                ultimoMilitarPorRotacao[chaveCor] = ultimoMilitarPorFuncaoECor[`${col.funcao}:${cor.id}`] || (cor.id === 'preto' ? ultimoCorrida : null);
+              }
+            });
           }
           diferenciadaTemporariaAtivaPorFuncao[col.funcao] = usarDiferenciadaTemporaria;
           const tipoFuncaoHistorico = escalaExistenteAntesGeracao?.tiposUsadosPorDia?.[dia]?.[col.funcao];
@@ -5408,7 +5782,7 @@ try {
             && servicoVermelho
             && !regrasFuncaoDia.vermelho?.permitirConsecutivos;
           const chaveRotacao = tipoFuncao === 'semanaFimSemana'
-            ? `${col.funcao}:${servicoVermelho ? 'fimSemana' : 'semana'}`
+            ? `${col.funcao}:cor:${corServico}`
             : `${col.funcao}:todos`;
           const chavePeriodoAtual = tipoFuncao === 'semanaFimSemana'
             ? obterChavePeriodo(dataObj, servicoVermelho)
@@ -5442,11 +5816,9 @@ try {
               if (!contagemAnoGeracao[militarLastro.id][col.funcao]) {
                 contagemAnoGeracao[militarLastro.id][col.funcao] = { preto: 0, vermelho: 0 };
               }
-              const corLastro = lastro.cor === 'vermelho' ? 'vermelho' : 'preto';
-              contagemAnoGeracao[militarLastro.id][col.funcao][corLastro]++;
-              if (contagemSeparadaGeracao[militarLastro.id]?.[col.funcao]?.[corLastro]) {
-                contagemSeparadaGeracao[militarLastro.id][col.funcao][corLastro].lastros++;
-              }
+              const corLastro = lastro.cor || 'preto';
+              contagemAnoGeracao[militarLastro.id][col.funcao][corLastro] = (contagemAnoGeracao[militarLastro.id][col.funcao][corLastro] || 0) + 1;
+              garantirCorNaContagem(contagemSeparadaGeracao[militarLastro.id][col.funcao], corLastro).lastros++;
               militaresComLastroPorIndisponibilidade.push(militarLastro.id);
             });
           }
@@ -5461,7 +5833,7 @@ try {
             if (lastrosIndisponibilidade[dia].some(lastro => `${dia}|${lastro.chave}|${lastro.militarId}` === chaveLastro)) {
               return false;
             }
-            const cor = servicoVermelho ? 'vermelho' : 'preto';
+            const cor = corServico;
             lastrosIndisponibilidade[dia].push({
               militarId: militar.id,
               funcao: col.funcao,
@@ -5477,10 +5849,8 @@ try {
             if (!contagemAnoGeracao[militar.id][col.funcao]) {
               contagemAnoGeracao[militar.id][col.funcao] = { preto: 0, vermelho: 0 };
             }
-            contagemAnoGeracao[militar.id][col.funcao][cor]++;
-            if (contagemSeparadaGeracao[militar.id]?.[col.funcao]?.[cor]) {
-              contagemSeparadaGeracao[militar.id][col.funcao][cor].lastros++;
-            }
+            contagemAnoGeracao[militar.id][col.funcao][cor] = (contagemAnoGeracao[militar.id][col.funcao][cor] || 0) + 1;
+            garantirCorNaContagem(contagemSeparadaGeracao[militar.id][col.funcao], cor).lastros++;
             militaresComLastroPorIndisponibilidade.push(militar.id);
             return true;
           };
@@ -5590,7 +5960,7 @@ try {
               data: dataObj,
               escala: null,
               tipoFuncao,
-              classificacaoDiaOverride: servicoVermelho ? 'vermelho' : 'preto',
+              classificacaoDiaOverride: corServico,
               servicosMilitar: servicosParaMotor,
               idsJaEscaladosNoDia: Object.values(novaEscala[dia]).filter(Boolean),
               ignorarIndisponibilidade: true,
@@ -5695,6 +6065,18 @@ try {
 
           let candidatos = obterMilitaresParaEscala(col.funcao).filter(m => podeSerEscalado(m));
           let excecaoVermelhaConsecutiva = false;
+          let excecaoCorConsecutiva = false;
+          const regraCorAtual = garantirRegrasCorServico(corServico);
+          if (tipoFuncao === 'semanaFimSemana' && corServico !== 'vermelho' && regraCorAtual.evitarConsecutivos) {
+            const candidatosSemRepetirCor = candidatos.filter(m => !obterUltimoMilitarDaCorAntes(m.id, col.funcao, corServico, dataObj, novaEscala, mesAno));
+            if (candidatosSemRepetirCor.length > 0) {
+              candidatos = candidatosSemRepetirCor;
+            } else if (candidatos.length > 0) {
+              const autorizar = regraCorAtual.confirmarExcecao === false || confirm(`Não há candidato para ${dia}/${String(mes).padStart(2,'0')} sem repetir consecutivamente a cor ${obterCorServicoPorId(corServico).nome} na função ${col.funcao}. Deseja abrir uma exceção somente para esta vaga?`);
+              if (autorizar) excecaoCorConsecutiva = true;
+              else candidatos = [];
+            }
+          }
 
           if (tipoFuncao !== 'semanaFimSemana' && proximoMilitarDaRotacao && militaresDaRotacao.length > 0) {
             let indiceAnaliseCorrida = militaresDaRotacao.findIndex(militar => militar.id === proximoMilitarDaRotacao.id);
@@ -5760,8 +6142,11 @@ try {
               candidatosComVermelhaConsecutiva = filtrarMilitaresAdiantados(candidatosComVermelhaConsecutiva);
             }
 
-            candidatos = candidatosComVermelhaConsecutiva;
-            excecaoVermelhaConsecutiva = candidatos.length > 0;
+            if (candidatosComVermelhaConsecutiva.length > 0) {
+              const autorizarVermelho = confirm(`Não há candidato para ${dia}/${String(mes).padStart(2,'0')} sem quebrar a regra de vermelhos consecutivos na função ${col.funcao}. Deseja abrir uma exceção somente para esta vaga?`);
+              candidatos = autorizarVermelho ? candidatosComVermelhaConsecutiva : [];
+              excecaoVermelhaConsecutiva = autorizarVermelho;
+            }
           }
 
           if (tipoFuncao === 'semanaFimSemana'
@@ -5821,7 +6206,7 @@ try {
           }
 
           if (candidatos.length > 0) {
-            const tipoContagemJustica = servicoVermelho ? 'vermelho' : 'preto';
+            const tipoContagemJustica = corServico;
             const regrasJusticaFuncao = obterRegrasEfetivasFuncao(col.funcao, tipoFuncao);
             const usarJusticaConfiguravel = tipoFuncao === 'semanaFimSemana';
             // ETAPA 53 — a justificativa usa exatamente o mesmo modo de decisão
@@ -5829,8 +6214,8 @@ try {
             // o acumulado da cor não participa da escolha e não pode aparecer como motivo.
             const priorizarMenorQuantidadeCor = usarJusticaConfiguravel
               && regrasJusticaFuncao.justica?.separarPretoVermelho !== false;
-            const rotuloCorJustificativa = servicoVermelho ? 'vermelho' : 'preto';
-            const rotuloRotacaoJustificativa = servicoVermelho ? 'vermelha' : 'preta';
+            const rotuloCorJustificativa = obterCorServicoPorId(corServico).nome.toLowerCase();
+            const rotuloRotacaoJustificativa = `da cor ${obterCorServicoPorId(corServico).nome}`;
             const obterDadosCandidato = militar => {
               const servicos = historicoServicos[militar.id];
               const contagemSeparada = contagemSeparadaGeracao[militar.id]?.[col.funcao] || criarContagemQuadrinhoLastro();
@@ -5893,7 +6278,7 @@ try {
             const escolhido = candidatos[0];
             novaEscala[dia][col.chave] = escolhido.id;
             if (contagemSeparadaGeracao[escolhido.id]?.[col.funcao]) {
-              contagemSeparadaGeracao[escolhido.id][col.funcao][tipoContagemJustica].quadrinhos++;
+              garantirCorNaContagem(contagemSeparadaGeracao[escolhido.id][col.funcao], tipoContagemJustica).quadrinhos++;
             }
             const militarEraPendente = pendenciasRotacao[chaveRotacao] === escolhido.id;
             const militarEraProximo = proximoMilitarDaRotacao?.id === escolhido.id;
@@ -5903,8 +6288,8 @@ try {
               : [];
             const explicacao = [
               `${obterNomeMilitar(escolhido.id)} foi escalado em ${formatarDataBR(dataObj)} para ${col.chave}.`,
-              `Tipo de serviço: ${servicoVermelho ? 'vermelho' : 'preto'}.`,
-              `Rotação usada: ${tipoFuncao === 'semanaFimSemana' ? (servicoVermelho ? 'fim de semana/feriado' : 'dias úteis') : 'corrida'}.`
+              `Tipo de serviço: ${obterCorServicoPorId(corServico).nome}.`,
+              `Rotação usada: ${tipoFuncao === 'semanaFimSemana' ? `cor ${obterCorServicoPorId(corServico).nome}` : 'corrida'}.`
             ];
             if (usarDiferenciadaTemporaria) {
               explicacao.push(`A escala está configurada como corrida, mas nesta data havia(m) apenas ${efetivoDisponivelFuncao} militares aptos por indisponibilidade cadastrada, indisponibilidade por dia da semana ou início de indisponibilidade no dia seguinte; por isso foram aplicados temporariamente os critérios da escala por quadrinho.`);
@@ -5935,7 +6320,7 @@ try {
             }
             if (militaresComLastroPorIndisponibilidade.length > 0) {
               const minimoLastroJustificativa = Math.max(1, Number(obterRegrasEfetivasFuncao(col.funcao, tipoFuncao).lastro?.minimoDiasIndisponibilidade || 30));
-              explicacao.push(`Lastro computado por indisponibilidade de ${minimoLastroJustificativa} dias consecutivos ou mais, incluindo registros consecutivos ou sobrepostos quando existirem: ${militaresComLastroPorIndisponibilidade.map(obterNomeMilitar).join(', ')} recebeu 1 lastro ${servicoVermelho ? 'vermelho' : 'preto'} nesta vaga.`);
+              explicacao.push(`Lastro computado por indisponibilidade de ${minimoLastroJustificativa} dias consecutivos ou mais, incluindo registros consecutivos ou sobrepostos quando existirem: ${militaresComLastroPorIndisponibilidade.map(obterNomeMilitar).join(', ')} recebeu 1 lastro ${obterCorServicoPorId(corServico).nome.toLowerCase()} nesta vaga.`);
             }
             if (ultimoMilitar) {
               explicacao.push(`${houvePulosAutomaticos ? 'Último militar da rotação após os pulos' : 'Último militar considerado nesta rotação'}: ${obterNomeMilitar(ultimoMilitar)}.`);
@@ -5943,7 +6328,7 @@ try {
               explicacao.push('Não havia último militar anterior nesta rotação; a escala iniciou pela ordem cadastrada.');
             }
             if (proximoMilitarDaRotacao) {
-              explicacao.push(`${houvePulosAutomaticos ? 'Próximo efetivo pela ordem após os pulos' : 'Próximo previsto pela ordem'}: ${obterNomeMilitar(proximoMilitarDaRotacao.id)}.`);
+              explicacao.push(`${houvePulosAutomaticos ? 'Próximo pela ordem após os pulos' : 'Próximo previsto pela ordem'}: ${obterNomeMilitar(proximoMilitarDaRotacao.id)}.`);
             }
             const analiseRotacao = obterAnaliseRotacaoAteEscolhido(escolhido);
             if (analiseRotacao.length > 0) {
@@ -6046,11 +6431,11 @@ try {
             ultimoEventoPorMilitar[`${escolhido.id}:${chaveRotacao}`] = eventoRotacao;
             ultimaDataServicoPorMilitar[escolhido.id] = dataObj.getTime();
             ultimoServicoFoiVermelhoPorMilitar[escolhido.id] = servicoVermelho;
-            ultimoMilitarPorFuncaoECor[`${col.funcao}:${servicoVermelho ? 'vermelho' : 'preto'}`] = escolhido.id;
+            ultimoMilitarPorFuncaoECor[`${col.funcao}:${corServico}`] = escolhido.id;
             if (!contagemAnoGeracao[escolhido.id][col.funcao]) {
               contagemAnoGeracao[escolhido.id][col.funcao] = { preto: 0, vermelho: 0 };
             }
-            contagemAnoGeracao[escolhido.id][col.funcao][servicoVermelho ? 'vermelho' : 'preto']++;
+            contagemAnoGeracao[escolhido.id][col.funcao][corServico] = (contagemAnoGeracao[escolhido.id][col.funcao][corServico] || 0) + 1;
             historicoServicos[escolhido.id].push(dia);
             diasDaSemanaServico[escolhido.id][diaSemana] = (diasDaSemanaServico[escolhido.id][diaSemana] || 0) + 1;
           } else {
@@ -6059,9 +6444,7 @@ try {
         });
 
         Object.keys(contadorEventosRotacao).forEach(chave => {
-          if (chave.endsWith(':todos')
-            || (chave.endsWith(':semana') && !servicoVermelho)
-            || (chave.endsWith(':fimSemana') && servicoVermelho)) {
+          if (chave.endsWith(':todos') || chave.endsWith(`:cor:${corServico}`)) {
             contadorEventosRotacao[chave]++;
           }
         });
@@ -6098,6 +6481,7 @@ try {
               alteracoesManuais: {},
               estrutura: structuredClone(estruturaGerada),
               diasVermelhos: [...diasVermelhos],
+              coresDias: { ...coresDias },
               dados: {},
               substituicoes: {},
               justificativas: {},
@@ -6174,6 +6558,7 @@ delete escalaBase.alteracoesManuais[dia][chave];
           escalaBase.estrutura.vagas[funcao] = estado.vagas[funcao] || 0;
         });
         escalaBase.diasVermelhos = diasVermelhos;
+        escalaBase.coresDias = { ...(escalaBase.coresDias || {}), ...coresDias };
 
         novaEscala = escalaBase.dados;
         substituicoes = escalaBase.substituicoes;
@@ -6199,6 +6584,7 @@ delete escalaBase.alteracoesManuais[dia][chave];
   alteracoesManuais,
   estrutura: estruturaGerada,
   diasVermelhos,
+  coresDias,
   dados: novaEscala,
   substituicoes,
   justificativas,
@@ -6251,6 +6637,8 @@ const salvou = await salvarEstado();
 
 if (salvou) {
   renderizarTabelaEscala();
+  atualizarCoresMesesEscala();
+  atualizarAvisoEscalasNaoPublicadas();
 }
 
 } catch (erro) {
@@ -6395,12 +6783,11 @@ if (salvou) {
       estruturaEscala.funcoes.forEach(funcao => {
         const ultimoMilitar = ultimosMilitaresPorFuncao[funcao];
         ultimoMilitarPorRotacao[`${funcao}:todos`] = ultimoMilitar;
-        ultimoMilitarPorRotacao[`${funcao}:semana`] = ultimoMilitar;
-        ultimoMilitarPorRotacao[`${funcao}:fimSemana`] = null;
         contadorEventosRotacao[`${funcao}:todos`] = 0;
-        contadorEventosRotacao[`${funcao}:semana`] = 0;
-        contadorEventosRotacao[`${funcao}:fimSemana`] = 0;
-        [`${funcao}:semana`, `${funcao}:fimSemana`].forEach(chaveRotacao => {
+        obterCoresServico().forEach(cor => {
+          const chaveRotacao = `${funcao}:cor:${cor.id}`;
+          ultimoMilitarPorRotacao[chaveRotacao] = ultimosMilitaresPorFuncaoECor[`${funcao}:${cor.id}`] || null;
+          contadorEventosRotacao[chaveRotacao] = 0;
           militaresAdiantadosRotacao[chaveRotacao] = new Set(compensacoesAnteriores[chaveRotacao]?.adiantados || []);
           bloqueiosRotacao[chaveRotacao] = { ...(compensacoesAnteriores[chaveRotacao]?.bloqueios || {}) };
           if (compensacoesAnteriores[chaveRotacao]?.pendente) {
@@ -6444,13 +6831,14 @@ if (salvou) {
         const dataStr = `${ano}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
         const dataObj = new Date(ano, mes - 1, dia);
         const diaSemana = dataObj.getDay();
-        const servicoVermelho = escalaTemDiaVermelho(escala, dataObj, dia);
+        const corServico = obterCorDiaEscala(escala, dataObj, dia);
+        const servicoVermelho = corServico === 'vermelho';
         escalaParcial[dia] = {};
 
         colunasVagas.forEach(col => {
           const tipoFuncao = escala.tiposUsadosPorDia?.[dia]?.[col.funcao] || tiposEscala[col.funcao] || 'corrida';
           const chaveRotacao = tipoFuncao === 'semanaFimSemana'
-            ? `${col.funcao}:${servicoVermelho ? 'fimSemana' : 'semana'}`
+            ? `${col.funcao}:cor:${corServico}`
             : `${col.funcao}:todos`;
           const chavePeriodoAtual = tipoFuncao === 'semanaFimSemana'
             ? obterChavePeriodo(dataObj, servicoVermelho)
@@ -6504,7 +6892,7 @@ if (salvou) {
               if (dataParcial.getTime() >= dataObj.getTime()) return;
               servicosParaMotor.push({
                 tempo: dataParcial.getTime(),
-                vermelho: escalaTemDiaVermelho(escala, dataParcial, Number(diaParcial))
+                vermelho: obterCorDiaEscala(escala, dataParcial, Number(diaParcial)) === 'vermelho'
               });
             });
             if (ultimaDataServico !== undefined && !servicosParaMotor.some(s => s.tempo === ultimaDataServico)) {
@@ -6543,7 +6931,7 @@ if (salvou) {
               data: dataObj,
               escala,
               tipoFuncao,
-              classificacaoDiaOverride: servicoVermelho ? 'vermelho' : 'preto',
+              classificacaoDiaOverride: corServico,
               servicosMilitar: servicosParaMotor,
               idsJaEscaladosNoDia: Object.values(escalaParcial[dia]).filter(Boolean),
               verificarVermelhoConsecutivo: aplicarRegraVermelha,
@@ -6651,9 +7039,7 @@ if (salvou) {
         });
 
         Object.keys(contadorEventosRotacao).forEach(chave => {
-          if (chave.endsWith(':todos')
-            || (chave.endsWith(':semana') && !servicoVermelho)
-            || (chave.endsWith(':fimSemana') && servicoVermelho)) {
+          if (chave.endsWith(':todos') || chave.endsWith(`:cor:${corServico}`)) {
             contadorEventosRotacao[chave]++;
           }
         });
@@ -6737,6 +7123,7 @@ if (salvou) {
         escala.publicadaEm = dataHora.toISOString();
         atualizarCoresMesesEscala();
         await salvarEstado('marcar_escala_publicada');
+        atualizarAvisoEscalasNaoPublicadas();
 
         if (status) status.textContent = `✓ ${formatarMesAno(mesAno)} publicada em ${dataHora.toLocaleString('pt-BR')}.`;
         alert('Escala publicada com sucesso.');
@@ -6837,10 +7224,17 @@ cabecalho.innerHTML = `
 
         htmlCorpo += `<tr class="${isFimDeSemana ? 'bg-amber-50' : 'hover:bg-gray-50'}">`;
         const dataStrLinha = `${ano}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+        // A cor exibida deve vir da própria escala quando ela já existe, pois a
+        // classificação usada na geração fica congelada no mês. Para uma tela
+        // ainda sem escala, usa a classificação atual configurada pelo usuário.
+        const corDiaLinha = estado.escala?.dados
+          ? obterCorDiaEscala(estado.escala, dataObj, dia)
+          : obterClassificacaoDia(dataObj).cor;
+        const definicaoCorDia = obterCorServicoPorId(corDiaLinha || 'preto');
         const classificacaoLinha = obterClassificacaoDia(dataObj);
-        const tituloClassificacao = `Classificação: ${classificacaoLinha.cor === 'vermelho' ? 'Vermelho' : 'Preto'} | Origem: ${classificacaoLinha.origem || 'escala salva'} | Clique para alternar escolher Automático, Preto ou Vermelho`;
+        const tituloClassificacao = `Classificação: ${definicaoCorDia.nome} | Origem: ${classificacaoLinha.origem || 'escala salva'} | Clique para escolher Automático ou uma cor de serviço`;
         htmlCorpo += `<td class="border p-2 text-center font-bold ${podeEditarSistema() ? 'cursor-pointer hover:bg-blue-100' : ''}" title="${tituloClassificacao}" ${podeEditarSistema() ? `onclick="abrirDropdownCorDia('${dataStrLinha}', this)"` : ''}>${dia}</td>`;
-        htmlCorpo += `<td class="border p-2 text-center text-xs font-semibold ${isFimDeSemana ? 'text-red-600' : 'text-gray-600'}">${nomeDiaSemana}</td>`;
+        htmlCorpo += `<td class="border p-2 text-center text-xs font-semibold" style="color:${definicaoCorDia.hex}">${nomeDiaSemana}</td>`;
 
         colunasVagas.forEach(col => {
           const militarIdEscalado = estado.escala.dados[dia]?.[col.chave] || '';
@@ -7349,13 +7743,13 @@ const opcoes = militaresOrdenadosTroca
 
       // A geração pode informar explicitamente a cor do dia que está sendo montado.
       // Isso evita depender da escala que por acaso esteja aberta em estado.escala.
-      const corOverride = classificacaoDiaOverride === true || classificacaoDiaOverride === 'vermelho'
-        ? 'vermelho'
-        : (classificacaoDiaOverride === false || classificacaoDiaOverride === 'preto' ? 'preto' : '');
+      const corOverride = typeof classificacaoDiaOverride === 'string' && classificacaoDiaOverride
+        ? classificacaoDiaOverride
+        : (classificacaoDiaOverride === true ? 'vermelho' : (classificacaoDiaOverride === false ? 'preto' : ''));
       const classificacao = corOverride
         ? { cor: corOverride }
         : (escala
-          ? { cor: escalaTemDiaVermelho(escala, data, data.getDate()) ? 'vermelho' : 'preto' }
+          ? { cor: obterCorDiaEscala(escala, data, data.getDate()) }
           : obterClassificacaoDia(data));
       const ehVermelho = classificacao.cor === 'vermelho';
       if (verificarVermelhoConsecutivo && ehVermelho && !regras.vermelho?.permitirConsecutivos) {
@@ -8007,42 +8401,36 @@ const opcoes = militaresOrdenadosTroca
     }
 
     function criarContagemQuadrinhoLastro() {
-      return {
-        preto: { quadrinhos: 0, lastros: 0 },
-        vermelho: { quadrinhos: 0, lastros: 0 }
-      };
+      return Object.fromEntries(obterCoresServico().map(c => [c.id, { quadrinhos: 0, lastros: 0 }]));
+    }
+
+    function garantirCorNaContagem(contagem, corId) {
+      if (!contagem[corId]) contagem[corId] = { quadrinhos: 0, lastros: 0 };
+      return contagem[corId];
     }
 
     function obterTotaisQuadrinhoLastro(contagem) {
-      const preto = contagem?.preto || { quadrinhos: 0, lastros: 0 };
-      const vermelho = contagem?.vermelho || { quadrinhos: 0, lastros: 0 };
-      const totalPreto = (preto.quadrinhos || 0) + (preto.lastros || 0);
-      const totalVermelho = (vermelho.quadrinhos || 0) + (vermelho.lastros || 0);
-      return {
-        quadrinhosPreto: preto.quadrinhos || 0,
-        lastrosPreto: preto.lastros || 0,
-        totalPreto,
-        quadrinhosVermelho: vermelho.quadrinhos || 0,
-        lastrosVermelho: vermelho.lastros || 0,
-        totalVermelho,
-        totalGeral: totalPreto + totalVermelho
-      };
+      const porCor = {};
+      let totalGeral = 0;
+      obterCoresServico().forEach(c => {
+        const item = contagem?.[c.id] || { quadrinhos:0,lastros:0 };
+        const total=(item.quadrinhos||0)+(item.lastros||0);
+        porCor[c.id]={quadrinhos:item.quadrinhos||0,lastros:item.lastros||0,total}; totalGeral+=total;
+      });
+      const p=porCor.preto||{quadrinhos:0,lastros:0,total:0}, v=porCor.vermelho||{quadrinhos:0,lastros:0,total:0};
+      return { porCor, quadrinhosPreto:p.quadrinhos,lastrosPreto:p.lastros,totalPreto:p.total,quadrinhosVermelho:v.quadrinhos,lastrosVermelho:v.lastros,totalVermelho:v.total,totalGeral };
     }
 
     function obterValorJusticaSeparada(contagem, regras, corAtual) {
       const totais = obterTotaisQuadrinhoLastro(contagem);
       const considerarTotal = regras?.justica?.considerarTotal !== false;
       const separarCores = regras?.justica?.separarPretoVermelho !== false;
-
       if (separarCores) {
-        if (corAtual === 'vermelho') {
-          return considerarTotal ? totais.totalVermelho : totais.quadrinhosVermelho;
-        }
-        return considerarTotal ? totais.totalPreto : totais.quadrinhosPreto;
+        const item=totais.porCor?.[corAtual]||{quadrinhos:0,total:0};
+        return considerarTotal ? item.total : item.quadrinhos;
       }
-
       if (considerarTotal) return totais.totalGeral;
-      return totais.quadrinhosPreto + totais.quadrinhosVermelho;
+      return Object.values(totais.porCor||{}).reduce((s,x)=>s+(x.quadrinhos||0),0);
     }
 
     function obterContagemSeparadaEscala(escala, contagem, filtroFuncao = '') {
@@ -8052,12 +8440,12 @@ const opcoes = militaresOrdenadosTroca
       // QUADRINHOS: somente serviços realmente existentes nas células da escala.
       Object.entries(escala.dados).forEach(([dia, vagas]) => {
         const data = new Date(ano, mes - 1, Number(dia));
-        const cor = escalaTemDiaVermelho(escala, data, Number(dia)) ? 'vermelho' : 'preto';
+        const cor = obterCorDiaEscala(escala, data, Number(dia));
 
         Object.entries(vagas).forEach(([chave, militarId]) => {
           if (filtroFuncao && obterFuncaoDaChave(chave) !== filtroFuncao) return;
           if (!militarId || !contagem[militarId]) return;
-          contagem[militarId][cor].quadrinhos++;
+          garantirCorNaContagem(contagem[militarId], cor).quadrinhos++;
         });
       });
 
@@ -8065,8 +8453,8 @@ const opcoes = militaresOrdenadosTroca
       Object.values(escala.lastrosIndisponibilidade || {}).flat().forEach(lastro => {
         if (filtroFuncao && lastro.funcao !== filtroFuncao) return;
         if (!lastro.militarId || !contagem[lastro.militarId]) return;
-        const cor = lastro.cor === 'vermelho' ? 'vermelho' : 'preto';
-        contagem[lastro.militarId][cor].lastros++;
+        const cor = lastro.cor || 'preto';
+        garantirCorNaContagem(contagem[lastro.militarId], cor).lastros++;
       });
     }
 
@@ -8076,18 +8464,18 @@ const opcoes = militaresOrdenadosTroca
       const [ano, mes] = escala.mesAno.split('-').map(Number);
       Object.entries(escala.dados).forEach(([dia, vagas]) => {
         const data = new Date(ano, mes - 1, Number(dia));
-        const cor = escalaTemDiaVermelho(escala, data, Number(dia)) ? 'vermelho' : 'preto';
+        const cor = obterCorDiaEscala(escala, data, Number(dia));
         Object.entries(vagas).forEach(([chave, militarId]) => {
           if (filtroFuncao && obterFuncaoDaChave(chave) !== filtroFuncao) return;
           if (!militarId || !contagem[militarId]) return;
-          contagem[militarId][cor]++;
+          contagem[militarId][cor] = (contagem[militarId][cor] || 0) + 1;
         });
       });
       Object.values(escala.lastrosIndisponibilidade || {}).flat().forEach(lastro => {
         if (filtroFuncao && lastro.funcao !== filtroFuncao) return;
         if (!lastro.militarId || !contagem[lastro.militarId]) return;
-        const cor = lastro.cor === 'vermelho' ? 'vermelho' : 'preto';
-        contagem[lastro.militarId][cor]++;
+        const cor = lastro.cor || 'preto';
+        contagem[lastro.militarId][cor] = (contagem[lastro.militarId][cor] || 0) + 1;
       });
     }
 
@@ -8096,79 +8484,40 @@ const opcoes = militaresOrdenadosTroca
       const [ano, mes] = escala.mesAno.split('-').map(Number);
       Object.entries(escala.dados).forEach(([dia, vagas]) => {
         const data = new Date(ano, mes - 1, Number(dia));
-        const cor = escalaTemDiaVermelho(escala, data, Number(dia)) ? 'vermelho' : 'preto';
+        const cor = obterCorDiaEscala(escala, data, Number(dia));
         Object.entries(vagas).forEach(([chave, militarId]) => {
           if (!militarId || !contagem[militarId]) return;
           const funcao = obterFuncaoDaChave(chave);
           if (!contagem[militarId][funcao]) contagem[militarId][funcao] = { preto: 0, vermelho: 0 };
-          contagem[militarId][funcao][cor]++;
+          contagem[militarId][funcao][cor] = (contagem[militarId][funcao][cor] || 0) + 1;
         });
       });
       Object.values(escala.lastrosIndisponibilidade || {}).flat().forEach(lastro => {
         if (!lastro.militarId || !contagem[lastro.militarId] || !lastro.funcao) return;
-        if (!contagem[lastro.militarId][lastro.funcao]) {
-          contagem[lastro.militarId][lastro.funcao] = { preto: 0, vermelho: 0 };
-        }
-        const cor = lastro.cor === 'vermelho' ? 'vermelho' : 'preto';
-        contagem[lastro.militarId][lastro.funcao][cor]++;
+        if (!contagem[lastro.militarId][lastro.funcao]) contagem[lastro.militarId][lastro.funcao] = { preto: 0, vermelho: 0 };
+        const cor = lastro.cor || 'preto';
+        contagem[lastro.militarId][lastro.funcao][cor] = (contagem[lastro.militarId][lastro.funcao][cor] || 0) + 1;
       });
     }
 
     function renderizarResumoServicos() {
       const corpo = document.getElementById('corpoResumoServicos');
       if (!corpo) return;
-
+      const tabela = corpo.closest('table');
       const filtro = document.getElementById('filtroFuncaoResumo')?.value || '';
       const mesSelecionado = document.getElementById('mesAnoEscala').value;
-
-      const contagemMes = Object.fromEntries(
-        estado.militares.map(m => [m.id, criarContagemQuadrinhoLastro()])
-      );
-      const contagemAcumulada = Object.fromEntries(
-        estado.militares.map(m => [m.id, criarContagemQuadrinhoLastro()])
-      );
-
-      if (mesSelecionado && estado.escalas[mesSelecionado]) {
-        obterContagemSeparadaEscala(estado.escalas[mesSelecionado], contagemMes, filtro);
-      }
-
-      if (mesSelecionado) {
-        Object.values(estado.escalas)
-          .filter(escala => escala.mesAno && escala.mesAno <= mesSelecionado)
-          .forEach(escala => obterContagemSeparadaEscala(escala, contagemAcumulada, filtro));
-      }
-
-      corpo.innerHTML = estado.militares.filter(militar => {
-        if (!filtro) return true;
-        const mes = obterTotaisQuadrinhoLastro(contagemMes[militar.id]);
-        const acum = obterTotaisQuadrinhoLastro(contagemAcumulada[militar.id]);
-        return militar.funcao === filtro || mes.totalGeral + acum.totalGeral > 0;
-      }).map(militar => {
-        const mes = obterTotaisQuadrinhoLastro(contagemMes[militar.id]);
-        const acum = obterTotaisQuadrinhoLastro(contagemAcumulada[militar.id]);
-        const funcaoAjuste = filtro || militar.funcao;
-
-        const tituloMes =
-          `Mês selecionado — Preto: ${mes.quadrinhosPreto} quadrinho(s) + ${mes.lastrosPreto} lastro(s) = ${mes.totalPreto}; ` +
-          `Vermelho: ${mes.quadrinhosVermelho} quadrinho(s) + ${mes.lastrosVermelho} lastro(s) = ${mes.totalVermelho}.`;
-
-        return `<tr class="border-b hover:bg-gray-50" title="${tituloMes}">
-          <td class="p-2 font-medium">${militar.nome} (${militar.saram})</td>
-          <td class="p-2 text-gray-600">${filtro || militar.funcao}${militar.ativo === false ? ' (inativo)' : ''}</td>
-          <td class="p-2 text-center">${acum.quadrinhosPreto}</td>
-          <td class="p-2 text-center text-gray-600">${acum.lastrosPreto}</td>
-          <td class="p-2 text-center font-bold">${acum.totalPreto}</td>
-          <td class="p-2 text-center text-red-600">${acum.quadrinhosVermelho}</td>
-          <td class="p-2 text-center text-red-400">${acum.lastrosVermelho}</td>
-          <td class="p-2 text-center font-bold text-red-700">${acum.totalVermelho}</td>
-          <td class="p-2 text-center font-bold">${acum.totalGeral}</td>
-          <td class="p-2 text-right">
-            <div class="flex justify-end gap-1">
-              <button type="button" onclick="abrirModalAjusteAcumulado('${militar.id}', '${encodeURIComponent(funcaoAjuste)}')" class="somente-edicao rounded bg-gray-200 px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-300" title="Ajustes históricos permanecem separados de Quadrinho e Lastro">Ajustar</button>
-              <button type="button" onclick="abrirModalAuditoriaAcumulado('${militar.id}', '${encodeURIComponent(funcaoAjuste)}')" class="rounded bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-200">Auditoria</button>
-            </div>
-          </td>
-        </tr>`;
+      const cores = obterCoresServico();
+      const contagemMes = Object.fromEntries(estado.militares.map(m => [m.id, criarContagemQuadrinhoLastro()]));
+      const contagemAcumulada = Object.fromEntries(estado.militares.map(m => [m.id, criarContagemQuadrinhoLastro()]));
+      if (mesSelecionado && estado.escalas[mesSelecionado]) obterContagemSeparadaEscala(estado.escalas[mesSelecionado], contagemMes, filtro);
+      if (mesSelecionado) Object.values(estado.escalas).filter(e=>e.mesAno&&e.mesAno<=mesSelecionado).forEach(e=>obterContagemSeparadaEscala(e,contagemAcumulada,filtro));
+      if (tabela?.tHead) tabela.tHead.innerHTML = `<tr class="bg-gray-100 border-b"><th class="p-2 text-left">Militar</th><th class="p-2 text-left">Função</th>${cores.map(c=>`<th class="p-2 text-center" colspan="3" style="color:${c.hex}">${c.nome}<div class="mt-1 grid grid-cols-3 gap-2 text-[10px] text-gray-500"><span>Q</span><span>L</span><span>Total</span></div></th>`).join('')}<th class="p-2 text-center font-bold">Total Geral</th><th class="p-2 text-right">Ações</th></tr>`;
+      corpo.innerHTML = estado.militares.filter(m=>{
+        if(!filtro)return true; const a=obterTotaisQuadrinhoLastro(contagemAcumulada[m.id]); return m.funcao===filtro||a.totalGeral>0;
+      }).map(m=>{
+        const acum=obterTotaisQuadrinhoLastro(contagemAcumulada[m.id]); const funcaoAjuste=filtro||m.funcao;
+        const celulas=cores.map(c=>{const x=acum.porCor[c.id]||{quadrinhos:0,lastros:0,total:0};return `<td class="p-2 text-center" style="color:${c.hex}">${x.quadrinhos}</td><td class="p-2 text-center text-gray-500">${x.lastros}</td><td class="p-2 text-center font-bold" style="color:${c.hex}">${x.total}</td>`}).join('');
+        return `<tr class="border-b hover:bg-gray-50"><td class="p-2 font-medium">${m.nome} (${m.saram})</td><td class="p-2 text-gray-600">${filtro||m.funcao}${m.ativo===false?' (inativo)':''}</td>${celulas}<td class="p-2 text-center font-bold">${acum.totalGeral}</td><td class="p-2 text-right"><div class="flex justify-end gap-1"><button type="button" onclick="abrirModalAjusteAcumulado('${m.id}','${encodeURIComponent(funcaoAjuste)}')" class="somente-edicao rounded bg-gray-200 px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-300">Ajustar</button><button type="button" onclick="abrirModalAuditoriaAcumulado('${m.id}','${encodeURIComponent(funcaoAjuste)}')" class="rounded bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-200">Auditoria</button></div></td></tr>`;
       }).join('');
     }
 
@@ -8403,6 +8752,8 @@ const salvou = await salvarEstado({
 
 if (salvou) {
   renderizarTabelaEscala();
+  atualizarCoresMesesEscala();
+  atualizarAvisoEscalasNaoPublicadas();
 }
 
 } catch (erro) {
