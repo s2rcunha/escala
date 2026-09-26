@@ -1,5 +1,4 @@
-﻿
-<html lang="pt-BR">
+﻿<html lang="pt-BR">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -17,7 +16,7 @@ if (location.protocol === 'http:' || location.protocol === 'https:') {
 }
 </script>
 <link href="./icons/icon-192.png" rel="apple-touch-icon"/>
-<title>ETAPA 49 - Sistema de Escala Automática - CCI</title>
+<title>SESCI - Sistema de Escala Automática - CCI</title>
 <!-- Tailwind CSS CDN -->
 <script src="https://cdn.tailwindcss.com"></script>
 <!-- Bibliotecas para exportacao de PDF em pagina unica -->
@@ -247,7 +246,7 @@ table{border-color:#cfd2d5!important}thead tr{background:#eceeef!important;color
 /* Login alinhado com a nova identidade */
 #telaLogin{background:#edf0f2}
 #telaLogin>div{max-width:390px;border:1px solid #cfd4d8;border-radius:2px!important;box-shadow:0 3px 14px rgba(0,0,0,.12)!important;padding:0!important;overflow:hidden}
-#telaLogin>div:before{content:"CCI  •  SISTEMA DE ESCALA";display:block;background:var(--cci-topo);color:white;padding:14px 18px;font-size:13px;font-weight:700;letter-spacing:.02em}
+#telaLogin>div:before{content:"SESCI  •  SISTEMA DE ESCALA";display:block;background:var(--cci-topo);color:white;padding:14px 18px;font-size:13px;font-weight:700;letter-spacing:.02em}
 #telaLogin .mb-6{margin:18px 18px 14px!important;text-align:left!important}#telaLogin h1{font-size:16px!important;color:#2d465b!important}#telaLogin form{padding:0 18px 18px}#botaoLogin{border-radius:2px!important;background:var(--cci-primary)!important;padding:8px 12px!important;font-size:12px!important}
 
 @media(max-width:767px){
@@ -361,7 +360,7 @@ body.cci-menu-recolhido .cci-nav-arrow{display:none}
     Recarregar agora
   </button>
 </div>
-<header class="cci-topbar"><div class="cci-brand"><button aria-label="Abrir menu" class="cci-mobile" onclick="alternarMenuLateral()" type="button">☰</button><div class="cci-brand-mark">CCI</div><div><div class="cci-brand-title">Sistema de Escala de Serviço - CCI</div><div class="cci-brand-sub">Gestão e geração automática de escalas de serviço</div></div></div><div class="cci-user"><div class="flex shrink-0 items-center gap-3 whitespace-nowrap" id="areaUsuarioLogado"><div class="text-right leading-tight"><div class="text-sm font-bold" id="nomeUsuarioLogado"></div><div class="text-xs" id="perfilUsuarioLogado"></div></div><button class="rounded px-3 py-2 text-sm font-semibold text-white" onclick="sairDoSistema()" type="button">Sair</button></div></div></header>
+<header class="cci-topbar"><div class="cci-brand"><button aria-label="Abrir menu" class="cci-mobile" onclick="alternarMenuLateral()" type="button">☰</button><div class="cci-brand-mark">SESCI</div><div><div class="cci-brand-title">Sistema de Escala de Serviço - CCI</div><div class="cci-brand-sub">Gestão e geração automática de escalas de serviço</div></div></div><div class="cci-user"><div class="flex shrink-0 items-center gap-3 whitespace-nowrap" id="areaUsuarioLogado"><div class="text-right leading-tight"><div class="text-sm font-bold" id="nomeUsuarioLogado"></div><div class="text-xs" id="perfilUsuarioLogado"></div></div><button class="rounded px-3 py-2 text-sm font-semibold text-white" onclick="sairDoSistema()" type="button">Sair</button></div></div></header>
 <aside class="cci-sidebar" id="menuLateralCCI"><button class="cci-toggle" data-cci-descricao="Expanda ou recolha o menu lateral para aumentar a área de trabalho." onclick="alternarMenuLateral()" title="Expanda ou recolha o menu lateral para aumentar a área de trabalho." type="button"><span class="cci-nav-icon">☰</span><span class="cci-toggle-label">Recolher menu</span></button><div class="cci-nav-title">ESCALA</div><nav class="cci-nav"><div class="cci-nav-group" data-grupo="gerador"><button class="cci-nav-btn cci-nav-parent ativo" data-aba="gerador" data-cci-descricao="Gere, consulte e acompanhe a escala mensal de serviço." onclick="alternarSubmenuCCI('gerador')" title="Gere, consulte e acompanhe a escala mensal de serviço." type="button"><span class="cci-nav-icon">▦</span><span class="cci-nav-label">Escala Mensal</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu aberto" data-submenu="gerador"><button class="cci-submenu-btn ativo" data-aba="gerador" data-cci-descricao="Selecione o período e gere automaticamente uma nova escala mensal." data-subpagina="criar" onclick="abrirSubpaginaCCI('gerador','criar')" title="Selecione o período e gere automaticamente uma nova escala mensal." type="button"><span class="cci-submenu-dot">•</span><span>Criar Escala</span></button><button class="cci-submenu-btn" data-aba="gerador" data-cci-descricao="Consulte, edite, publique e exporte a escala mensal gerada." data-subpagina="visualizacao" onclick="abrirSubpaginaCCI('gerador','visualizacao')" title="Consulte, edite, publique e exporte a escala mensal gerada." type="button"><span class="cci-submenu-dot">•</span><span>Visualizar Escala</span></button><button class="cci-submenu-btn" data-aba="gerador" data-cci-descricao="Consulte os quadrinhos, lastros e totais acumulados dos militares." data-subpagina="quadrinhos" onclick="abrirSubpaginaCCI('gerador','quadrinhos')" title="Consulte os quadrinhos, lastros e totais acumulados dos militares." type="button"><span class="cci-submenu-dot">•</span><span>Quadrinhos e Totais</span></button></div></div><div class="somente-edicao cci-nav-group" data-grupo="militares"><button class="cci-nav-btn cci-nav-parent" data-aba="militares" data-cci-descricao="Cadastre e gerencie os militares que compõem o efetivo." onclick="alternarSubmenuCCI('militares')" title="Cadastre e gerencie os militares que compõem o efetivo." type="button"><span class="cci-nav-icon">♟</span><span class="cci-nav-label">Militares</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="militares"><button class="cci-submenu-btn" data-aba="militares" data-cci-descricao="Inclua um novo militar, sua função e posição de antiguidade." data-subpagina="cadastrar" onclick="abrirSubpaginaCCI('militares','cadastrar')" title="Inclua um novo militar, sua função e posição de antiguidade." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar Militar</span></button><button class="cci-submenu-btn" data-aba="militares" data-cci-descricao="Consulte, edite e organize os militares já cadastrados." data-subpagina="efetivo" onclick="abrirSubpaginaCCI('militares','efetivo')" title="Consulte, edite e organize os militares já cadastrados." type="button"><span class="cci-submenu-dot">•</span><span>Militares Cadastrados</span></button></div></div><div class="somente-edicao cci-nav-group" data-grupo="vagas"><button class="cci-nav-btn cci-nav-parent" data-aba="vagas" data-cci-descricao="Configure as funções, vagas e regras usadas na montagem das escalas." onclick="alternarSubmenuCCI('vagas')" title="Configure as funções, vagas e regras usadas na montagem das escalas." type="button"><span class="cci-nav-icon">☷</span><span class="cci-nav-label">Estrutura da Equipe</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="vagas"><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Cadastre e mantenha as funções existentes na equipe de serviço." data-subpagina="funcoes" onclick="abrirSubpaginaCCI('vagas','funcoes')" title="Cadastre e mantenha as funções existentes na equipe de serviço." type="button"><span class="cci-submenu-dot">•</span><span>Funções da Equipe</span></button><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina quantas vagas de cada função são necessárias em cada serviço." data-subpagina="dimensionamento" onclick="abrirSubpaginaCCI('vagas','dimensionamento')" title="Defina quantas vagas de cada função são necessárias em cada serviço." type="button"><span class="cci-submenu-dot">•</span><span>Dimensionamento do Serviço</span></button><button class="cci-submenu-btn cci-submenu-parent" data-aba="vagas" data-cci-descricao="Configure a distribuição, descanso, lastro, justiça e classificação dos dias." data-submenu-pai="regras" onclick="alternarSubmenuRegrasCCI()" title="Configure a distribuição, descanso, lastro, justiça e classificação dos dias." type="button"><span class="cci-submenu-dot">•</span><span>Regras das Escalas</span><span class="cci-submenu-arrow">›</span></button><div class="cci-submenu-nivel2" data-submenu-nivel2="regras"><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina as regras de geração da escala para cada função do serviço." data-subpagina="regras" onclick="abrirSubpaginaCCI('vagas','regras')" title="Defina as regras de geração da escala para cada função do serviço." type="button"><span class="cci-submenu-dot">·</span><span>Configurações das Regras</span></button><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina quais dias são pretos ou vermelhos e cadastre exceções por data." data-subpagina="classificacao" onclick="abrirSubpaginaCCI('vagas','classificacao')" title="Defina quais dias são pretos ou vermelhos e cadastre exceções por data." type="button"><span class="cci-submenu-dot">·</span><span>Classificação dos Dias</span></button></div></div></div><div class="somente-edicao cci-nav-group" data-grupo="indisponibilidades"><button class="cci-nav-btn cci-nav-parent" data-aba="indisponibilidades" data-cci-descricao="Registre períodos e restrições em que militares não podem concorrer à escala." onclick="alternarSubmenuCCI('indisponibilidades')" title="Registre períodos e restrições em que militares não podem concorrer à escala." type="button"><span class="cci-nav-icon">⊘</span><span class="cci-nav-label">Indisponibilidades</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="indisponibilidades"><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Cadastre férias, cursos, missões, licenças e outras indisponibilidades por período." data-subpagina="periodo" onclick="abrirSubpaginaCCI('indisponibilidades','periodo')" title="Cadastre férias, cursos, missões, licenças e outras indisponibilidades por período." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar por Período</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Defina indisponibilidades recorrentes em determinados dias da semana." data-subpagina="semanal" onclick="abrirSubpaginaCCI('indisponibilidades','semanal')" title="Defina indisponibilidades recorrentes em determinados dias da semana." type="button"><span class="cci-submenu-dot">•</span><span>Indisponibilidade Semanal</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Importe várias indisponibilidades de uma só vez por arquivo CSV." data-subpagina="importar" onclick="abrirSubpaginaCCI('indisponibilidades','importar')" title="Importe várias indisponibilidades de uma só vez por arquivo CSV." type="button"><span class="cci-submenu-dot">•</span><span>Importar CSV</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Consulte e gerencie todas as indisponibilidades já cadastradas." data-subpagina="registros" onclick="abrirSubpaginaCCI('indisponibilidades','registros')" title="Consulte e gerencie todas as indisponibilidades já cadastradas." type="button"><span class="cci-submenu-dot">•</span><span>Registros Cadastrados</span></button></div></div><div class="somente-administrador cci-nav-group" data-grupo="backups"><button class="cci-nav-btn cci-nav-parent" data-aba="backups" data-cci-descricao="Proteja os dados do sistema por meio de exportação, importação e backups." onclick="alternarSubmenuCCI('backups')" title="Proteja os dados do sistema por meio de exportação, importação e backups." type="button"><span class="cci-nav-icon">↻</span><span class="cci-nav-label">Backups</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="backups"><button class="cci-submenu-btn" data-aba="backups" data-cci-descricao="Exporte, importe e gerencie as ferramentas de cópia de segurança." data-subpagina="gerenciar" onclick="abrirSubpaginaCCI('backups','gerenciar')" title="Exporte, importe e gerencie as ferramentas de cópia de segurança." type="button"><span class="cci-submenu-dot">•</span><span>Gerenciar Backups</span></button><button class="cci-submenu-btn" data-aba="backups" data-cci-descricao="Consulte, restaure e gerencie os backups armazenados." data-subpagina="lista" onclick="abrirSubpaginaCCI('backups','lista')" title="Consulte, restaure e gerencie os backups armazenados." type="button"><span class="cci-submenu-dot">•</span><span>Lista de Backups</span></button></div></div><div class="somente-administrador cci-nav-group" data-grupo="usuarios"><button class="cci-nav-btn cci-nav-parent" data-aba="usuarios" data-cci-descricao="Administre usuários, permissões de acesso e histórico de alterações." onclick="alternarSubmenuCCI('usuarios')" title="Administre usuários, permissões de acesso e histórico de alterações." type="button"><span class="cci-nav-icon">▣</span><span class="cci-nav-label">Usuários / Auditoria</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="usuarios"><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Crie um novo usuário e defina seu perfil de acesso ao sistema." data-subpagina="cadastrar" onclick="abrirSubpaginaCCI('usuarios','cadastrar')" title="Crie um novo usuário e defina seu perfil de acesso ao sistema." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar Usuário</span></button><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Consulte e gerencie os usuários cadastrados e suas permissões." data-subpagina="lista" onclick="abrirSubpaginaCCI('usuarios','lista')" title="Consulte e gerencie os usuários cadastrados e suas permissões." type="button"><span class="cci-submenu-dot">•</span><span>Usuários Cadastrados</span></button><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Consulte o histórico das alterações administrativas realizadas no sistema." data-subpagina="auditoria" onclick="abrirSubpaginaCCI('usuarios','auditoria')" title="Consulte o histórico das alterações administrativas realizadas no sistema." type="button"><span class="cci-submenu-dot">•</span><span>Auditoria do Sistema</span></button></div></div></nav></aside><div aria-hidden="true" id="cciMenuTooltip" role="tooltip"></div>
 <main class="cci-main"><div class="cci-page-heading"><div><h2 class="cci-page-title" id="tituloPaginaCCI">Escala Mensal</h2><p class="cci-page-sub" id="subtituloPaginaCCI">Geração, consulta e manutenção da escala mensal.</p></div></div>
 <!-- ABA 1: GERADOR E VISUALIZAÇÃO DA ESCALA -->
@@ -1847,10 +1846,13 @@ async function salvarEstadoNoServidor(
                       <option title="Usa uma única sequência de rotação para os serviços, sem separar a distribuição por preto e vermelho." value="corrida" ${r.distribuicao === 'corrida' ? 'selected' : ''}>Corrida</option>
                     </select>
                   </label>
-                  <label class="mt-3 flex items-start gap-2 text-xs font-medium text-gray-700">
-                    <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.vermelho.permitirConsecutivos ? 'checked' : ''} data-regra-funcao="${f}" data-regra-campo="vermelhosConsecutivos" title="Marcado: permite ao mesmo militar tirar serviços vermelhos consecutivos dentro das demais regras. Desmarcado: o sistema procura evitar essa sequência.">
-                    <span>Permitir vermelhos consecutivos</span>
-                  </label>
+                  <div data-regra-grupo="somenteDiferenciada" class="${r.distribuicao === 'corrida' ? 'opacity-50' : ''}">
+                    <label class="mt-3 flex items-start gap-2 text-xs font-medium text-gray-700">
+                      <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.vermelho.permitirConsecutivos ? 'checked' : ''} ${r.distribuicao === 'corrida' ? 'disabled' : ''} data-regra-funcao="${f}" data-regra-campo="vermelhosConsecutivos" title="Disponível apenas em Separar preto/vermelho. Marcado: permite ao mesmo militar tirar serviços vermelhos consecutivos dentro das demais regras.">
+                      <span>Permitir vermelhos consecutivos</span>
+                    </label>
+                    <p data-regra-aviso="somenteDiferenciada" class="mt-1 pl-6 text-[10px] ${r.distribuicao === 'corrida' ? 'text-amber-700' : 'hidden text-gray-500'}">Não se aplica à escala corrida.</p>
+                  </div>
                 </fieldset>
 
                 <fieldset class="min-w-0 rounded border bg-gray-50 p-3">
@@ -1883,20 +1885,21 @@ async function salvarEstadoNoServidor(
                   </div>
                 </fieldset>
 
-                <fieldset class="min-w-0 rounded border bg-gray-50 p-3">
+                <fieldset data-regra-grupo="somenteDiferenciada" class="min-w-0 rounded border bg-gray-50 p-3 ${r.distribuicao === 'corrida' ? 'opacity-50' : ''}">
                   <legend class="px-1 text-[11px] font-bold uppercase tracking-wide text-gray-500">Lastro e justiça</legend>
+                  <p data-regra-aviso="somenteDiferenciada" class="mb-2 text-[10px] ${r.distribuicao === 'corrida' ? 'text-amber-700' : 'hidden text-gray-500'}">Estas opções não participam da distribuição da escala corrida.</p>
                   <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
                     <label class="flex items-center gap-2 text-xs font-medium text-gray-700">
-                      <input class="h-4 w-4 shrink-0" type="checkbox" ${r.lastro.habilitado ? 'checked' : ''} data-regra-funcao="${f}" data-regra-campo="lastroHabilitado" title="Marcado: indisponibilidades longas podem gerar crédito virtual de lastro. Desmarcado: nenhuma indisponibilidade gera lastro para esta função.">
+                      <input class="h-4 w-4 shrink-0" type="checkbox" ${r.lastro.habilitado ? 'checked' : ''} ${r.distribuicao === 'corrida' ? 'disabled' : ''} data-regra-funcao="${f}" data-regra-campo="lastroHabilitado" title="Marcado: indisponibilidades longas podem gerar crédito virtual de lastro. Desmarcado: nenhuma indisponibilidade gera lastro para esta função.">
                       <span>Utilizar lastro</span>
                     </label>
                     <label class="text-xs font-semibold text-gray-700">Mín. lastro (dias)
-                      <input type="number" min="1" max="365" value="${r.lastro.minimoDiasIndisponibilidade}" data-regra-funcao="${f}" data-regra-campo="lastroMinimo" title="Número mínimo de dias de indisponibilidade para que o período possa gerar lastro." class="ml-1 w-20 rounded border px-2 py-1.5 text-center text-sm">
+                      <input type="number" min="1" max="365" value="${r.lastro.minimoDiasIndisponibilidade}" ${r.distribuicao === 'corrida' ? 'disabled' : ''} data-regra-funcao="${f}" data-regra-campo="lastroMinimo" title="Número mínimo de dias de indisponibilidade para que o período possa gerar lastro." class="ml-1 w-20 rounded border px-2 py-1.5 text-center text-sm">
                     </label>
                   </div>
                   <div class="mt-3 grid grid-cols-1 gap-2 border-t pt-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
                     <label class="flex items-start gap-2 text-xs font-medium text-gray-700">
-                      <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.justica.considerarTotal !== false ? 'checked' : ''} data-regra-funcao="${f}" data-regra-campo="justicaConsiderarTotal" title="Marcado: a comparação de justiça considera Quadrinho + Lastro. Desmarcado: o lastro não entra nessa comparação.">
+                      <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.justica.considerarTotal !== false ? 'checked' : ''} ${r.distribuicao === 'corrida' ? 'disabled' : ''} data-regra-funcao="${f}" data-regra-campo="justicaConsiderarTotal" title="Marcado: a comparação de justiça considera Quadrinho + Lastro. Desmarcado: o lastro não entra nessa comparação.">
                       <span>Justiça considera Quadrinho + Lastro</span>
                     </label>
                     <div data-regra-grupo="equalizacaoCores" class="${r.distribuicao === 'corrida' ? 'opacity-50' : ''}">
@@ -1907,7 +1910,7 @@ async function salvarEstadoNoServidor(
                       <p data-regra-aviso="equalizacaoCores" class="mt-1 pl-6 text-[10px] ${r.distribuicao === 'corrida' ? 'text-amber-700' : 'hidden text-gray-500'}">Disponível apenas em “Separar preto/vermelho”.</p>
                     </div>
                     <label class="flex items-start gap-2 text-xs font-medium text-gray-700 sm:col-span-2 xl:col-span-1 2xl:col-span-2">
-                      <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.justica.usarRotacaoDesempate !== false ? 'checked' : ''} data-regra-funcao="${f}" data-regra-campo="justicaRotacao" title="Marcado: quando candidatos ficam empatados pelos critérios anteriores, a posição na rotação decide a prioridade. Desmarcado: a rotação não é usada como critério de desempate.">
+                      <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.justica.usarRotacaoDesempate !== false ? 'checked' : ''} ${r.distribuicao === 'corrida' ? 'disabled' : ''} data-regra-funcao="${f}" data-regra-campo="justicaRotacao" title="Marcado: quando candidatos ficam empatados pelos critérios anteriores, a posição na rotação decide a prioridade. Desmarcado: a rotação não é usada como critério de desempate.">
                       <span>Usar rotação por antiguidade como desempate</span>
                     </label>
                   </div>
@@ -1924,17 +1927,45 @@ async function salvarEstadoNoServidor(
 
     function atualizarDisponibilidadeEqualizacaoCores(funcaoCodificada) {
       const distribuicao = document.querySelector(`[data-regra-funcao="${funcaoCodificada}"][data-regra-campo="distribuicao"]`);
-      const checkbox = document.querySelector(`[data-regra-funcao="${funcaoCodificada}"][data-regra-campo="justicaSepararCores"]`);
-      const grupo = checkbox?.closest('[data-regra-grupo="equalizacaoCores"]');
-      const aviso = grupo?.querySelector('[data-regra-aviso="equalizacaoCores"]');
-      if (!distribuicao || !checkbox || !grupo || !aviso) return;
+      if (!distribuicao) return;
 
       const corrida = distribuicao.value === 'corrida';
-      checkbox.disabled = corrida;
-      grupo.classList.toggle('opacity-50', corrida);
-      aviso.classList.toggle('hidden', !corrida);
-      aviso.classList.toggle('text-amber-700', corrida);
-      aviso.classList.toggle('text-gray-500', !corrida);
+      const camposSomenteDiferenciada = [
+        'vermelhosConsecutivos',
+        'lastroHabilitado',
+        'lastroMinimo',
+        'justicaConsiderarTotal',
+        'justicaSepararCores',
+        'justicaRotacao'
+      ];
+
+      camposSomenteDiferenciada.forEach(campo => {
+        const controle = document.querySelector(`[data-regra-funcao="${funcaoCodificada}"][data-regra-campo="${campo}"]`);
+        if (controle) controle.disabled = corrida;
+      });
+
+      document.querySelectorAll(`[data-regra-funcao="${funcaoCodificada}"]`).forEach(controle => {
+        const grupo = controle.closest('[data-regra-grupo="somenteDiferenciada"]');
+        if (grupo) grupo.classList.toggle('opacity-50', corrida);
+      });
+
+      document.querySelectorAll('[data-regra-grupo="somenteDiferenciada"] [data-regra-aviso="somenteDiferenciada"]').forEach(aviso => {
+        const grupo = aviso.closest('[data-regra-grupo="somenteDiferenciada"]');
+        if (!grupo?.querySelector(`[data-regra-funcao="${funcaoCodificada}"]`)) return;
+        aviso.classList.toggle('hidden', !corrida);
+        aviso.classList.toggle('text-amber-700', corrida);
+        aviso.classList.toggle('text-gray-500', !corrida);
+      });
+
+      const checkbox = document.querySelector(`[data-regra-funcao="${funcaoCodificada}"][data-regra-campo="justicaSepararCores"]`);
+      const grupoEqualizacao = checkbox?.closest('[data-regra-grupo="equalizacaoCores"]');
+      const avisoEqualizacao = grupoEqualizacao?.querySelector('[data-regra-aviso="equalizacaoCores"]');
+      if (grupoEqualizacao) grupoEqualizacao.classList.toggle('opacity-50', corrida);
+      if (avisoEqualizacao) {
+        avisoEqualizacao.classList.toggle('hidden', !corrida);
+        avisoEqualizacao.classList.toggle('text-amber-700', corrida);
+        avisoEqualizacao.classList.toggle('text-gray-500', !corrida);
+      }
     }
 
     async function salvarRegrasEscalaFuncao(funcaoCodificada) {
@@ -7041,7 +7072,7 @@ const opcoes = militaresOrdenadosTroca
       }
 
       corpo.innerHTML = htmlCorpo;
-      document.getElementById('tituloEscala').innerText = `ESCALA DE SERVIÇO DE CONTRAINCÊNDIO - ${mes}/${ano}`;
+      document.getElementById('tituloEscala').innerText = `ESCALA DE SERVIÇO DA CÉLULA CONTRAINCÊNDIO - ${mes}/${ano}`;
       document.getElementById('subtituloEscala').innerText = `Gerado em ${new Date().toLocaleDateString('pt-BR')}`;
       renderizarLegendaCoresEscala();
       renderizarResumoServicos();
