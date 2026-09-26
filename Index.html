@@ -4241,7 +4241,10 @@ async function sairDoSistema() {
       const militar = estado.militares.find(item => item.id === id);
       if (!militar || militar.ativo === false) return;
 
-      const militaresDaFuncao = obterMilitaresOrdenados(militar.funcao);
+      // A antiguidade exibida e movimentada considera somente o efetivo ativo.
+      // Militares inativos permanecem fora da fila até eventual reativação.
+      const militaresDaFuncao = obterMilitaresOrdenados(militar.funcao)
+        .filter(item => item.ativo !== false);
       const indiceAtual = militaresDaFuncao.findIndex(item => item.id === id);
       const novoIndice = indiceAtual + direcao;
       if (novoIndice < 0 || novoIndice >= militaresDaFuncao.length) return;
@@ -4306,11 +4309,12 @@ async function sairDoSistema() {
 
     function renderizarMilitares() {
       const tbody = document.getElementById('tabelaMilitares');
+      if (!tbody) return;
+
       const filtro = document.getElementById('filtroFuncaoMilitares')?.value || '';
-      const funcoesExibidas = filtro ? [filtro] : estado.funcoes;
-      tbody.innerHTML = funcoesExibidas.flatMap(funcao => obterMilitaresOrdenados(funcao).map((m, indice, militaresDaFuncao) => `
+      const renderizarLinhaAtiva = (m, indice, militaresDaFuncao) => `
         <tr class="border-b hover:bg-gray-50">
-          <td class="p-2 font-medium">${m.nome}${m.ativo === false ? ' <span class="ml-2 rounded bg-gray-200 px-2 py-0.5 text-xs text-gray-600">Inativo</span>' : ''}</td>
+          <td class="p-2 font-medium">${m.nome}</td>
           <td class="p-2 text-gray-600">${m.saram}</td>
           <td class="p-2"><span class="bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded">${m.funcao}</span></td>
           <td class="p-2 text-sm">${indice + 1} <span class="text-xs text-gray-500">(mais antigo primeiro)</span></td>
@@ -4318,14 +4322,49 @@ async function sairDoSistema() {
             <button onclick="moverMilitar('${m.id}', -1)" ${indice === 0 ? 'disabled' : ''} class="text-blue-600 hover:underline text-xs mr-2 disabled:text-gray-300">↑</button>
             <button onclick="moverMilitar('${m.id}', 1)" ${indice === militaresDaFuncao.length - 1 ? 'disabled' : ''} class="text-blue-600 hover:underline text-xs mr-2 disabled:text-gray-300">↓</button>
             <button onclick="promoverMilitar('${m.id}')" class="text-green-600 hover:underline text-xs mr-2">Promover</button>
-            <button onclick="${m.ativo === false ? `reativarMilitar('${m.id}')` : `removerMilitar('${m.id}')`}" class="${m.ativo === false ? 'text-green-600' : 'text-red-600'} hover:underline text-xs mr-2">${m.ativo === false ? 'Reativar' : 'Inativar'}</button>
-${m.ativo === false
-  ? `<button onclick="excluirMilitarDefinitivamente('${m.id}')" class="text-red-700 hover:underline text-xs font-semibold">Excluir definitivamente</button>`
-  : ''
-}
+            <button onclick="removerMilitar('${m.id}')" class="text-red-600 hover:underline text-xs mr-2">Inativar</button>
           </td>
-        </tr>
-      `)).join('');
+        </tr>`;
+
+      const renderizarLinhaInativa = m => `
+        <tr class="border-b bg-gray-50 hover:bg-gray-100">
+          <td class="p-2 font-medium text-gray-600">${m.nome} <span class="ml-2 rounded bg-gray-200 px-2 py-0.5 text-xs text-gray-600">Inativo</span></td>
+          <td class="p-2 text-gray-500">${m.saram}</td>
+          <td class="p-2"><span class="bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded">${m.funcao}</span></td>
+          <td class="p-2 text-sm text-gray-400">—</td>
+          <td class="p-2 text-right">
+            <button onclick="reativarMilitar('${m.id}')" class="text-green-600 hover:underline text-xs mr-2">Reativar</button>
+            <button onclick="excluirMilitarDefinitivamente('${m.id}')" class="text-red-700 hover:underline text-xs font-semibold">Excluir definitivamente</button>
+          </td>
+        </tr>`;
+
+      // O filtro especial reúne todos os inativos em uma única lista,
+      // independentemente da função à qual pertencem.
+      if (filtro === '__INATIVOS__') {
+        const inativos = estado.militares
+          .filter(m => m.ativo === false)
+          .slice()
+          .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
+
+        tbody.innerHTML = inativos.length
+          ? `<tr class="bg-gray-200 border-b"><td colspan="5" class="p-2 font-bold text-gray-700">Militares Inativos (${inativos.length})</td></tr>`
+            + inativos.map(renderizarLinhaInativa).join('')
+          : '<tr><td colspan="5" class="p-5 text-center text-gray-400">Não há militares inativos.</td></tr>';
+        return;
+      }
+
+      const funcoesExibidas = filtro ? [filtro] : estado.funcoes;
+      const blocosAtivos = funcoesExibidas.map(funcao => {
+        const ativos = obterMilitaresOrdenados(funcao).filter(m => m.ativo !== false);
+        if (!ativos.length) return '';
+        const cabecalho = filtro ? '' : `<tr class="bg-gray-100 border-b"><td colspan="5" class="p-2 font-bold text-gray-700">${funcao} (${ativos.length})</td></tr>`;
+        return cabecalho + ativos.map((m, indice) => renderizarLinhaAtiva(m, indice, ativos)).join('');
+      }).join('');
+
+      // Os inativos permanecem ocultos na visão geral e nos filtros por função.
+      // Eles são exibidos exclusivamente quando o usuário seleciona "Inativos" no dropdown.
+      tbody.innerHTML = blocosAtivos ||
+        '<tr><td colspan="5" class="p-5 text-center text-gray-400">Nenhum militar ativo encontrado para este filtro.</td></tr>';
     }
 
     function renderizarFiltroMilitares() {
@@ -4333,8 +4372,9 @@ ${m.ativo === false
       if (!filtro) return;
       const valorAtual = filtro.value;
       filtro.innerHTML = '<option value="">Todas as funções</option>'
-        + estado.funcoes.map(funcao => `<option value="${funcao}">${funcao}</option>`).join('');
-      filtro.value = estado.funcoes.includes(valorAtual) ? valorAtual : '';
+        + estado.funcoes.map(funcao => `<option value="${funcao}">${funcao}</option>`).join('')
+        + '<option value="__INATIVOS__">Inativos</option>';
+      filtro.value = (estado.funcoes.includes(valorAtual) || valorAtual === '__INATIVOS__') ? valorAtual : '';
     }
 
     function renderizarFuncoes() {
