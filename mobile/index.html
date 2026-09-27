@@ -9786,15 +9786,7 @@ async function exportarPDF() {
             </style>
           </head>
           <body>${copia.innerHTML}
-<script>
-if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js').catch(error => {
-      console.warn('SESCI: não foi possível registrar o service worker.', error);
-    });
-  });
-}
-</script>
+
 
 </body>
         </html>
@@ -9906,5 +9898,14 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
   window.addEventListener('resize', esconder);
   window.addEventListener('scroll', esconder, true);
 })();
-</script></body>
+</script><script>
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').catch(error => {
+      console.warn('SESCI: não foi possível registrar o service worker.', error);
+    });
+  });
+}
+</script>
+</body>
 </html>
