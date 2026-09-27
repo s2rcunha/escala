@@ -899,11 +899,11 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 <label class="block text-sm font-semibold text-gray-700">
             Nome do responsável
-            <input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="responsavelAlteracaoManual" required="" type="text"/>
+            <input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="responsavelAlteracaoManual" readonly aria-readonly="true" title="Preenchido automaticamente com o usuário logado" required="" type="text"/>
 </label>
 <label class="block text-sm font-semibold text-gray-700">
             SARAM do responsável
-            <input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="saramResponsavelAlteracaoManual" required="" type="text"/>
+            <input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="saramResponsavelAlteracaoManual" readonly aria-readonly="true" title="Preenchido automaticamente com o usuário logado" required="" type="text"/>
 </label>
 </div>
 </div>
@@ -928,8 +928,8 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
           <textarea class="mt-1 w-full rounded border p-2 text-sm font-normal" id="motivoAjusteAcumulado" placeholder="Explique por que os lastros precisam ser ajustados" required rows="4"></textarea>
 </label>
 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-<label class="block text-sm font-semibold text-gray-700">Nome do responsável<input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="responsavelAjusteAcumulado" required type="text"/></label>
-<label class="block text-sm font-semibold text-gray-700">SARAM do responsável<input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="saramResponsavelAjusteAcumulado" required type="text"/></label>
+<label class="block text-sm font-semibold text-gray-700">Nome do responsável<input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="responsavelAjusteAcumulado" readonly aria-readonly="true" title="Preenchido automaticamente com o usuário logado" required type="text"/></label>
+<label class="block text-sm font-semibold text-gray-700">SARAM do responsável<input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="saramResponsavelAjusteAcumulado" readonly aria-readonly="true" title="Preenchido automaticamente com o usuário logado" required type="text"/></label>
 </div>
 </div>
 <div class="flex justify-end gap-2 border-t px-5 py-3">
@@ -3020,6 +3020,22 @@ function obterPerfilAtual() {
 
 function podeEditarSistema() {
   return ['administrador', 'editor'].includes(obterPerfilAtual());
+}
+
+function obterIdentificacaoUsuarioLogado() {
+  return {
+    nome: String(usuarioLogado?.nome || '').trim(),
+    saram: String(usuarioLogado?.saram || '').trim()
+  };
+}
+
+function preencherResponsavelComUsuarioLogado(idNome, idSaram) {
+  const { nome, saram } = obterIdentificacaoUsuarioLogado();
+  const campoNome = document.getElementById(idNome);
+  const campoSaram = document.getElementById(idSaram);
+  if (campoNome) campoNome.value = nome;
+  if (campoSaram) campoSaram.value = saram;
+  return Boolean(nome && saram);
 }
 
 function aplicarPermissoesInterface() {
@@ -8345,8 +8361,7 @@ const opcoes = militaresOrdenadosTroca
         resolverJustificativaAlteracaoManual = resolve;
         document.getElementById('tipoAlteracaoManual').value = 'troca';
         document.getElementById('motivoAlteracaoManual').value = '';
-        document.getElementById('responsavelAlteracaoManual').value = '';
-        document.getElementById('saramResponsavelAlteracaoManual').value = '';
+        preencherResponsavelComUsuarioLogado('responsavelAlteracaoManual', 'saramResponsavelAlteracaoManual');
         const modal = document.getElementById('modalAlteracaoManual');
         modal.classList.remove('hidden');
         modal.classList.add('flex');
@@ -8372,10 +8387,9 @@ const opcoes = militaresOrdenadosTroca
       evento.preventDefault();
       const tipo = document.getElementById('tipoAlteracaoManual').value;
       const motivo = document.getElementById('motivoAlteracaoManual').value.trim();
-      const responsavelNome = document.getElementById('responsavelAlteracaoManual').value.trim();
-      const responsavelSaram = document.getElementById('saramResponsavelAlteracaoManual').value.trim();
+      const { nome: responsavelNome, saram: responsavelSaram } = obterIdentificacaoUsuarioLogado();
       if (!tipo || !motivo || !responsavelNome || !responsavelSaram) {
-        alert('Preencha o tipo da alteração, a justificativa, o nome e o SARAM do responsável.');
+        alert('Não foi possível identificar o usuário logado. Saia do sistema e entre novamente antes de confirmar a alteração.');
         return;
       }
 
@@ -8800,8 +8814,7 @@ const opcoes = militaresOrdenadosTroca
           <input class="mt-1 w-full rounded border p-2 text-sm font-normal" data-cor-lastro="${escaparHTML(cor.id)}" min="0" required step="1" type="number" value="${lastrosAtuais[cor.id] || 0}"/>
         </label>`).join('');
       document.getElementById('motivoAjusteAcumulado').value = '';
-      document.getElementById('responsavelAjusteAcumulado').value = '';
-      document.getElementById('saramResponsavelAjusteAcumulado').value = '';
+      preencherResponsavelComUsuarioLogado('responsavelAjusteAcumulado', 'saramResponsavelAjusteAcumulado');
 
       const modal = document.getElementById('modalAjusteAcumulado');
       modal.classList.remove('hidden');
@@ -8833,10 +8846,9 @@ const opcoes = militaresOrdenadosTroca
         novosLastros[campo.dataset.corLastro] = valor;
       }
       const motivo = document.getElementById('motivoAjusteAcumulado').value.trim();
-      const responsavelNome = document.getElementById('responsavelAjusteAcumulado').value.trim();
-      const responsavelSaram = document.getElementById('saramResponsavelAjusteAcumulado').value.trim();
+      const { nome: responsavelNome, saram: responsavelSaram } = obterIdentificacaoUsuarioLogado();
       if (!motivo || !responsavelNome || !responsavelSaram) {
-        alert('Informe a justificativa, o nome e o SARAM do responsável.');
+        alert('Informe a justificativa. Se a identificação do responsável não aparecer, saia do sistema e entre novamente.');
         return;
       }
 
