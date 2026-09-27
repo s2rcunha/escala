@@ -536,7 +536,7 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
 <tbody id="tabelaMilitares"></tbody>
 </table>
 </div>
-<div class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-40 p-4" id="modalPromocao">
+<div class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-40 p-4" id="modalPromocao" onclick="if (event.target === this) fecharModalPromocao()">
 <div class="w-full max-w-md rounded bg-white p-5 shadow-lg">
 <h3 class="mb-3 text-lg font-bold">Promover militar</h3>
 <p class="mb-3 text-sm text-gray-600" id="militarPromocaoDescricao"></p>
@@ -1241,10 +1241,13 @@ escala: {},
     }
 
     let falhaSalvamentoServidor = false;
+    let salvamentosPendentes = 0;
 
     window.addEventListener('beforeunload', function(evento) {
 
-  if (!falhaSalvamentoServidor) {
+  // Avisa após falha de comunicação e também enquanto houver
+  // alteração aguardando na fila ou sendo enviada ao servidor.
+  if (!falhaSalvamentoServidor && salvamentosPendentes === 0) {
     return;
   }
 
@@ -1264,6 +1267,8 @@ escala: {},
         estado.classificacaoSemanal = { 0: 'vermelho', 1: 'preto', 2: 'preto', 3: 'preto', 4: 'preto', 5: 'preto', 6: 'vermelho' };
       }
       if (!estado.excecoesClassificacaoDias || typeof estado.excecoesClassificacaoDias !== 'object') estado.excecoesClassificacaoDias = {};
+      if (!Array.isArray(estado.coresServicoPersonalizadas)) estado.coresServicoPersonalizadas = [];
+      if (!estado.regrasCoresServico || typeof estado.regrasCoresServico !== 'object') estado.regrasCoresServico = {};
       if (!estado.regrasEscala || typeof estado.regrasEscala !== 'object') estado.regrasEscala = {};
       estado.versaoEsquemaCCI = Math.max(Number(estado.versaoEsquemaCCI || 0), 6);
       estado.funcoes.forEach(funcao => garantirRegrasEscalaFuncao(funcao));
@@ -1278,6 +1283,29 @@ if (!estado.escalas || typeof estado.escalas !== 'object') {
 if (!estado.historicoEscalasExcluidas || typeof estado.historicoEscalasExcluidas !== 'object') {
   estado.historicoEscalasExcluidas = {};
 }
+
+// Defesa em profundidade para dados vindos do servidor ou de backups.
+// Cores de observação só podem usar a whitelist definida pelo sistema.
+const normalizarCoresObservacoesEscala = escala => {
+  if (!escala || typeof escala !== 'object') return;
+  if (!escala.observacoes || typeof escala.observacoes !== 'object') {
+    escala.observacoes = {};
+    return;
+  }
+
+  Object.values(escala.observacoes).forEach(observacoesDia => {
+    if (!observacoesDia || typeof observacoesDia !== 'object') return;
+    Object.values(observacoesDia).forEach(observacao => {
+      if (!observacao || typeof observacao !== 'object') return;
+      if (observacao.cor && !CORES_OBSERVACAO_PERMITIDAS.includes(observacao.cor)) {
+        observacao.cor = '';
+      }
+    });
+  });
+};
+
+Object.values(estado.escalas).forEach(normalizarCoresObservacoesEscala);
+Object.values(estado.historicoEscalasExcluidas).forEach(normalizarCoresObservacoesEscala);
 
 // Compatibilidade com bancos antigos:
 // se ainda existir "estado.escala", preserva-a no histórico antes
@@ -1398,6 +1426,8 @@ const estadoParaSalvar = structuredClone(estado);
 // Portanto, não enviamos essa duplicação para o servidor.
 delete estadoParaSalvar.escala;
 
+  salvamentosPendentes += 1;
+
   const tentativaSalvamento = filaSalvamento
 
     .catch(() => {
@@ -1426,8 +1456,12 @@ delete estadoParaSalvar.escala;
       );
     });
 
-  filaSalvamento = tentativaSalvamento.catch(() => false);
-  return tentativaSalvamento.catch(erro => {
+  const tentativaMonitorada = tentativaSalvamento.finally(() => {
+    salvamentosPendentes = Math.max(0, salvamentosPendentes - 1);
+  });
+
+  filaSalvamento = tentativaMonitorada.catch(() => false);
+  return tentativaMonitorada.catch(erro => {
     console.error('Salvamento não concluído:', erro);
     return false;
   });
@@ -1825,7 +1859,7 @@ async function salvarEstadoNoServidor(
 
       estado.funcoes.forEach(funcao => garantirRegrasEscalaFuncao(funcao));
 
-      Object.values(estado.escalas || {}).forEach(escala => {
+      obterEscalasHistoricas().forEach(escala => {
         if (!escala || !escala.mesAno) return;
 
         // Escalas antigas continuam válidas. O snapshot é reconstruído apenas
@@ -1886,8 +1920,8 @@ async function salvarEstadoNoServidor(
         const r = garantirRegrasEscalaFuncao(funcao);
         const f = encodeURIComponent(funcao);
         return `
-          <details class="rounded border bg-gray-50" data-regra-detalhe="${f}">
-            <summary class="cursor-pointer select-none px-3 py-2.5 font-semibold text-sm">${funcao}</summary>
+          <details class="rounded border bg-gray-50" data-regra-detalhe="${escaparHTML(f)}">
+            <summary class="cursor-pointer select-none px-3 py-2.5 font-semibold text-sm">${escaparHTML(funcao)}</summary>
             <div class="border-t bg-white px-3 py-3">
               <p class="mb-3 text-[11px] text-gray-500">Passe o mouse sobre qualquer opção para ver uma explicação rápida da regra.</p>
 
@@ -1895,14 +1929,14 @@ async function salvarEstadoNoServidor(
                 <fieldset class="min-w-0 rounded border bg-gray-50 p-3">
                   <legend class="px-1 text-[11px] font-bold uppercase tracking-wide text-gray-500">Distribuição</legend>
                   <label class="block text-xs font-semibold text-gray-700">Tipo de escala
-                    <select data-regra-funcao="${f}" data-regra-campo="distribuicao" onchange="atualizarDisponibilidadeEqualizacaoCores('${f}')" title="Quadrinhos mantém controles, contagens e rotações distintas conforme a cor/classificação do dia. Corrida usa uma única sequência para todos os dias." class="mt-1 w-full max-w-64 rounded border bg-white px-2 py-1.5 text-sm">
+                    <select data-regra-funcao="${escaparHTML(f)}" data-regra-campo="distribuicao" onchange="atualizarDisponibilidadeEqualizacaoCores(this.dataset.regraFuncao)" title="Quadrinhos mantém controles, contagens e rotações distintas conforme a cor/classificação do dia. Corrida usa uma única sequência para todos os dias." class="mt-1 w-full max-w-64 rounded border bg-white px-2 py-1.5 text-sm">
                       <option title="Usa a classificação dos dias para controlar e distribuir serviços pretos e vermelhos separadamente." value="semanaFimSemana" ${r.distribuicao === 'semanaFimSemana' ? 'selected' : ''}>Quadrinhos</option>
                       <option title="Usa uma única sequência de rotação para os serviços, sem separar a distribuição por preto e vermelho." value="corrida" ${r.distribuicao === 'corrida' ? 'selected' : ''}>Corrida</option>
                     </select>
                   </label>
                   <div data-regra-grupo="somenteDiferenciada" class="${r.distribuicao === 'corrida' ? 'opacity-50' : ''}">
                     <label class="mt-3 flex items-start gap-2 text-xs font-medium text-gray-700">
-                      <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.vermelho.permitirConsecutivos ? 'checked' : ''} ${r.distribuicao === 'corrida' ? 'disabled' : ''} data-regra-funcao="${f}" data-regra-campo="vermelhosConsecutivos" title="Disponível apenas em Quadrinhos. Marcado: permite ao mesmo militar tirar serviços vermelhos consecutivos dentro das demais regras.">
+                      <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.vermelho.permitirConsecutivos ? 'checked' : ''} ${r.distribuicao === 'corrida' ? 'disabled' : ''} data-regra-funcao="${escaparHTML(f)}" data-regra-campo="vermelhosConsecutivos" title="Disponível apenas em Quadrinhos. Marcado: permite ao mesmo militar tirar serviços vermelhos consecutivos dentro das demais regras.">
                       <span>Permitir vermelhos consecutivos</span>
                     </label>
                     <p data-regra-aviso="somenteDiferenciada" class="mt-1 pl-6 text-[10px] ${r.distribuicao === 'corrida' ? 'text-amber-700' : 'hidden text-gray-500'}">Não se aplica à escala corrida.</p>
@@ -1913,27 +1947,27 @@ async function salvarEstadoNoServidor(
                   <legend class="px-1 text-[11px] font-bold uppercase tracking-wide text-gray-500">Descanso</legend>
                   <div class="flex flex-wrap items-end gap-x-4 gap-y-3">
                     <label class="text-xs font-semibold text-gray-700">Folgas antes
-                      <input type="number" min="0" max="30" value="${r.descanso.folgasAntes}" data-regra-funcao="${f}" data-regra-campo="folgasAntes" title="Quantidade de dias de folga exigida antes deste serviço para o militar ser considerado em condição normal." class="mt-1 block w-20 rounded border px-2 py-1.5 text-center text-sm">
+                      <input type="number" min="0" max="30" value="${r.descanso.folgasAntes}" data-regra-funcao="${escaparHTML(f)}" data-regra-campo="folgasAntes" title="Quantidade de dias de folga exigida antes deste serviço para o militar ser considerado em condição normal." class="mt-1 block w-20 rounded border px-2 py-1.5 text-center text-sm">
                     </label>
                     <label class="text-xs font-semibold text-gray-700">Folgas depois
-                      <input type="number" min="0" max="30" value="${r.descanso.folgasDepois}" data-regra-funcao="${f}" data-regra-campo="folgasDepois" title="Quantidade de dias de folga exigida depois deste serviço para o militar ser considerado em condição normal." class="mt-1 block w-20 rounded border px-2 py-1.5 text-center text-sm">
+                      <input type="number" min="0" max="30" value="${r.descanso.folgasDepois}" data-regra-funcao="${escaparHTML(f)}" data-regra-campo="folgasDepois" title="Quantidade de dias de folga exigida depois deste serviço para o militar ser considerado em condição normal." class="mt-1 block w-20 rounded border px-2 py-1.5 text-center text-sm">
                     </label>
                   </div>
                   <div class="mt-3 border-t pt-3">
                     <label class="flex items-start gap-2 text-xs font-medium text-gray-700">
-                      <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.descanso.reduzido.permitido ? 'checked' : ''} data-regra-funcao="${f}" data-regra-campo="reduzidoPermitido" title="Marcado: permite usar candidatos com descanso abaixo do normal, desde que atinjam os mínimos reduzidos. Desmarcado: esses candidatos ficam impedidos.">
+                      <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.descanso.reduzido.permitido ? 'checked' : ''} data-regra-funcao="${escaparHTML(f)}" data-regra-campo="reduzidoPermitido" title="Marcado: permite usar candidatos com descanso abaixo do normal, desde que atinjam os mínimos reduzidos. Desmarcado: esses candidatos ficam impedidos.">
                       <span>Permitir descanso reduzido</span>
                     </label>
                     <div class="mt-2 flex flex-wrap items-end gap-x-4 gap-y-2">
                       <label class="text-xs font-semibold text-gray-700">Mín. antes
-                        <input type="number" min="0" max="30" value="${r.descanso.reduzido.folgasAntes}" data-regra-funcao="${f}" data-regra-campo="reduzidoFolgasAntes" title="Mínimo de folgas antes do serviço aceito quando o descanso reduzido estiver habilitado." class="mt-1 block w-20 rounded border px-2 py-1.5 text-center text-sm">
+                        <input type="number" min="0" max="30" value="${r.descanso.reduzido.folgasAntes}" data-regra-funcao="${escaparHTML(f)}" data-regra-campo="reduzidoFolgasAntes" title="Mínimo de folgas antes do serviço aceito quando o descanso reduzido estiver habilitado." class="mt-1 block w-20 rounded border px-2 py-1.5 text-center text-sm">
                       </label>
                       <label class="text-xs font-semibold text-gray-700">Mín. depois
-                        <input type="number" min="0" max="30" value="${r.descanso.reduzido.folgasDepois}" data-regra-funcao="${f}" data-regra-campo="reduzidoFolgasDepois" title="Mínimo de folgas depois do serviço aceito quando o descanso reduzido estiver habilitado." class="mt-1 block w-20 rounded border px-2 py-1.5 text-center text-sm">
+                        <input type="number" min="0" max="30" value="${r.descanso.reduzido.folgasDepois}" data-regra-funcao="${escaparHTML(f)}" data-regra-campo="reduzidoFolgasDepois" title="Mínimo de folgas depois do serviço aceito quando o descanso reduzido estiver habilitado." class="mt-1 block w-20 rounded border px-2 py-1.5 text-center text-sm">
                       </label>
                     </div>
                     <label class="mt-3 flex items-start gap-2 text-xs font-medium text-gray-700">
-                      <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.descanso.reduzido.exigirConfirmacao !== false ? 'checked' : ''} data-regra-funcao="${f}" data-regra-campo="reduzidoConfirmacao" title="Marcado: o sistema solicita confirmação antes de utilizar descanso reduzido. Desmarcado: pode utilizá-lo automaticamente quando necessário e permitido.">
+                      <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.descanso.reduzido.exigirConfirmacao !== false ? 'checked' : ''} data-regra-funcao="${escaparHTML(f)}" data-regra-campo="reduzidoConfirmacao" title="Marcado: o sistema solicita confirmação antes de utilizar descanso reduzido. Desmarcado: pode utilizá-lo automaticamente quando necessário e permitido.">
                       <span>Confirmar antes de usar descanso reduzido</span>
                     </label>
                   </div>
@@ -1944,27 +1978,27 @@ async function salvarEstadoNoServidor(
                   <p data-regra-aviso="somenteDiferenciada" class="mb-2 text-[10px] ${r.distribuicao === 'corrida' ? 'text-amber-700' : 'hidden text-gray-500'}">Estas opções não participam da distribuição da escala corrida.</p>
                   <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
                     <label class="flex items-center gap-2 text-xs font-medium text-gray-700">
-                      <input class="h-4 w-4 shrink-0" type="checkbox" ${r.lastro.habilitado ? 'checked' : ''} ${r.distribuicao === 'corrida' ? 'disabled' : ''} data-regra-funcao="${f}" data-regra-campo="lastroHabilitado" title="Marcado: indisponibilidades longas podem gerar crédito virtual de lastro. Desmarcado: nenhuma indisponibilidade gera lastro para esta função.">
+                      <input class="h-4 w-4 shrink-0" type="checkbox" ${r.lastro.habilitado ? 'checked' : ''} ${r.distribuicao === 'corrida' ? 'disabled' : ''} data-regra-funcao="${escaparHTML(f)}" data-regra-campo="lastroHabilitado" title="Marcado: indisponibilidades longas podem gerar crédito virtual de lastro. Desmarcado: nenhuma indisponibilidade gera lastro para esta função.">
                       <span>Utilizar lastro</span>
                     </label>
                     <label class="text-xs font-semibold text-gray-700">Mín. lastro (dias)
-                      <input type="number" min="1" max="365" value="${r.lastro.minimoDiasIndisponibilidade}" ${r.distribuicao === 'corrida' ? 'disabled' : ''} data-regra-funcao="${f}" data-regra-campo="lastroMinimo" title="Número mínimo de dias de indisponibilidade para que o período possa gerar lastro." class="ml-1 w-20 rounded border px-2 py-1.5 text-center text-sm">
+                      <input type="number" min="1" max="365" value="${r.lastro.minimoDiasIndisponibilidade}" ${r.distribuicao === 'corrida' ? 'disabled' : ''} data-regra-funcao="${escaparHTML(f)}" data-regra-campo="lastroMinimo" title="Número mínimo de dias de indisponibilidade para que o período possa gerar lastro." class="ml-1 w-20 rounded border px-2 py-1.5 text-center text-sm">
                     </label>
                   </div>
                   <div class="mt-3 grid grid-cols-1 gap-2 border-t pt-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
                     <label class="flex items-start gap-2 text-xs font-medium text-gray-700">
-                      <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.justica.considerarTotal !== false ? 'checked' : ''} ${r.distribuicao === 'corrida' ? 'disabled' : ''} data-regra-funcao="${f}" data-regra-campo="justicaConsiderarTotal" title="Marcado: a comparação de justiça considera Quadrinho + Lastro. Desmarcado: o lastro não entra nessa comparação.">
+                      <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.justica.considerarTotal !== false ? 'checked' : ''} ${r.distribuicao === 'corrida' ? 'disabled' : ''} data-regra-funcao="${escaparHTML(f)}" data-regra-campo="justicaConsiderarTotal" title="Marcado: a comparação de justiça considera Quadrinho + Lastro. Desmarcado: o lastro não entra nessa comparação.">
                       <span>Justiça considera Quadrinho + Lastro</span>
                     </label>
                     <div data-regra-grupo="equalizacaoCores" class="${r.distribuicao === 'corrida' ? 'opacity-50' : ''}">
                       <label class="flex items-start gap-2 text-xs font-medium text-gray-700">
-                        <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.justica.separarPretoVermelho !== false ? 'checked' : ''} ${r.distribuicao === 'corrida' ? 'disabled' : ''} data-regra-funcao="${f}" data-regra-campo="justicaSepararCores" title="Marcado: em Quadrinhos, prioriza quem possui menor quantidade acumulada da cor do serviço. Desmarcado: preto e vermelho mantêm rotações independentes, sem priorização pelo menor acumulado da cor.">
+                        <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.justica.separarPretoVermelho !== false ? 'checked' : ''} ${r.distribuicao === 'corrida' ? 'disabled' : ''} data-regra-funcao="${escaparHTML(f)}" data-regra-campo="justicaSepararCores" title="Marcado: em Quadrinhos, prioriza quem possui menor quantidade acumulada da cor do serviço. Desmarcado: preto e vermelho mantêm rotações independentes, sem priorização pelo menor acumulado da cor.">
                         <span>Priorizar menor quantidade da cor do serviço</span>
                       </label>
                       <p data-regra-aviso="equalizacaoCores" class="mt-1 pl-6 text-[10px] ${r.distribuicao === 'corrida' ? 'text-amber-700' : 'hidden text-gray-500'}">Disponível apenas em “Quadrinhos”.</p>
                     </div>
                     <label class="flex items-start gap-2 text-xs font-medium text-gray-700 sm:col-span-2 xl:col-span-1 2xl:col-span-2">
-                      <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.justica.usarRotacaoDesempate !== false ? 'checked' : ''} ${r.distribuicao === 'corrida' ? 'disabled' : ''} data-regra-funcao="${f}" data-regra-campo="justicaRotacao" title="Marcado: quando candidatos ficam empatados pelos critérios anteriores, a posição na rotação decide a prioridade. Desmarcado: a rotação não é usada como critério de desempate.">
+                      <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.justica.usarRotacaoDesempate !== false ? 'checked' : ''} ${r.distribuicao === 'corrida' ? 'disabled' : ''} data-regra-funcao="${escaparHTML(f)}" data-regra-campo="justicaRotacao" title="Marcado: quando candidatos ficam empatados pelos critérios anteriores, a posição na rotação decide a prioridade. Desmarcado: a rotação não é usada como critério de desempate.">
                       <span>Usar rotação por antiguidade como desempate</span>
                     </label>
                   </div>
@@ -1972,7 +2006,7 @@ async function salvarEstadoNoServidor(
               </div>
 
               <div class="mt-3 flex justify-end border-t pt-3">
-                <button type="button" onclick="salvarRegrasEscalaFuncao('${f}')" class="rounded bg-blue-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-blue-700">Salvar regras</button>
+                <button type="button" data-funcao="${escaparHTML(f)}" onclick="salvarRegrasEscalaFuncao(this.dataset.funcao)" class="rounded bg-blue-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-blue-700">Salvar regras</button>
               </div>
             </div>
           </details>`;
@@ -2068,7 +2102,7 @@ async function salvarEstadoNoServidor(
 
     function obterOpcoesCoresServico(corAtual = '', incluirAutomatico = false) {
       const automatico = incluirAutomatico ? `<option value="automatico"${corAtual === 'automatico' ? ' selected' : ''}>Automático</option>` : '';
-      return automatico + obterCoresServico().map(c => `<option value="${c.id}"${corAtual === c.id ? ' selected' : ''}>${c.nome}</option>`).join('');
+      return automatico + obterCoresServico().map(c => `<option value="${escaparHTML(c.id)}"${corAtual === c.id ? ' selected' : ''}>${escaparHTML(c.nome)}</option>`).join('');
     }
 
     function garantirRegrasCorServico(corId) {
@@ -2084,11 +2118,11 @@ async function salvarEstadoNoServidor(
       lista.innerHTML = extras.length ? extras.map(c => {
         const regra = garantirRegrasCorServico(c.id);
         return `<div class="flex flex-wrap items-center gap-3 rounded border bg-gray-50 p-2">
-          <span class="h-5 w-5 rounded-full border" style="background:${c.hex}"></span>
-          <span class="min-w-24 text-sm font-semibold">${c.nome}</span>
-          <label class="flex items-center gap-2 text-xs text-gray-700"><input type="checkbox" ${regra.evitarConsecutivos ? 'checked' : ''} onchange="alterarRegraCorServico('${c.id}','evitarConsecutivos',this.checked)">Não permitir duas ocorrências consecutivas desta cor para o mesmo militar</label>
-          <label class="flex items-center gap-2 text-xs text-gray-700"><input type="checkbox" ${regra.confirmarExcecao !== false ? 'checked' : ''} onchange="alterarRegraCorServico('${c.id}','confirmarExcecao',this.checked)">Perguntar antes de quebrar a regra quando for impossível cumpri-la</label>
-          <button type="button" onclick="removerCorServicoPersonalizada('${c.id}')" class="ml-auto text-xs font-semibold text-red-600 hover:underline">Excluir</button>
+          <span class="h-5 w-5 rounded-full border" style="background:${escaparHTML(c.hex)}"></span>
+          <span class="min-w-24 text-sm font-semibold">${escaparHTML(c.nome)}</span>
+          <label class="flex items-center gap-2 text-xs text-gray-700"><input type="checkbox" data-cor-id="${escaparHTML(c.id)}" ${regra.evitarConsecutivos ? 'checked' : ''} onchange="alterarRegraCorServico(this.dataset.corId,'evitarConsecutivos',this.checked)">Não permitir duas ocorrências consecutivas desta cor para o mesmo militar</label>
+          <label class="flex items-center gap-2 text-xs text-gray-700"><input type="checkbox" data-cor-id="${escaparHTML(c.id)}" ${regra.confirmarExcecao !== false ? 'checked' : ''} onchange="alterarRegraCorServico(this.dataset.corId,'confirmarExcecao',this.checked)">Perguntar antes de quebrar a regra quando for impossível cumpri-la</label>
+          <button type="button" data-cor-id="${escaparHTML(c.id)}" onclick="removerCorServicoPersonalizada(this.dataset.corId)" class="ml-auto text-xs font-semibold text-red-600 hover:underline">Excluir</button>
         </div>`;
       }).join('') : '<p class="text-xs text-gray-400">Nenhuma cor adicional cadastrada.</p>';
     }
@@ -2097,6 +2131,9 @@ async function salvarEstadoNoServidor(
       evento.preventDefault();
       const nome = document.getElementById('nomeNovaCorServico')?.value.trim();
       const hex = document.getElementById('hexNovaCorServico')?.value || '#f59e0b';
+      if (!/^#[0-9a-fA-F]{6}$/.test(hex)) {
+        return alert('Cor inválida. Selecione uma cor no formato hexadecimal #RRGGBB.');
+      }
       let id = normalizarIdCorServico(nome);
       if (!nome || !id) return alert('Informe um nome válido para a cor.');
       if (['preto','vermelho','automatico'].includes(id) || obterCoresServico().some(c => c.id === id)) return alert('Já existe uma cor com esse nome.');
@@ -2129,7 +2166,7 @@ async function salvarEstadoNoServidor(
 
       let referenciasEscalas = 0;
       let referenciasLastros = 0;
-      Object.values(estado.escalas || {}).forEach(escala => {
+      obterEscalasHistoricas().forEach(escala => {
         referenciasEscalas += Object.values(escala?.coresDias || {}).filter(valor => valor === corId).length;
         Object.values(escala?.lastrosIndisponibilidade || {}).forEach(lastros => {
           if (Array.isArray(lastros)) referenciasLastros += lastros.filter(l => l?.cor === corId).length;
@@ -2169,7 +2206,7 @@ async function salvarEstadoNoServidor(
           if (excecao?.cor === corId) excecao.cor = 'preto';
         });
 
-        Object.values(estado.escalas || {}).forEach(escala => {
+        obterEscalasHistoricas().forEach(escala => {
           if (!escala) return;
           Object.keys(escala.coresDias || {}).forEach(data => {
             if (escala.coresDias[data] === corId) escala.coresDias[data] = 'preto';
@@ -2221,7 +2258,7 @@ async function salvarEstadoNoServidor(
     function obterUltimoMilitarDaCorAntes(militarId, funcao, corId, dataAtual, novaEscala, mesAnoAtual) {
       let ultimoTempo = -Infinity;
       let achou = false;
-      Object.values(estado.escalas || {}).forEach(esc => {
+      obterEscalasHistoricas().forEach(esc => {
         if (!esc?.dados || !esc.mesAno || esc.mesAno > mesAnoAtual) return;
         const [a,m] = esc.mesAno.split('-').map(Number);
         Object.entries(esc.dados).forEach(([d,vagas]) => {
@@ -2475,9 +2512,9 @@ async function salvarEstadoNoServidor(
         const definicaoCor = obterCorServicoPorId(info?.cor || 'preto');
         const cor = definicaoCor.nome;
         const classes = 'border-gray-300 bg-gray-50 text-gray-800';
-        return `<span class="inline-flex items-center gap-2 rounded border px-3 py-1 ${classes}" style="border-left:4px solid ${definicaoCor.hex}">
-          <span>${dia}/${mes}/${ano} - ${cor}${info?.motivo ? ` - ${info.motivo}` : ''}</span>
-          <button type="button" onclick="removerDiaEspecial('${data}')" class="somente-edicao font-bold hover:opacity-70">x</button>
+        return `<span class="inline-flex items-center gap-2 rounded border px-3 py-1 ${classes}" style="border-left:4px solid ${escaparHTML(definicaoCor.hex)}">
+          <span>${escaparHTML(`${dia}/${mes}/${ano} - ${cor}${info?.motivo ? ` - ${info.motivo}` : ''}`)}</span>
+          <button type="button" data-data-especial="${escaparHTML(data)}" onclick="removerDiaEspecial(this.dataset.dataEspecial)" class="somente-edicao font-bold hover:opacity-70">x</button>
         </span>`;
       }).join('');
     }
@@ -2547,7 +2584,7 @@ async function salvarEstadoNoServidor(
         ? 'Esta escala foi criada, mas ainda não foi publicada. O aviso permanecerá até a publicação.'
         : 'Estas escalas foram criadas, mas ainda não foram publicadas. O aviso permanecerá até que todas sejam publicadas.';
       lista.innerHTML = pendentes.map(mesAno =>
-        `<button type="button" class="aviso-pendencias-mes" onclick="abrirEscalaPendentePublicacao('${mesAno}')" title="Abrir ${formatarMesAno(mesAno)} para publicação">${formatarMesAno(mesAno)}</button>`
+        `<button type="button" class="aviso-pendencias-mes" data-mes-ano="${escaparHTML(mesAno)}" onclick="abrirEscalaPendentePublicacao(this.dataset.mesAno)" title="Abrir ${escaparHTML(formatarMesAno(mesAno))} para publicação">${escaparHTML(formatarMesAno(mesAno))}</button>`
       ).join('');
       aviso.classList.remove('hidden');
     }
@@ -2676,6 +2713,7 @@ async function inicializar() {
         cancelarJustificativaAlteracaoManual();
         fecharModalAjusteAcumulado();
         fecharModalAuditoriaAcumulado();
+        fecharModalPromocao();
       }
 
     }
@@ -3006,11 +3044,13 @@ async function carregarUsuariosInterface() {
         </select></td>
         <td class="p-2 text-center"><input data-campo="ativo" type="checkbox" ${usuario.ativo ? 'checked' : ''}></td>
         <td class="p-2"><div class="flex justify-end gap-2">
-          <button type="button" onclick="salvarUsuarioInterface(this, '${usuario.id}')" class="rounded bg-blue-600 px-2 py-1 text-xs font-semibold text-white">Salvar</button>
-          <button type="button" onclick="redefinirSenhaInterface('${usuario.id}')" class="rounded bg-gray-600 px-2 py-1 text-xs font-semibold text-white">Redefinir senha</button>
+          <button type="button" data-usuario-id="${escaparHTML(usuario.id)}" onclick="salvarUsuarioInterface(this, this.dataset.usuarioId)" class="rounded bg-blue-600 px-2 py-1 text-xs font-semibold text-white">Salvar</button>
+          <button type="button" data-usuario-id="${escaparHTML(usuario.id)}" onclick="redefinirSenhaInterface(this.dataset.usuarioId)" class="rounded bg-gray-600 px-2 py-1 text-xs font-semibold text-white">Redefinir senha</button>
          <button
   type="button"
-  onclick="excluirUsuarioInterface(this, '${usuario.id}', '${encodeURIComponent(usuario.nome)}')"
+  data-usuario-id="${escaparHTML(usuario.id)}"
+  data-usuario-nome="${escaparHTML(encodeURIComponent(usuario.nome))}"
+  onclick="excluirUsuarioInterface(this, this.dataset.usuarioId, this.dataset.usuarioNome)"
   class="rounded bg-red-600 px-2 py-1 text-xs font-semibold text-white"
 >
   Excluir
@@ -3621,11 +3661,8 @@ async function realizarLogin(evento) {
     'hidden'
   );
 
-  botao.disabled = true;
-
-  botao.textContent =
-    'Entrando...';
-
+  // O botão já foi desabilitado e recebeu o spinner por iniciarSpinnerBotao().
+  // Não substituir seu conteúdo aqui, pois isso removeria a animação.
 
   try {
 
@@ -3790,6 +3827,10 @@ async function sairDoSistema() {
   sessionStorage.removeItem(
     CHAVE_TOKEN_SESSAO
   );
+
+  // O snapshot pertence à sessão que acabou de sair e não deve ficar
+  // disponível para um usuário que autentique depois neste navegador.
+  localStorage.removeItem(CHAVE_RECUPERACAO_CONFLITO);
 
 
   mostrarLogin();
@@ -3988,7 +4029,7 @@ async function sairDoSistema() {
       const selFuncao = document.getElementById('militarFuncao');
       selFuncao.innerHTML = '<option value="">Selecione a Função Principal</option>';
       estado.funcoes.forEach(f => {
-        selFuncao.innerHTML += `<option value="${f}">${f}</option>`;
+        selFuncao.innerHTML += `<option value="${escaparHTML(f)}">${escaparHTML(f)}</option>`;
       });
 
       renderizarFiltroMilitares();
@@ -4003,7 +4044,7 @@ async function sairDoSistema() {
       if (!selFuncao) return;
       const valorAtual = selFuncao.value;
       selFuncao.innerHTML = '<option value="">Selecione a Função</option>'
-        + estado.funcoes.map(funcao => `<option value="${funcao}">${funcao}</option>`).join('');
+        + estado.funcoes.map(funcao => `<option value="${escaparHTML(funcao)}">${escaparHTML(funcao)}</option>`).join('');
       selFuncao.value = estado.funcoes.includes(valorAtual) ? valorAtual : '';
       renderizarMilitaresIndisponibilidade();
     }
@@ -4018,7 +4059,7 @@ async function sairDoSistema() {
         ? obterMilitaresOrdenados(funcao).filter(militar => militar.ativo !== false)
         : [];
       selMilitar.innerHTML = '<option value="">Selecione o Militar</option>'
-        + militares.map(m => `<option value="${m.id}">${m.nome} (${m.saram})</option>`).join('');
+        + militares.map(m => `<option value="${escaparHTML(m.id)}">${escaparHTML(m.nome)} (${escaparHTML(m.saram)})</option>`).join('');
       selMilitar.disabled = !funcao;
       selMilitar.value = militares.some(m => m.id === valorAtual) ? valorAtual : '';
     }
@@ -4028,7 +4069,7 @@ async function sairDoSistema() {
       if (!selFuncao) return;
       const valorAtual = selFuncao.value;
       selFuncao.innerHTML = '<option value="">Selecione a Função</option>'
-        + estado.funcoes.map(funcao => `<option value="${funcao}">${funcao}</option>`).join('');
+        + estado.funcoes.map(funcao => `<option value="${escaparHTML(funcao)}">${escaparHTML(funcao)}</option>`).join('');
       selFuncao.value = estado.funcoes.includes(valorAtual) ? valorAtual : '';
       renderizarMilitaresIndisponibilidadeSemanal();
     }
@@ -4043,7 +4084,7 @@ async function sairDoSistema() {
         ? obterMilitaresOrdenados(funcao).filter(militar => militar.ativo !== false)
         : [];
       selMilitar.innerHTML = '<option value="">Selecione o Militar</option>'
-        + militares.map(m => `<option value="${m.id}">${m.nome} (${m.saram})</option>`).join('');
+        + militares.map(m => `<option value="${escaparHTML(m.id)}">${escaparHTML(m.nome)} (${escaparHTML(m.saram)})</option>`).join('');
       selMilitar.disabled = !funcao;
       selMilitar.value = militares.some(m => m.id === valorAtual) ? valorAtual : '';
       carregarDiasSemanaisDoMilitar();
@@ -4112,7 +4153,8 @@ async function sairDoSistema() {
   // Verifica se o militar ainda aparece em alguma escala armazenada.
   const escalasComMilitar = [];
 
-  Object.entries(estado.escalas || {}).forEach(([mesAno, escala]) => {
+  obterEscalasHistoricas().forEach(escala => {
+  const mesAno = escala?.mesAno || '';
   const encontrado = Object.values(escala?.dados || {}).some(vagas =>
     Object.values(vagas || {}).some(militarId => militarId === id)
   );
@@ -4291,7 +4333,7 @@ async function sairDoSistema() {
       militarEmPromocaoId = id;
       document.getElementById('militarPromocaoDescricao').textContent = `${militar.nome} (${militar.saram}) - função atual: ${militar.funcao}`;
       document.getElementById('novaFuncaoPromocao').innerHTML = funcoesDisponiveis
-        .map(funcao => `<option value="${funcao}">${funcao}</option>`)
+        .map(funcao => `<option value="${escaparHTML(funcao)}">${escaparHTML(funcao)}</option>`)
         .join('');
       const modal = document.getElementById('modalPromocao');
       modal.classList.remove('hidden');
@@ -4333,33 +4375,33 @@ async function sairDoSistema() {
       const filtro = document.getElementById('filtroFuncaoMilitares')?.value || '';
       const renderizarLinhaAtiva = (m, indice, militaresDaFuncao) => `
         <tr class="border-b hover:bg-gray-50">
-          <td class="p-2 font-medium">${m.nome}</td>
-          <td class="p-2 text-gray-600">${m.saram}</td>
-          <td class="p-2"><span class="bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded">${m.funcao}</span></td>
+          <td class="p-2 font-medium">${escaparHTML(m.nome)}</td>
+          <td class="p-2 text-gray-600">${escaparHTML(m.saram)}</td>
+          <td class="p-2"><span class="bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded">${escaparHTML(m.funcao)}</span></td>
           <td class="p-2 text-sm">${indice + 1} <span class="text-xs text-gray-500">(mais antigo primeiro)</span></td>
           <td class="p-2 text-right">
-            <button onclick="moverMilitar('${m.id}', -1)" ${indice === 0 ? 'disabled' : ''} class="text-blue-600 hover:underline text-xs mr-2 disabled:text-gray-300">↑</button>
-            <button onclick="moverMilitar('${m.id}', 1)" ${indice === militaresDaFuncao.length - 1 ? 'disabled' : ''} class="text-blue-600 hover:underline text-xs mr-2 disabled:text-gray-300">↓</button>
-            <button onclick="promoverMilitar('${m.id}')" class="text-green-600 hover:underline text-xs mr-2">Promover</button>
-            <button onclick="removerMilitar('${m.id}')" class="text-red-600 hover:underline text-xs mr-2">Inativar</button>
+            <button data-militar-id="${escaparHTML(m.id)}" onclick="moverMilitar(this.dataset.militarId, -1)" ${indice === 0 ? 'disabled' : ''} class="text-blue-600 hover:underline text-xs mr-2 disabled:text-gray-300">↑</button>
+            <button data-militar-id="${escaparHTML(m.id)}" onclick="moverMilitar(this.dataset.militarId, 1)" ${indice === militaresDaFuncao.length - 1 ? 'disabled' : ''} class="text-blue-600 hover:underline text-xs mr-2 disabled:text-gray-300">↓</button>
+            <button data-militar-id="${escaparHTML(m.id)}" onclick="promoverMilitar(this.dataset.militarId)" class="text-green-600 hover:underline text-xs mr-2">Promover</button>
+            <button data-militar-id="${escaparHTML(m.id)}" onclick="removerMilitar(this.dataset.militarId)" class="text-red-600 hover:underline text-xs mr-2">Inativar</button>
           </td>
         </tr>`;
 
       const renderizarLinhaInativa = m => `
         <tr class="border-b bg-gray-50 hover:bg-gray-100">
-          <td class="p-2 font-medium text-gray-600">${m.nome} <span class="ml-2 rounded bg-gray-200 px-2 py-0.5 text-xs text-gray-600">Inativo</span></td>
-          <td class="p-2 text-gray-500">${m.saram}</td>
-          <td class="p-2"><span class="bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded">${m.funcao}</span></td>
+          <td class="p-2 font-medium text-gray-600">${escaparHTML(m.nome)} <span class="ml-2 rounded bg-gray-200 px-2 py-0.5 text-xs text-gray-600">Inativo</span></td>
+          <td class="p-2 text-gray-500">${escaparHTML(m.saram)}</td>
+          <td class="p-2"><span class="bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded">${escaparHTML(m.funcao)}</span></td>
           <td class="p-2 text-sm text-gray-400">—</td>
           <td class="p-2 text-right">
-            <button onclick="reativarMilitar('${m.id}')" class="text-green-600 hover:underline text-xs mr-2">Reativar</button>
-            <button onclick="excluirMilitarDefinitivamente('${m.id}')" class="text-red-700 hover:underline text-xs font-semibold">Excluir definitivamente</button>
+            <button data-militar-id="${escaparHTML(m.id)}" onclick="reativarMilitar(this.dataset.militarId)" class="text-green-600 hover:underline text-xs mr-2">Reativar</button>
+            <button data-militar-id="${escaparHTML(m.id)}" onclick="excluirMilitarDefinitivamente(this.dataset.militarId)" class="text-red-700 hover:underline text-xs font-semibold">Excluir definitivamente</button>
           </td>
         </tr>`;
 
       // O filtro especial reúne todos os inativos em uma única lista,
       // independentemente da função à qual pertencem.
-      if (filtro === '__INATIVOS__') {
+      if (filtro === '__cci_inativos__') {
         const inativos = estado.militares
           .filter(m => m.ativo === false)
           .slice()
@@ -4376,7 +4418,7 @@ async function sairDoSistema() {
       const blocosAtivos = funcoesExibidas.map(funcao => {
         const ativos = obterMilitaresOrdenados(funcao).filter(m => m.ativo !== false);
         if (!ativos.length) return '';
-        const cabecalho = filtro ? '' : `<tr class="bg-gray-100 border-b"><td colspan="5" class="p-2 font-bold text-gray-700">${funcao} (${ativos.length})</td></tr>`;
+        const cabecalho = filtro ? '' : `<tr class="bg-gray-100 border-b"><td colspan="5" class="p-2 font-bold text-gray-700">${escaparHTML(funcao)} (${ativos.length})</td></tr>`;
         return cabecalho + ativos.map((m, indice) => renderizarLinhaAtiva(m, indice, ativos)).join('');
       }).join('');
 
@@ -4391,9 +4433,9 @@ async function sairDoSistema() {
       if (!filtro) return;
       const valorAtual = filtro.value;
       filtro.innerHTML = '<option value="">Todas as funções</option>'
-        + estado.funcoes.map(funcao => `<option value="${funcao}">${funcao}</option>`).join('')
-        + '<option value="__INATIVOS__">Inativos</option>';
-      filtro.value = (estado.funcoes.includes(valorAtual) || valorAtual === '__INATIVOS__') ? valorAtual : '';
+        + estado.funcoes.map(funcao => `<option value="${escaparHTML(funcao)}">${escaparHTML(funcao)}</option>`).join('')
+        + '<option value="__cci_inativos__">Inativos</option>';
+      filtro.value = (estado.funcoes.includes(valorAtual) || valorAtual === '__cci_inativos__') ? valorAtual : '';
     }
 
     function renderizarFuncoes() {
@@ -4402,8 +4444,8 @@ async function sairDoSistema() {
         const quantidadeMilitares = estado.militares.filter(militar => militar.funcao === funcao && militar.ativo !== false).length;
         return `
           <div class="flex items-center justify-between border rounded p-2 bg-gray-50">
-            <span class="text-sm font-semibold">${funcao}</span>
-            <button onclick="removerFuncao('${funcao}')" ${quantidadeMilitares > 0 ? 'disabled title="Remova ou transfira os militares desta função primeiro"' : ''} class="text-red-600 hover:underline text-xs disabled:text-gray-300">Excluir</button>
+            <span class="text-sm font-semibold">${escaparHTML(funcao)}</span>
+            <button data-funcao="${escaparHTML(funcao)}" onclick="removerFuncao(this.dataset.funcao)" ${quantidadeMilitares > 0 ? 'disabled title="Remova ou transfira os militares desta função primeiro"' : ''} class="text-red-600 hover:underline text-xs disabled:text-gray-300">Excluir</button>
           </div>
         `;
       }).join('');
@@ -4451,11 +4493,11 @@ async function sairDoSistema() {
       const container = document.getElementById('listaVagas');
       container.innerHTML = estado.funcoes.map(f => `
         <div class="flex justify-between items-center p-3 border rounded bg-gray-50">
-          <span class="font-semibold text-sm">${f}</span>
+          <span class="font-semibold text-sm">${escaparHTML(f)}</span>
           <div class="flex items-center gap-2">
-            <button onclick="alterarVagas('${f}', -1)" class="w-8 h-8 bg-gray-200 rounded text-lg font-bold hover:bg-gray-300">-</button>
+            <button data-funcao="${escaparHTML(f)}" onclick="alterarVagas(this.dataset.funcao, -1)" class="w-8 h-8 bg-gray-200 rounded text-lg font-bold hover:bg-gray-300">-</button>
             <span class="w-8 text-center font-bold">${estado.vagas[f] || 0}</span>
-            <button onclick="alterarVagas('${f}', 1)" class="w-8 h-8 bg-gray-200 rounded text-lg font-bold hover:bg-gray-300">+</button>
+            <button data-funcao="${escaparHTML(f)}" onclick="alterarVagas(this.dataset.funcao, 1)" class="w-8 h-8 bg-gray-200 rounded text-lg font-bold hover:bg-gray-300">+</button>
           </div>
         </div>
       `).join('');
@@ -5337,13 +5379,13 @@ if (
         const militar = estado.militares.find(m => m.id === i.militarId);
         return `
           <tr class="border-b hover:bg-gray-50">
-            <td class="p-2 font-medium">${militar ? militar.nome : 'N/A'}</td>
+            <td class="p-2 font-medium">${escaparHTML(militar ? militar.nome : 'N/A')}</td>
             <td class="p-2 text-xs">Período</td>
             <td class="p-2 text-xs">${formatarDataBR(i.inicio)}</td>
             <td class="p-2 text-xs">${formatarDataBR(i.fim)}</td>
-            <td class="p-2 text-xs text-gray-600">${i.motivo}</td>
+            <td class="p-2 text-xs text-gray-600">${escaparHTML(i.motivo)}</td>
             <td class="p-2 text-right">
-              <button onclick="removerIndisponibilidade('${i.id}')" class="text-red-600 hover:underline text-xs">Excluir</button>
+              <button data-indisponibilidade-id="${escaparHTML(i.id)}" onclick="removerIndisponibilidade(this.dataset.indisponibilidadeId)" class="text-red-600 hover:underline text-xs">Excluir</button>
             </td>
           </tr>
         `;
@@ -5352,13 +5394,13 @@ if (
         const militar = estado.militares.find(m => m.id === i.militarId);
         return `
           <tr class="border-b hover:bg-gray-50">
-            <td class="p-2 font-medium">${militar ? militar.nome : 'N/A'}</td>
+            <td class="p-2 font-medium">${escaparHTML(militar ? militar.nome : 'N/A')}</td>
             <td class="p-2 text-xs">Dia da semana</td>
             <td class="p-2 text-xs">${diasSemanaNomes[Number(i.diaSemana)] || 'N/A'}</td>
             <td class="p-2 text-xs">-</td>
-            <td class="p-2 text-xs text-gray-600">${i.motivo}</td>
+            <td class="p-2 text-xs text-gray-600">${escaparHTML(i.motivo)}</td>
             <td class="p-2 text-right">
-              <button onclick="removerIndisponibilidadeSemanal('${i.id}')" class="text-red-600 hover:underline text-xs">Excluir</button>
+              <button data-indisponibilidade-id="${escaparHTML(i.id)}" onclick="removerIndisponibilidadeSemanal(this.dataset.indisponibilidadeId)" class="text-red-600 hover:underline text-xs">Excluir</button>
             </td>
           </tr>
         `;
@@ -5380,6 +5422,23 @@ if (
       return obterEscalasHistoricas()
         .filter(escala => escala.mesAno < mesAno)
         .sort((a, b) => b.mesAno.localeCompare(a.mesAno))[0] || null;
+    }
+
+
+    // Fonte única para dependências históricas. Escalas excluídas que foram
+    // preservadas têm o mesmo peso de continuidade das escalas visíveis, mas
+    // nunca voltam a aparecer como mês gerado na interface.
+    function obterMesesHistoricosFuturos(mesAno) {
+      const mesBase = obterMesBaseEscala(mesAno);
+      return Object.keys(estado.historicoEscalasExcluidas || {})
+        .filter(mesEscala => obterMesBaseEscala(mesEscala) > mesBase)
+        .sort((a, b) => obterMesBaseEscala(a).localeCompare(obterMesBaseEscala(b)));
+    }
+
+    function removerHistoricosFuturosDependentes(mesAno) {
+      const meses = obterMesesHistoricosFuturos(mesAno);
+      meses.forEach(mesEscala => delete estado.historicoEscalasExcluidas[mesEscala]);
+      return meses;
     }
 
     function obterUltimosMilitaresPorFuncao(escalaAnterior) {
@@ -5514,7 +5573,7 @@ select.innerHTML = `
   <option value="">Todas as funções</option>
   ${estado.funcoes
     .filter(funcao => (estado.vagas[funcao] || 0) > 0)
-    .map(funcao => `<option value="${funcao}">${funcao}</option>`)
+    .map(funcao => `<option value="${escaparHTML(funcao)}">${escaparHTML(funcao)}</option>`)
     .join('')}
 `;
 
@@ -5961,7 +6020,7 @@ try {
           // processamento da vaga, portanto não fica obsoleto quando a geração
           // avança para outra vaga ou outro dia.
           const sequenciaVermelhaFuncaoGeracao = [];
-          Object.values(estado.escalas || {}).forEach(escalaHistorica => {
+          obterEscalasHistoricas().forEach(escalaHistorica => {
             if (!escalaHistorica?.mesAno || escalaHistorica.mesAno >= mesAno || !escalaHistorica.dados) return;
             const [anoHist, mesHist] = escalaHistorica.mesAno.split('-').map(Number);
             Object.entries(escalaHistorica.dados).forEach(([diaHist, vagasHist]) => {
@@ -5995,7 +6054,7 @@ try {
 
             // Preserva o histórico completo necessário para descanso e para as
             // rotações preta/vermelha independentes, inclusive entre meses.
-            Object.values(estado.escalas || {}).forEach(escalaHistorica => {
+            obterEscalasHistoricas().forEach(escalaHistorica => {
               if (!escalaHistorica?.mesAno || escalaHistorica.mesAno >= mesAno || !escalaHistorica.dados) return;
               const [anoHist, mesHist] = escalaHistorica.mesAno.split('-').map(Number);
               Object.entries(escalaHistorica.dados).forEach(([diaHist, vagasHist]) => {
@@ -6824,6 +6883,7 @@ if (salvou) {
         || escalaAnterior?.compensacoesFimSemana
         || {};
       const ultimosMilitaresPorFuncao = obterUltimosMilitaresPorFuncao(escalaAnterior);
+      const ultimosMilitaresPorFuncaoECor = obterUltimosMilitaresPorFuncaoECor(escalaAnterior);
       const ultimosEventosAnteriores = obterMilitaresNoUltimoEvento(escalaAnterior, tiposEscala);
       const ultimasDatasAnteriores = obterUltimasDatasServicos(escalaAnterior, tiposEscala);
       const ultimosTiposAnteriores = obterUltimoServicoFoiVermelhoPorMilitar(escalaAnterior);
@@ -6984,7 +7044,7 @@ if (salvou) {
             }
 
             const sequenciaVermelhaFuncao = [];
-            Object.values(estado.escalas || {}).forEach(escalaHistorica => {
+            obterEscalasHistoricas().forEach(escalaHistorica => {
               if (!escalaHistorica?.mesAno || escalaHistorica.mesAno >= escala.mesAno || !escalaHistorica.dados) return;
               const [anoHist, mesHist] = escalaHistorica.mesAno.split('-').map(Number);
               Object.entries(escalaHistorica.dados).forEach(([diaHist, vagasHist]) => {
@@ -7277,6 +7337,46 @@ if (salvou) {
 
       const [ano, mes] = mesAno.split('-').map(Number);
       const diasNoMes = new Date(ano, mes, 0).getDate();
+
+      // Índice de serviços usado pelo dropdown de troca manual.
+      // Antes, cada candidato percorria novamente todas as escalas e todos os dias
+      // para descobrir se possuía serviço em D-1/D+1. Em históricos longos isso
+      // multiplicava o custo por célula e candidato. Agora o histórico é percorrido
+      // uma única vez por render e a consulta passa a ser O(1) em média.
+      const indiceServicosPorTempoTroca = new Map();
+      obterEscalasHistoricas().forEach(escalaHistorica => {
+        if (!escalaHistorica?.dados || !escalaHistorica?.mesAno) return;
+
+        // Para o mês atualmente aberto, usa a instância em edição para que o índice
+        // reflita imediatamente alterações manuais ainda presentes em estado.escala.
+        const escalaAnalise = escalaHistorica.mesAno === estado.escala.mesAno
+          ? estado.escala
+          : escalaHistorica;
+        if (!escalaAnalise?.dados || !escalaAnalise?.mesAno) return;
+
+        const [anoEscala, mesEscala] = escalaAnalise.mesAno.split('-').map(Number);
+        Object.entries(escalaAnalise.dados).forEach(([diaEscala, vagas]) => {
+          const tempoServico = new Date(
+            anoEscala,
+            mesEscala - 1,
+            Number(diaEscala)
+          ).getTime();
+          if (!Number.isFinite(tempoServico)) return;
+
+          let militaresNoDia = indiceServicosPorTempoTroca.get(tempoServico);
+          if (!militaresNoDia) {
+            militaresNoDia = new Set();
+            indiceServicosPorTempoTroca.set(tempoServico, militaresNoDia);
+          }
+          Object.values(vagas || {}).forEach(militarId => {
+            if (militarId) militaresNoDia.add(militarId);
+          });
+        });
+      });
+
+      const militarTemServicoNoTempoTroca = (militarId, tempoAlvo) =>
+        indiceServicosPorTempoTroca.get(tempoAlvo)?.has(militarId) === true;
+
       const estruturaEscala = obterEstruturaDaEscala(estado.escala);
       const diasSemanaNomes = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
@@ -7293,7 +7393,7 @@ if (salvou) {
 cabecalho.innerHTML = `
   <th class="border border-gray-300 p-2 w-12 text-center bg-gray-800 text-white">Dia</th>
   <th class="border border-gray-300 p-2 w-14 text-center bg-gray-800 text-white">Sem.</th>
-  ${colunasVagas.map(c => `<th class="border border-gray-300 p-2 text-center bg-gray-700 text-white">${c.funcao}</th>`).join('')}
+  ${colunasVagas.map(c => `<th class="border border-gray-300 p-2 text-center bg-gray-700 text-white">${escaparHTML(c.funcao)}</th>`).join('')}
 `;
 
       // Linhas dos Dias
@@ -7314,8 +7414,8 @@ cabecalho.innerHTML = `
         const definicaoCorDia = obterCorServicoPorId(corDiaLinha || 'preto');
         const classificacaoLinha = obterClassificacaoDia(dataObj);
         const tituloClassificacao = `Classificação: ${definicaoCorDia.nome} | Origem: ${classificacaoLinha.origem || 'escala salva'} | Clique para escolher Automático ou uma cor de serviço`;
-        htmlCorpo += `<td class="border p-2 text-center font-bold ${podeEditarSistema() ? 'cursor-pointer hover:bg-blue-100' : ''}" title="${tituloClassificacao}" ${podeEditarSistema() ? `onclick="abrirDropdownCorDia('${dataStrLinha}', this)"` : ''}>${dia}</td>`;
-        htmlCorpo += `<td class="border p-2 text-center text-xs font-semibold" style="color:${definicaoCorDia.hex}">${nomeDiaSemana}</td>`;
+        htmlCorpo += `<td class="border p-2 text-center font-bold ${podeEditarSistema() ? 'cursor-pointer hover:bg-blue-100' : ''}" title="${escaparHTML(tituloClassificacao)}" ${podeEditarSistema() ? `data-data-escala="${escaparHTML(dataStrLinha)}" onclick="abrirDropdownCorDia(this.dataset.dataEscala, this)"` : ''}>${dia}</td>`;
+        htmlCorpo += `<td class="border p-2 text-center text-xs font-semibold" style="color:${escaparHTML(definicaoCorDia.hex)}">${escaparHTML(nomeDiaSemana)}</td>`;
 
         colunasVagas.forEach(col => {
           const militarIdEscalado = estado.escala.dados[dia]?.[col.chave] || '';
@@ -7325,8 +7425,13 @@ cabecalho.innerHTML = `
           const corAlteracaoManual = tipoAlteracaoManual === 'troca'
             ? '#ccff00'
             : (tipoAlteracaoManual === 'puxado' ? '#fee2e2' : '');
-          const corFundoCelula = observacaoCelula?.cor || corAlteracaoManual;
-          const estiloFundoCelula = corFundoCelula ? ` style="background-color: ${corFundoCelula};"` : '';
+          const corObservacaoValida = CORES_OBSERVACAO_PERMITIDAS.includes(observacaoCelula?.cor)
+            ? observacaoCelula.cor
+            : '';
+          const corFundoCelula = corObservacaoValida || corAlteracaoManual;
+          const estiloFundoCelula = corFundoCelula
+            ? ` style="background-color: ${escaparHTML(corFundoCelula)};"`
+            : '';
           
           // Dropdown de edicao manual na ordem esperada da rotacao daquele dia
 const ordemSalvaTroca =
@@ -7415,28 +7520,6 @@ const militarTemInicioIndisponibilidadePeriodoAmanhaTroca = militarId =>
     i.inicio === dataSeguinteTrocaStr
   );
 
-const militarTemServicoNoTempoTroca = (militarId, tempoAlvo) => {
-  return Object.values(estado.escalas || {}).some(escala => {
-    if (!escala?.dados || !escala?.mesAno) return false;
-
-    const escalaAnalise = escala.mesAno === estado.escala.mesAno
-      ? estado.escala
-      : escala;
-    const [anoEscala, mesEscala] = escalaAnalise.mesAno.split('-').map(Number);
-
-    return Object.entries(escalaAnalise.dados || {}).some(([diaEscala, vagas]) => {
-      const tempoServico = new Date(
-        anoEscala,
-        mesEscala - 1,
-        Number(diaEscala)
-      ).getTime();
-
-      return tempoServico === tempoAlvo &&
-        Object.values(vagas || {}).includes(militarId);
-    });
-  });
-};
-
 const militaresOrdenadosTroca = militaresNaOrdemBase
   .filter(militar => {
     // O militar já escalado nesta célula é mostrado separadamente
@@ -7507,27 +7590,28 @@ const militaresOrdenadosTroca = militaresNaOrdemBase
 
 const opcoes = militaresOrdenadosTroca
   .map(m =>
-    `<option value="${m.id}">${m.nome} (${m.saram})${m.ativo === false ? ' - inativo' : ''}</option>`
+    `<option value="${escaparHTML(m.id)}">${escaparHTML(m.nome)} (${escaparHTML(m.saram)})${m.ativo === false ? ' - inativo' : ''}</option>`
   )
   .join('');
           const textoBotaoJustificativa = militarEscalado
-            ? `${militarEscalado.nome} (${militarEscalado.saram})`
+            ? `${escaparHTML(militarEscalado.nome)} (${escaparHTML(militarEscalado.saram)})`
             : '-- Sem Militar --';
           const textoMilitar = militarEscalado
-            ? `<span class="pdf-militar"><span class="pdf-militar-nome">${militarEscalado.nome}</span><span class="pdf-militar-saram">SARAM: ${militarEscalado.saram}</span></span>`
+            ? `<span class="pdf-militar"><span class="pdf-militar-nome">${escaparHTML(militarEscalado.nome)}</span><span class="pdf-militar-saram">SARAM: ${escaparHTML(militarEscalado.saram)}</span></span>`
             : '<span class="pdf-militar">-- Sem Militar --</span>';
 
           htmlCorpo += `
             <td class="celula-escala border p-1 ${corFundoCelula ? '' : (ehSubstituicao ? 'bg-yellow-200 font-bold' : '')}"${estiloFundoCelula}>
               <div class="flex items-start gap-1">
-                <button type="button" title="Clique para ver a justificativa" onclick="mostrarJustificativa(${dia}, '${encodeURIComponent(col.chave)}')" class="botao-justificativa min-w-0 flex-1 text-left text-xs p-1 rounded hover:bg-yellow-100 ${ehSubstituicao ? 'font-bold' : 'font-medium'}">${textoBotaoJustificativa}</button>
+                <button type="button" title="Clique para ver a justificativa" data-dia="${dia}" data-coluna-chave="${escaparHTML(encodeURIComponent(col.chave))}" onclick="mostrarJustificativa(Number(this.dataset.dia), this.dataset.colunaChave)" class="botao-justificativa min-w-0 flex-1 text-left text-xs p-1 rounded hover:bg-yellow-100 ${ehSubstituicao ? 'font-bold' : 'font-medium'}">${textoBotaoJustificativa}</button>
                 <select
   title="${podeEditarSistema() ? 'Alterar militar' : 'Consultar próximos militares sugeridos'}"
-  onchange="${
-    podeEditarSistema()
-      ? `atualizarEscalaManual(${dia}, '${col.chave}', this.value)`
-      : `this.value = '${militarIdEscalado || ''}'`
-  }"
+  data-dia="${dia}"
+  data-coluna-chave="${escaparHTML(col.chave)}"
+  data-militar-atual="${escaparHTML(militarIdEscalado || '')}"
+  onchange="${podeEditarSistema()
+      ? `atualizarEscalaManual(Number(this.dataset.dia), this.dataset.colunaChave, this.value)`
+      : `this.value = this.dataset.militarAtual`}"
   class="w-7 shrink-0 text-xs p-1 rounded border bg-white ${ehSubstituicao ? 'font-bold' : ''}"
 >
   ${
@@ -8158,7 +8242,7 @@ const opcoes = militaresOrdenadosTroca
       // estado.escala (fonte viva da tabela), e não de uma eventual cópia antiga
       // existente em estado.escalas. Isso é essencial quando houve troca manual,
       // classificação de dia ou outra alteração ainda não refletida na coleção.
-      const escalasParaSequenciaVermelha = Object.values(estado.escalas || {})
+      const escalasParaSequenciaVermelha = obterEscalasHistoricas()
         .filter(escalaHistorica => escalaHistorica?.mesAno !== estado.escala.mesAno);
       escalasParaSequenciaVermelha.push(estado.escala);
 
@@ -8324,12 +8408,14 @@ const opcoes = militaresOrdenadosTroca
         if (militarIdAnterior === militarId) return;
 
         const mesesFuturosGerados = obterMesesFuturosGerados(estado.escala.mesAno);
-        if (mesesFuturosGerados.length > 0) {
-          const mensagemMeses = mesesFuturosGerados.map(formatarMesAno).join(', ');
+        const mesesHistoricosFuturos = obterMesesHistoricosFuturos(estado.escala.mesAno);
+        const mesesDependentesFuturos = [...new Set([...mesesFuturosGerados, ...mesesHistoricosFuturos])].sort();
+        if (mesesDependentesFuturos.length > 0) {
+          const mensagemMeses = mesesDependentesFuturos.map(formatarMesAno).join(', ');
           const confirmarExclusao = confirm(
-            `ATENÇÃO: já existe escala futura gerada após ${formatarMesAno(estado.escala.mesAno)}.\n\n`
-            + `Alterar esta escala pode mudar a rotação e a contagem usadas nos meses seguintes.\n\n`
-            + `As seguintes escalas futuras serão excluídas e deverão ser geradas novamente: ${mensagemMeses}.\n\n`
+            `ATENÇÃO: existem escalas ou memórias históricas posteriores a ${formatarMesAno(estado.escala.mesAno)}.\n\n`
+            + `Alterar esta escala muda a base de rotação, quadrinhos, lastros e regras de continuidade dos meses seguintes.\n\n`
+            + `As seguintes dependências futuras serão removidas e deverão ser geradas novamente: ${mensagemMeses}.\n\n`
             + 'Deseja continuar?'
           );
           if (!confirmarExclusao) {
@@ -8426,9 +8512,9 @@ const opcoes = militaresOrdenadosTroca
             : 'Militar considerado apto pelas regras configuradas no momento da alteração.',
           `Regras de descanso aplicadas: ${descreverRegrasDescansoFuncao(obterFuncaoDaChave(chaveColuna), estado.escala.tiposUsadosPorDia?.[dia]?.[obterFuncaoDaChave(chaveColuna)] || obterTiposEscalaDaEscala(estado.escala)[obterFuncaoDaChave(chaveColuna)] || '')}.`,
           'As compensações da rotação foram recalculadas a partir da escala atual após esta edição manual.',
-          mesesFuturosGerados.length > 0
-            ? `Escalas futuras excluídas por dependerem desta rotação: ${mesesFuturosGerados.map(formatarMesAno).join(', ')}.`
-            : 'Não havia escala futura gerada para excluir.'
+          mesesDependentesFuturos.length > 0
+            ? `Escalas/memórias futuras removidas por dependerem desta rotação: ${mesesDependentesFuturos.map(formatarMesAno).join(', ')}.`
+            : 'Não havia escala nem memória histórica futura dependente para remover.'
         ].join('\n');
         estado.escala.justificativas[dia][chaveColuna] = justificativaAnterior
           ? `${justificativaAnterior}\n\n${registroManual}`
@@ -8438,6 +8524,7 @@ const opcoes = militaresOrdenadosTroca
         mesesFuturosGerados.forEach(mesEscala => {
           delete estado.escalas[mesEscala];
         });
+        removerHistoricosFuturosDependentes(estado.escala.mesAno);
         estado.escalas[estado.escala.mesAno] = estado.escala;
         if (!await salvarEstado()) return;
         renderizarTabelaEscala();
@@ -8624,20 +8711,9 @@ const opcoes = militaresOrdenadosTroca
       const filtro = document.getElementById('filtroFuncaoResumo')?.value || '';
       const mesSelecionado = document.getElementById('mesAnoEscala').value;
       const cores = obterCoresServico();
-      const contagemMes = Object.fromEntries(
-        estado.militares.map(militar => [militar.id, criarContagemQuadrinhoLastro()])
-      );
       const contagemAcumulada = Object.fromEntries(
         estado.militares.map(militar => [militar.id, criarContagemQuadrinhoLastro()])
       );
-
-      if (mesSelecionado && estado.escalas[mesSelecionado]) {
-        obterContagemSeparadaEscala(
-          estado.escalas[mesSelecionado],
-          contagemMes,
-          filtro
-        );
-      }
 
       if (mesSelecionado) {
         obterEscalasHistoricas()
@@ -8651,8 +8727,8 @@ const opcoes = militaresOrdenadosTroca
 
       if (tabela?.tHead) {
         const cabecalhosCores = cores.map(cor => `
-          <th class="p-2 text-center" colspan="3" style="color:${cor.hex}">
-            ${cor.nome}
+          <th class="p-2 text-center" colspan="3" style="color:${escaparHTML(cor.hex)}">
+            ${escaparHTML(cor.nome)}
             <div class="mt-1 grid grid-cols-3 gap-2 text-[10px] text-gray-500">
               <span>Q</span><span>L</span><span>Total</span>
             </div>
@@ -8682,22 +8758,22 @@ const opcoes = militaresOrdenadosTroca
         const celulasCores = cores.map(cor => {
           const item = acumulado.porCor[cor.id] || { quadrinhos: 0, lastros: 0, total: 0 };
           return `
-            <td class="p-2 text-center" style="color:${cor.hex}">${item.quadrinhos}</td>
+            <td class="p-2 text-center" style="color:${escaparHTML(cor.hex)}">${item.quadrinhos}</td>
             <td class="p-2 text-center text-gray-500">${item.lastros}</td>
-            <td class="p-2 text-center font-bold" style="color:${cor.hex}">${item.total}</td>
+            <td class="p-2 text-center font-bold" style="color:${escaparHTML(cor.hex)}">${item.total}</td>
           `;
         }).join('');
 
         return `
           <tr class="border-b hover:bg-gray-50">
-            <td class="p-2 font-medium">${militar.nome} (${militar.saram})</td>
-            <td class="p-2 text-gray-600">${filtro || militar.funcao}${militar.ativo === false ? ' (inativo)' : ''}</td>
+            <td class="p-2 font-medium">${escaparHTML(militar.nome)} (${escaparHTML(militar.saram)})</td>
+            <td class="p-2 text-gray-600">${escaparHTML(filtro || militar.funcao)}${militar.ativo === false ? ' (inativo)' : ''}</td>
             ${celulasCores}
             <td class="p-2 text-center font-bold">${acumulado.totalGeral}</td>
             <td class="p-2 text-right">
               <div class="flex justify-end gap-1">
-                <button type="button" onclick="abrirModalAjusteAcumulado('${militar.id}','${encodeURIComponent(funcaoAjuste)}')" class="somente-edicao rounded bg-gray-200 px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-300">Ajustar</button>
-                <button type="button" onclick="abrirModalAuditoriaAcumulado('${militar.id}','${encodeURIComponent(funcaoAjuste)}')" class="rounded bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-200">Auditoria</button>
+                <button type="button" data-militar-id="${escaparHTML(militar.id)}" data-funcao="${escaparHTML(encodeURIComponent(funcaoAjuste))}" onclick="abrirModalAjusteAcumulado(this.dataset.militarId,this.dataset.funcao)" class="somente-edicao rounded bg-gray-200 px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-300">Ajustar</button>
+                <button type="button" data-militar-id="${escaparHTML(militar.id)}" data-funcao="${escaparHTML(encodeURIComponent(funcaoAjuste))}" onclick="abrirModalAuditoriaAcumulado(this.dataset.militarId,this.dataset.funcao)" class="rounded bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-200">Auditoria</button>
               </div>
             </td>
           </tr>
@@ -8720,8 +8796,8 @@ const opcoes = militaresOrdenadosTroca
         `${militar.nome} (${militar.saram}) - ${funcao}. Informe abaixo somente os lastros manuais desejados.`;
       document.getElementById('camposAjusteLastros').innerHTML = obterCoresServico().map(cor => `
         <label class="block text-sm font-semibold text-gray-700">
-          Lastro ${cor.nome}
-          <input class="mt-1 w-full rounded border p-2 text-sm font-normal" data-cor-lastro="${cor.id}" min="0" required step="1" type="number" value="${lastrosAtuais[cor.id] || 0}"/>
+          Lastro ${escaparHTML(cor.nome)}
+          <input class="mt-1 w-full rounded border p-2 text-sm font-normal" data-cor-lastro="${escaparHTML(cor.id)}" min="0" required step="1" type="number" value="${lastrosAtuais[cor.id] || 0}"/>
         </label>`).join('');
       document.getElementById('motivoAjusteAcumulado').value = '';
       document.getElementById('responsavelAjusteAcumulado').value = '';
@@ -8881,7 +8957,7 @@ const opcoes = militaresOrdenadosTroca
       if (!filtro) return;
       const valorAtual = filtro.value;
       filtro.innerHTML = '<option value="">Todas as funções</option>'
-        + estado.funcoes.map(funcao => `<option value="${funcao}">${funcao}</option>`).join('');
+        + estado.funcoes.map(funcao => `<option value="${escaparHTML(funcao)}">${escaparHTML(funcao)}</option>`).join('');
       filtro.value = estado.funcoes.includes(valorAtual) ? valorAtual : '';
     }
 
@@ -9051,28 +9127,45 @@ const opcoes = militaresOrdenadosTroca
       }
     }
 
+    // ETAPA 1 — BACKUP COMPLETO
+    // Mantém em um único ponto a relação de dados persistentes do SESCI.
+    // "estado.escala" não entra no backup porque é apenas a escala aberta na interface;
+    // a fonte persistente são "escalas" e "historicoEscalasExcluidas".
+    function criarEstadoCompletoParaBackup() {
+      return {
+        funcoes: structuredClone(estado.funcoes || []),
+        militares: structuredClone(estado.militares || []),
+        vagas: structuredClone(estado.vagas || {}),
+        indisponibilidades: structuredClone(estado.indisponibilidades || []),
+        indisponibilidadesSemana: structuredClone(estado.indisponibilidadesSemana || []),
+        diasEspeciais: structuredClone(estado.diasEspeciais || {}),
+        classificacaoSemanal: structuredClone(estado.classificacaoSemanal || {}),
+        excecoesClassificacaoDias: structuredClone(estado.excecoesClassificacaoDias || {}),
+        coresServicoPersonalizadas: structuredClone(estado.coresServicoPersonalizadas || []),
+        regrasCoresServico: structuredClone(estado.regrasCoresServico || {}),
+        regrasEscala: structuredClone(estado.regrasEscala || {}),
+        versaoEsquemaCCI: Number(estado.versaoEsquemaCCI || 6),
+        escalas: structuredClone(estado.escalas || {}),
+        historicoEscalasExcluidas: structuredClone(estado.historicoEscalasExcluidas || {})
+      };
+    }
+
     function exportarBancoDados() {
       const backup = {
         aplicativo: 'Sistema de Escala de Serviço - CCI',
-        versao: 1,
+        versao: 2,
+        versaoEsquemaCCI: Number(estado.versaoEsquemaCCI || 6),
         exportadoEm: new Date().toISOString(),
-        estado: {
-          funcoes: estado.funcoes,
-          militares: estado.militares,
-          vagas: estado.vagas,
-          indisponibilidades: estado.indisponibilidades,
-          indisponibilidadesSemana: estado.indisponibilidadesSemana,
-          diasEspeciais: estado.diasEspeciais,
-          escalas: estado.escalas,
-          historicoEscalasExcluidas: estado.historicoEscalasExcluidas || {}
-        }
+        estado: criarEstadoCompletoParaBackup()
       };
       const arquivo = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(arquivo);
       const link = document.createElement('a');
       link.href = url;
       link.download = `Backup_Escala_CCI_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(link);
       link.click();
+      link.remove();
       URL.revokeObjectURL(url);
     }
 
@@ -9086,39 +9179,46 @@ const opcoes = militaresOrdenadosTroca
           const backup = JSON.parse(leitor.result);
           const dados = backup.estado || backup;
           const backupValido = dados && Array.isArray(dados.militares)
-  && dados.vagas && typeof dados.vagas === 'object'
-  && Array.isArray(dados.indisponibilidades)
-  && dados.escalas && typeof dados.escalas === 'object'
-  && (
-    dados.escala === undefined ||
-    (dados.escala && typeof dados.escala === 'object')
-  );
+            && dados.vagas && typeof dados.vagas === 'object'
+            && Array.isArray(dados.indisponibilidades)
+            && dados.escalas && typeof dados.escalas === 'object'
+            && (dados.escala === undefined || (dados.escala && typeof dados.escala === 'object'));
 
           if (!backupValido) throw new Error('Formato inválido');
           if (!confirm(
             'ATENÇÃO!\n\n' +
             'Importar este backup substituirá os dados atuais do sistema para todos os usuários.\n\n' +
+            'O arquivo restaurará também regras das escalas, classificação dos dias, cores personalizadas e memória histórica, quando esses dados existirem no backup.\n\n' +
             'Deseja realmente continuar?'
           )) return;
 
+          // Compatibilidade retroativa: backups antigos que não possuíam os novos campos
+          // continuam importáveis e recebem os padrões somente para o que realmente não existe.
           estado = {
-  funcoes: Array.isArray(dados.funcoes) ? dados.funcoes : [...FUNCOES_PADRAO],
-  militares: dados.militares,
-  vagas: dados.vagas,
-  indisponibilidades: dados.indisponibilidades,
-  indisponibilidadesSemana: Array.isArray(dados.indisponibilidadesSemana) ? dados.indisponibilidadesSemana : [],
-  diasEspeciais: dados.diasEspeciais && typeof dados.diasEspeciais === 'object' ? dados.diasEspeciais : {},
-  classificacaoSemanal: dados.classificacaoSemanal && typeof dados.classificacaoSemanal === 'object' ? dados.classificacaoSemanal : { 0: 'vermelho', 1: 'preto', 2: 'preto', 3: 'preto', 4: 'preto', 5: 'preto', 6: 'vermelho' },
-  excecoesClassificacaoDias: dados.excecoesClassificacaoDias && typeof dados.excecoesClassificacaoDias === 'object' ? dados.excecoesClassificacaoDias : {},
-  regrasEscala: dados.regrasEscala && typeof dados.regrasEscala === 'object' ? dados.regrasEscala : {},
-  escala: dados.escala && typeof dados.escala === 'object'
-    ? dados.escala
-    : {},
-  escalas: dados.escalas,
-  historicoEscalasExcluidas: dados.historicoEscalasExcluidas && typeof dados.historicoEscalasExcluidas === 'object'
-    ? dados.historicoEscalasExcluidas
-    : {}
-};
+            funcoes: Array.isArray(dados.funcoes) ? structuredClone(dados.funcoes) : [...FUNCOES_PADRAO],
+            militares: structuredClone(dados.militares),
+            vagas: structuredClone(dados.vagas),
+            indisponibilidades: structuredClone(dados.indisponibilidades),
+            indisponibilidadesSemana: Array.isArray(dados.indisponibilidadesSemana) ? structuredClone(dados.indisponibilidadesSemana) : [],
+            diasEspeciais: dados.diasEspeciais && typeof dados.diasEspeciais === 'object' ? structuredClone(dados.diasEspeciais) : {},
+            classificacaoSemanal: dados.classificacaoSemanal && typeof dados.classificacaoSemanal === 'object'
+              ? structuredClone(dados.classificacaoSemanal)
+              : { 0: 'vermelho', 1: 'preto', 2: 'preto', 3: 'preto', 4: 'preto', 5: 'preto', 6: 'vermelho' },
+            excecoesClassificacaoDias: dados.excecoesClassificacaoDias && typeof dados.excecoesClassificacaoDias === 'object'
+              ? structuredClone(dados.excecoesClassificacaoDias) : {},
+            coresServicoPersonalizadas: Array.isArray(dados.coresServicoPersonalizadas)
+              ? structuredClone(dados.coresServicoPersonalizadas) : [],
+            regrasCoresServico: dados.regrasCoresServico && typeof dados.regrasCoresServico === 'object'
+              ? structuredClone(dados.regrasCoresServico) : {},
+            regrasEscala: dados.regrasEscala && typeof dados.regrasEscala === 'object'
+              ? structuredClone(dados.regrasEscala) : {},
+            versaoEsquemaCCI: Math.max(Number(dados.versaoEsquemaCCI || backup.versaoEsquemaCCI || 0), 6),
+            escala: dados.escala && typeof dados.escala === 'object' ? structuredClone(dados.escala) : {},
+            escalas: structuredClone(dados.escalas),
+            historicoEscalasExcluidas: dados.historicoEscalasExcluidas && typeof dados.historicoEscalasExcluidas === 'object'
+              ? structuredClone(dados.historicoEscalasExcluidas) : {}
+          };
+
           normalizarEstadoAtual();
           if (!await salvarEstado()) return;
           renderizarSelectFuncoes();
@@ -9128,8 +9228,12 @@ const opcoes = militaresOrdenadosTroca
           renderizarVagas();
           renderizarIndisponibilidades();
           renderizarTabelaEscala();
-          alert('Dados importados com sucesso.');
+          renderizarResumoServicos();
+          atualizarCoresMesesEscala();
+          atualizarAvisoEscalasNaoPublicadas();
+          alert('Dados importados com sucesso. O backup completo foi restaurado.');
         } catch (erro) {
+          console.error('Erro ao importar backup:', erro);
           alert('Não foi possível importar o arquivo. Selecione um backup JSON válido.');
         } finally {
           evento.target.value = '';
@@ -9202,7 +9306,11 @@ async function exportarPDF() {
     function exportarXLS() {
       const elemento = document.getElementById('areaEscalaPDF');
       const copia = elemento.cloneNode(true);
-      copia.querySelector('.legenda-substituicao')?.remove();
+      // Remove elementos exclusivos da interface antes de montar o arquivo XLS.
+      // querySelectorAll() retorna NodeList; a remoção precisa ser feita elemento a elemento.
+      copia.querySelectorAll('.legenda-substituicao, .cci-nao-exportar-pdf, .cci-escala-scrollbar-sticky')
+        .forEach(elemento => elemento.remove());
+
       copia.querySelectorAll('td').forEach(celula => {
         celula.classList.remove('bg-yellow-200', 'font-bold');
         const seletor = celula.querySelector('select');
@@ -9222,6 +9330,9 @@ async function exportarPDF() {
         }
         celula.replaceChildren(textoVisivel);
       });
+
+      // Nenhum controle interativo deve seguir para o HTML interpretado pelo Excel.
+      copia.querySelectorAll('button, select, input, textarea').forEach(controle => controle.remove());
 
       copia.querySelectorAll('tbody tr').forEach((linha, indice) => {
         linha.classList.add(indice % 2 === 0 ? 'xls-linha-branca' : 'xls-linha-cinza');
@@ -9258,7 +9369,7 @@ async function exportarPDF() {
     }
 
     // Inicializar app
-    window.onload = inicializar;
+    window.addEventListener('load', inicializar);
   </script>
 <footer class="mt-8 border-t border-gray-200 py-4 text-center text-xs text-gray-500">
   Desenvolvido por Sgt R.Cunha ®
