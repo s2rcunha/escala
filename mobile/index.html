@@ -1280,11 +1280,11 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 <label class="block text-sm font-semibold text-gray-700">
             Nome do responsável
-            <input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="responsavelAlteracaoManual" required="" type="text"/>
+            <input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="responsavelAlteracaoManual" readonly required="" type="text"/>
 </label>
 <label class="block text-sm font-semibold text-gray-700">
             SARAM do responsável
-            <input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="saramResponsavelAlteracaoManual" required="" type="text"/>
+            <input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="saramResponsavelAlteracaoManual" readonly required="" type="text"/>
 </label>
 </div>
 </div>
@@ -1309,8 +1309,8 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
           <textarea class="mt-1 w-full rounded border p-2 text-sm font-normal" id="motivoAjusteAcumulado" placeholder="Explique por que os lastros precisam ser ajustados" required rows="4"></textarea>
 </label>
 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-<label class="block text-sm font-semibold text-gray-700">Nome do responsável<input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="responsavelAjusteAcumulado" required type="text"/></label>
-<label class="block text-sm font-semibold text-gray-700">SARAM do responsável<input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="saramResponsavelAjusteAcumulado" required type="text"/></label>
+<label class="block text-sm font-semibold text-gray-700">Nome do responsável<input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="responsavelAjusteAcumulado" readonly required type="text"/></label>
+<label class="block text-sm font-semibold text-gray-700">SARAM do responsável<input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="saramResponsavelAjusteAcumulado" readonly required type="text"/></label>
 </div>
 </div>
 <div class="flex justify-end gap-2 border-t px-5 py-3">
@@ -1560,6 +1560,22 @@ let tokenSessao =
   ) || '';
 
 let usuarioLogado = null;
+
+function obterIdentificacaoUsuarioLogado() {
+  const nome = String(usuarioLogado?.nome || usuarioLogado?.nomeUsuario || '').trim();
+  const saram = String(usuarioLogado?.saram || usuarioLogado?.SARAM || '').trim();
+  return { nome, saram };
+}
+
+function preencherResponsavelComUsuarioLogado(idNome, idSaram) {
+  const { nome, saram } = obterIdentificacaoUsuarioLogado();
+  const campoNome = document.getElementById(idNome);
+  const campoSaram = document.getElementById(idSaram);
+  if (campoNome) { campoNome.value = nome; campoNome.readOnly = true; }
+  if (campoSaram) { campoSaram.value = saram; campoSaram.readOnly = true; }
+  return { nome, saram };
+}
+
     let estado = {
       funcoes: lerLocalStorageJSON('cci_funcoes', [...FUNCOES_PADRAO]),
       militares: lerLocalStorageJSON('cci_militares', []),
@@ -8774,8 +8790,7 @@ const opcoes = militaresOrdenadosTroca
         resolverJustificativaAlteracaoManual = resolve;
         document.getElementById('tipoAlteracaoManual').value = 'troca';
         document.getElementById('motivoAlteracaoManual').value = '';
-        document.getElementById('responsavelAlteracaoManual').value = '';
-        document.getElementById('saramResponsavelAlteracaoManual').value = '';
+        preencherResponsavelComUsuarioLogado('responsavelAlteracaoManual', 'saramResponsavelAlteracaoManual');
         const modal = document.getElementById('modalAlteracaoManual');
         modal.classList.remove('hidden');
         modal.classList.add('flex');
@@ -8801,10 +8816,9 @@ const opcoes = militaresOrdenadosTroca
       evento.preventDefault();
       const tipo = document.getElementById('tipoAlteracaoManual').value;
       const motivo = document.getElementById('motivoAlteracaoManual').value.trim();
-      const responsavelNome = document.getElementById('responsavelAlteracaoManual').value.trim();
-      const responsavelSaram = document.getElementById('saramResponsavelAlteracaoManual').value.trim();
+      const { nome: responsavelNome, saram: responsavelSaram } = obterIdentificacaoUsuarioLogado();
       if (!tipo || !motivo || !responsavelNome || !responsavelSaram) {
-        alert('Preencha o tipo da alteração, a justificativa, o nome e o SARAM do responsável.');
+        alert('Preencha o tipo da alteração e a justificativa. Não foi possível identificar nome/SARAM do usuário logado.');
         return;
       }
 
@@ -9229,8 +9243,7 @@ const opcoes = militaresOrdenadosTroca
           <input class="mt-1 w-full rounded border p-2 text-sm font-normal" data-cor-lastro="${escaparHTML(cor.id)}" min="0" required step="1" type="number" value="${lastrosAtuais[cor.id] || 0}"/>
         </label>`).join('');
       document.getElementById('motivoAjusteAcumulado').value = '';
-      document.getElementById('responsavelAjusteAcumulado').value = '';
-      document.getElementById('saramResponsavelAjusteAcumulado').value = '';
+      preencherResponsavelComUsuarioLogado('responsavelAjusteAcumulado', 'saramResponsavelAjusteAcumulado');
 
       const modal = document.getElementById('modalAjusteAcumulado');
       modal.classList.remove('hidden');
@@ -9262,10 +9275,9 @@ const opcoes = militaresOrdenadosTroca
         novosLastros[campo.dataset.corLastro] = valor;
       }
       const motivo = document.getElementById('motivoAjusteAcumulado').value.trim();
-      const responsavelNome = document.getElementById('responsavelAjusteAcumulado').value.trim();
-      const responsavelSaram = document.getElementById('saramResponsavelAjusteAcumulado').value.trim();
+      const { nome: responsavelNome, saram: responsavelSaram } = obterIdentificacaoUsuarioLogado();
       if (!motivo || !responsavelNome || !responsavelSaram) {
-        alert('Informe a justificativa, o nome e o SARAM do responsável.');
+        alert('Informe a justificativa. Não foi possível identificar nome/SARAM do usuário logado.');
         return;
       }
 
@@ -9723,7 +9735,41 @@ async function exportarPDF() {
           compress: true
         });
         pdf.addImage(canvas.toDataURL('image/jpeg', 0.98), 'JPEG', 0, 0, larguraPt, alturaPt);
-        pdf.save(`Escala_CCI_${document.getElementById('mesAnoEscala').value}.pdf`);
+
+        const nomeArquivo = `Escala_CCI_${document.getElementById('mesAnoEscala').value}.pdf`;
+        const executandoNoCapacitor = !!(
+          window.Capacitor &&
+          typeof window.Capacitor.isNativePlatform === 'function' &&
+          window.Capacitor.isNativePlatform()
+        );
+
+        if (executandoNoCapacitor) {
+          const Filesystem = window.Capacitor?.Plugins?.Filesystem;
+          const Share = window.Capacitor?.Plugins?.Share;
+
+          if (!Filesystem || !Share) {
+            throw new Error('Plugins nativos Filesystem/Share não disponíveis. Execute npm install e npx cap sync android.');
+          }
+
+          const dataUri = pdf.output('datauristring');
+          const base64 = dataUri.substring(dataUri.indexOf(',') + 1);
+
+          const arquivo = await Filesystem.writeFile({
+            path: `sesci/${nomeArquivo}`,
+            data: base64,
+            directory: 'CACHE',
+            recursive: true
+          });
+
+          await Share.share({
+            title: 'Escala de Serviço - CCI',
+            text: `Escala ${document.getElementById('mesAnoEscala').value}`,
+            url: arquivo.uri,
+            dialogTitle: 'Salvar ou compartilhar PDF'
+          });
+        } else {
+          pdf.save(nomeArquivo);
+        }
       } catch (erro) {
         console.error('Erro ao exportar PDF:', erro);
         alert('Não foi possível gerar o PDF. Verifique sua conexão e tente novamente.');
