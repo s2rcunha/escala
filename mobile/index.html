@@ -142,6 +142,29 @@ if (location.protocol === 'http:' || location.protocol === 'https:') {
       to { transform: rotate(360deg); }
     }
 
+    /* V16 — bloqueio visual durante a concretização de uma alteração manual da escala */
+    #overlayAlteracaoManual {
+      position: fixed; inset: 0; z-index: 200000; display: none;
+      align-items: center; justify-content: center;
+      background: rgba(15, 23, 42, .52); backdrop-filter: blur(1.5px);
+      cursor: wait;
+    }
+    #overlayAlteracaoManual.ativo { display: flex; }
+    .painel-alteracao-manual {
+      min-width: 250px; max-width: 88vw; padding: 20px 24px;
+      border-radius: 12px; background: #fff; color: #1f2937;
+      box-shadow: 0 18px 50px rgba(0,0,0,.28); text-align: center;
+      font-size: 14px; font-weight: 600;
+    }
+    .spinner-alteracao-manual {
+      display: block; width: 34px; height: 34px; margin: 0 auto 12px;
+      border: 4px solid #cbd5e1; border-top-color: #2563eb;
+      border-radius: 50%; animation: girar-spinner-botao .7s linear infinite;
+    }
+    .texto-secundario-alteracao-manual {
+      display: block; margin-top: 5px; color: #64748b; font-size: 12px; font-weight: 400;
+    }
+
     /* Status dos meses no seletor da Escala Mensal:
        vermelho = sem escala; azul = escala gerada; verde = escala publicada */
     #mesEscala option[data-status="sem-escala"] { color: #dc2626; font-weight: 600; }
@@ -325,8 +348,8 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
 </style>
 <style>
 /* ==========================================================
-   OTIMIZAÇÃO MOBILE — SESCI
-   Foco: visualização da escala, justificativas e dropdowns.
+   OTIMIZACAO MOBILE - SESCI
+   Foco: visualizacao da escala, justificativas e dropdowns.
    Apenas responsividade/ergonomia; regras do motor preservadas.
    ========================================================== */
 @media (max-width: 767px) {
@@ -336,7 +359,6 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
     -webkit-text-size-adjust: 100%;
   }
 
-  /* Área útil */
   .cci-main,
   body.cci-menu-recolhido .cci-main {
     padding: 56px 4px 12px !important;
@@ -350,7 +372,6 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
     gap: 6px !important;
   }
 
-  /* Painel Visualizar Escala ocupa praticamente toda a largura */
   #areaEscalaPDF {
     width: 100% !important;
     max-width: 100% !important;
@@ -385,7 +406,6 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
     line-height: 1.35;
   }
 
-  /* Ações da visualização: duas colunas e alvos de toque maiores */
   #statusPublicacaoEscala + .flex {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -418,7 +438,6 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
     line-height: 1.25;
   }
 
-  /* Rolagem horizontal natural no toque */
   #scrollTabelaEscala {
     width: 100%;
     overflow-x: auto !important;
@@ -440,7 +459,6 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
     padding: 4px !important;
   }
 
-  /* Dia e dia da semana continuam visíveis, mas ocupam menos tela */
   #areaEscalaPDF #tabelaEscalaPrincipal th:nth-child(1),
   #areaEscalaPDF #tabelaEscalaPrincipal td:nth-child(1) {
     left: 0 !important;
@@ -472,7 +490,6 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
     gap: 4px !important;
   }
 
-  /* Nome do militar vira um alvo de toque confortável para justificativa */
   #areaEscalaPDF .botao-justificativa {
     min-width: 108px !important;
     min-height: 44px !important;
@@ -484,7 +501,6 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
     background: rgba(255,255,255,.42);
   }
 
-  /* Dropdown de troca/consulta: maior no toque, mantendo o nome no botão */
   #areaEscalaPDF .celula-escala select {
     width: 44px !important;
     min-width: 44px !important;
@@ -495,14 +511,12 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
     touch-action: manipulation;
   }
 
-  /* Barra inferior de rolagem mais fácil de manipular */
   #areaEscalaPDF .cci-escala-scrollbar-sticky {
     height: 22px !important;
     bottom: 0;
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Dropdown de classificação do dia vira painel inferior no celular */
   .dropdown-cor-dia {
     left: 8px !important;
     right: 8px !important;
@@ -521,7 +535,6 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
     font-size: 16px !important;
   }
 
-  /* Justificativa em formato quase tela cheia, sem conteúdo cortado */
   #modalJustificativa {
     padding: 6px !important;
     align-items: stretch !important;
@@ -598,7 +611,6 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
     margin: 0 !important;
   }
 
-  /* Demais modais ligados à edição da escala */
   #modalAlteracaoManual {
     padding: 6px !important;
     align-items: stretch !important;
@@ -617,13 +629,11 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
     min-height: 44px !important;
   }
 
-  /* Evita tooltip de desktop cobrindo conteúdo em telas touch */
   #cciMenuTooltip {
     display: none !important;
   }
 }
 
-/* Celulares muito estreitos */
 @media (max-width: 380px) {
   #areaEscalaPDF #tabelaEscalaPrincipal th:nth-child(1),
   #areaEscalaPDF #tabelaEscalaPrincipal td:nth-child(1) {
@@ -645,10 +655,8 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
   }
 }
 </style>
-
-
 <style>
-/* MOBILE — filtro de função na visualização da escala */
+/* MOBILE - filtro de funcao na visualizacao da escala */
 .cci-filtro-funcao-mobile { display:none; }
 
 .cci-coluna-funcao-oculta {
@@ -685,8 +693,6 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
     background:#fff !important;
   }
 
-  /* Com uma função selecionada, a tabela passa a ocupar apenas a largura
-     necessária para Dia + Sem. + quantidade real de vagas dessa função. */
   #areaEscalaPDF #tabelaEscalaPrincipal {
     min-width:max-content !important;
   }
@@ -696,7 +702,6 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
   }
 }
 </style>
-
 </head>
 <body class="bg-gray-100 font-sans text-gray-800">
 <!-- =====================================================
@@ -1280,11 +1285,11 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 <label class="block text-sm font-semibold text-gray-700">
             Nome do responsável
-            <input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="responsavelAlteracaoManual" readonly required="" type="text"/>
+            <input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="responsavelAlteracaoManual" readonly aria-readonly="true" title="Preenchido automaticamente com o usuário logado" required="" type="text"/>
 </label>
 <label class="block text-sm font-semibold text-gray-700">
             SARAM do responsável
-            <input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="saramResponsavelAlteracaoManual" readonly required="" type="text"/>
+            <input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="saramResponsavelAlteracaoManual" readonly aria-readonly="true" title="Preenchido automaticamente com o usuário logado" required="" type="text"/>
 </label>
 </div>
 </div>
@@ -1309,8 +1314,8 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
           <textarea class="mt-1 w-full rounded border p-2 text-sm font-normal" id="motivoAjusteAcumulado" placeholder="Explique por que os lastros precisam ser ajustados" required rows="4"></textarea>
 </label>
 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-<label class="block text-sm font-semibold text-gray-700">Nome do responsável<input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="responsavelAjusteAcumulado" readonly required type="text"/></label>
-<label class="block text-sm font-semibold text-gray-700">SARAM do responsável<input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="saramResponsavelAjusteAcumulado" readonly required type="text"/></label>
+<label class="block text-sm font-semibold text-gray-700">Nome do responsável<input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="responsavelAjusteAcumulado" readonly aria-readonly="true" title="Preenchido automaticamente com o usuário logado" required type="text"/></label>
+<label class="block text-sm font-semibold text-gray-700">SARAM do responsável<input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="saramResponsavelAjusteAcumulado" readonly aria-readonly="true" title="Preenchido automaticamente com o usuário logado" required type="text"/></label>
 </div>
 </div>
 <div class="flex justify-end gap-2 border-t px-5 py-3">
@@ -1560,22 +1565,6 @@ let tokenSessao =
   ) || '';
 
 let usuarioLogado = null;
-
-function obterIdentificacaoUsuarioLogado() {
-  const nome = String(usuarioLogado?.nome || usuarioLogado?.nomeUsuario || '').trim();
-  const saram = String(usuarioLogado?.saram || usuarioLogado?.SARAM || '').trim();
-  return { nome, saram };
-}
-
-function preencherResponsavelComUsuarioLogado(idNome, idSaram) {
-  const { nome, saram } = obterIdentificacaoUsuarioLogado();
-  const campoNome = document.getElementById(idNome);
-  const campoSaram = document.getElementById(idSaram);
-  if (campoNome) { campoNome.value = nome; campoNome.readOnly = true; }
-  if (campoSaram) { campoSaram.value = saram; campoSaram.readOnly = true; }
-  return { nome, saram };
-}
-
     let estado = {
       funcoes: lerLocalStorageJSON('cci_funcoes', [...FUNCOES_PADRAO]),
       militares: lerLocalStorageJSON('cci_militares', []),
@@ -2848,10 +2837,19 @@ async function salvarEstadoNoServidor(
           estado.escala.diasVermelhos.sort();
         }
 
+        const publicadaEmAnterior = escala?.publicadaEm || estado.escala?.publicadaEm || '';
+        if (escala) {
+          marcarEscalaComoAguardandoRepublicacao(escala, publicadaEmAnterior);
+        }
+        if (estado.escala?.mesAno === mesAno) {
+          marcarEscalaComoAguardandoRepublicacao(estado.escala, publicadaEmAnterior);
+        }
+
         await salvarEstado();
         renderizarDiasEspeciais();
         renderizarTabelaEscala();
         renderizarResumoServicos();
+        atualizarCoresMesesEscala();
       } catch (erro) {
         console.error('Erro ao alterar classificação do dia:', erro);
         alert(`Não foi possível alterar a classificação do dia. ${erro?.message || erro}`);
@@ -2953,6 +2951,16 @@ async function salvarEstadoNoServidor(
         .sort();
     }
 
+    function marcarEscalaComoAguardandoRepublicacao(escala, publicadaEmAnterior = '') {
+      if (!escala?.mesAno) return false;
+      const publicacaoAnterior = publicadaEmAnterior || escala.publicadaEm;
+      if (!publicacaoAnterior) return false;
+
+      delete escala.publicadaEm;
+      escala.alteradaAposPublicacaoEm = new Date().toISOString();
+      return true;
+    }
+
     function abrirEscalaPendentePublicacao(mesAno) {
       if (!/^\d{4}-\d{2}$/.test(mesAno || '')) return;
       definirMesAnoEscala(mesAno);
@@ -2974,12 +2982,23 @@ async function salvarEstadoNoServidor(
         return;
       }
 
+      const alteradas = pendentes.filter(mesAno => estado.escalas?.[mesAno]?.alteradaAposPublicacaoEm);
+      const todasAlteradas = alteradas.length === pendentes.length;
+
       titulo.textContent = pendentes.length === 1
-        ? 'Há 1 escala criada aguardando publicação'
-        : `Há ${pendentes.length} escalas criadas aguardando publicação`;
+        ? (todasAlteradas
+          ? 'Há 1 escala alterada aguardando republicação'
+          : 'Há 1 escala criada aguardando publicação')
+        : (todasAlteradas
+          ? `Há ${pendentes.length} escalas alteradas aguardando republicação`
+          : `Há ${pendentes.length} escalas aguardando publicação`);
       texto.textContent = pendentes.length === 1
-        ? 'Esta escala foi criada, mas ainda não foi publicada. O aviso permanecerá até a publicação.'
-        : 'Estas escalas foram criadas, mas ainda não foram publicadas. O aviso permanecerá até que todas sejam publicadas.';
+        ? (todasAlteradas
+          ? 'Esta escala foi alterada após a última publicação. O aviso permanecerá até que ela seja republicada.'
+          : 'Esta escala foi criada, mas ainda não foi publicada. O aviso permanecerá até a publicação.')
+        : (todasAlteradas
+          ? 'Estas escalas foram alteradas após a última publicação. O aviso permanecerá até que todas sejam republicadas.'
+          : 'Há escalas novas ou alteradas que ainda precisam ser publicadas. O aviso permanecerá até que todas sejam publicadas.');
       lista.innerHTML = pendentes.map(mesAno =>
         `<button type="button" class="aviso-pendencias-mes" data-mes-ano="${escaparHTML(mesAno)}" onclick="abrirEscalaPendentePublicacao(this.dataset.mesAno)" title="Abrir ${escaparHTML(formatarMesAno(mesAno))} para publicação">${escaparHTML(formatarMesAno(mesAno))}</button>`
       ).join('');
@@ -3417,6 +3436,22 @@ function obterPerfilAtual() {
 
 function podeEditarSistema() {
   return ['administrador', 'editor'].includes(obterPerfilAtual());
+}
+
+function obterIdentificacaoUsuarioLogado() {
+  return {
+    nome: String(usuarioLogado?.nome || '').trim(),
+    saram: String(usuarioLogado?.saram || '').trim()
+  };
+}
+
+function preencherResponsavelComUsuarioLogado(idNome, idSaram) {
+  const { nome, saram } = obterIdentificacaoUsuarioLogado();
+  const campoNome = document.getElementById(idNome);
+  const campoSaram = document.getElementById(idSaram);
+  if (campoNome) campoNome.value = nome;
+  if (campoSaram) campoSaram.value = saram;
+  return Boolean(nome && saram);
 }
 
 function aplicarPermissoesInterface() {
@@ -6079,6 +6114,9 @@ try {
 
       let novaEscala = {};
       let substituicoes = {};
+      // V14 — fatos explícitos de adiantamento criados pelo próprio gerador.
+      // O recálculo não precisa inferir retrospectivamente uma decisão automática.
+      let adiantamentosAutomaticos = {};
       let justificativas = {};
       let tiposUsadosPorDia = {};
       let ordemTrocaManual = {};
@@ -6241,6 +6279,7 @@ try {
 
         novaEscala[dia] = {};
         substituicoes[dia] = {};
+        adiantamentosAutomaticos[dia] = {};
         justificativas[dia] = {};
         tiposUsadosPorDia[dia] = {};
         ordemTrocaManual[dia] = {};
@@ -6571,7 +6610,10 @@ try {
 
               const motivos = obterMotivosImpedimento(militarAnalisado);
               if (motivos.length > 0) {
-                analise.push(`${nomeMilitar}: não foi escalado porque ${motivos.join('; ')}.`);
+                // V19 — a justificativa exibe apenas o motivo impeditivo principal.
+                // Os demais motivos continuam sendo calculados pelo motor e permanecem
+                // disponíveis para a lógica de elegibilidade/rotação.
+                analise.push(`${nomeMilitar}: ${motivos[0]}.`);
               } else if (tipoFuncao === 'semanaFimSemana' && pendenciasRotacao[chaveRotacao] === escolhido.id) {
                 analise.push(`${nomeMilitar}: estava válido, mas havia militar pendente com prioridade nesta rotação.`);
               } else {
@@ -6584,7 +6626,13 @@ try {
             return analise;
           };
 
-          let candidatos = obterMilitaresParaEscala(col.funcao).filter(m => podeSerEscalado(m));
+          // Quem acabou de cumprir uma compensação por adiantamento deve ficar
+          // fora da disputa DESTA vaga. Sem isso, o critério de menor acumulado
+          // poderia selecionar novamente o mesmo militar que acabou de ser pulado.
+          const idsPuladosPorAdiantamentoNestaVaga = new Set(militaresPuladosPorAdiantamento);
+          let candidatos = obterMilitaresParaEscala(col.funcao)
+            .filter(m => podeSerEscalado(m))
+            .filter(m => !idsPuladosPorAdiantamentoNestaVaga.has(m.id));
           let excecaoVermelhaConsecutiva = false;
           let excecaoCorConsecutiva = false;
           const regraCorAtual = garantirRegrasCorServico(corServico);
@@ -6653,7 +6701,8 @@ try {
 
           if (candidatos.length === 0 && aplicarRegraVermelha) {
             let candidatosComVermelhaConsecutiva = obterMilitaresParaEscala(col.funcao)
-              .filter(m => podeSerEscalado(m, false, true));
+              .filter(m => podeSerEscalado(m, false, true))
+              .filter(m => !idsPuladosPorAdiantamentoNestaVaga.has(m.id));
 
             candidatosComVermelhaConsecutiva = filtrarBloqueiosComoPreferencia(candidatosComVermelhaConsecutiva);
 
@@ -6807,101 +6856,99 @@ try {
             const motivosProximo = proximoMilitarDaRotacao && !militarEraProximo
               ? obterMotivosImpedimento(proximoMilitarDaRotacao)
               : [];
+            const houvePulosAutomaticos = militaresPuladosPorAdiantamento.length > 0 || militaresPuladosPorIndisponibilidade.length > 0;
+            // Justificativa operacional enxuta: registra apenas o que efetivamente
+            // explica a escolha, evitando repetir a mesma decisão em várias frases.
+            const nomeCorServico = obterCorServicoPorId(corServico).nome;
             const explicacao = [
               `${obterNomeMilitar(escolhido.id)} foi escalado em ${formatarDataBR(dataObj)} para ${col.chave}.`,
-              `Tipo de serviço: ${obterCorServicoPorId(corServico).nome}.`,
-              `Rotação usada: ${tipoFuncao === 'semanaFimSemana' ? `cor ${obterCorServicoPorId(corServico).nome}` : 'corrida'}.`
+              `Serviço: ${nomeCorServico} · ${!usarJusticaConfiguravel ? 'Escala corrida' : 'Escala por quadrinhos'}.`
             ];
+
             if (usarDiferenciadaTemporaria) {
-              explicacao.push(`A escala está configurada como corrida, mas nesta data havia(m) apenas ${efetivoDisponivelFuncao} militares aptos por indisponibilidade cadastrada, indisponibilidade por dia da semana ou início de indisponibilidade no dia seguinte; por isso foram aplicados temporariamente os critérios da escala por quadrinho.`);
+              explicacao.push(`Exceção de geração: efetivo apto reduzido a ${efetivoDisponivelFuncao}; nesta data foram aplicados temporariamente os critérios da escala por quadrinhos.`);
             }
-            if (!usarJusticaConfiguravel) {
-              explicacao.push('Regra utilizada: escala corrida, com uma única rotação por antiguidade.');
-            } else if (priorizarMenorQuantidadeCor) {
-              explicacao.push(`Regra utilizada: escala por quadrinho com priorização do menor acumulado ${rotuloCorJustificativa}; em empate, aplica-se a rotação ${rotuloRotacaoJustificativa} por antiguidade.`);
-            } else {
-              explicacao.push(`Regra utilizada: escala diferenciada sem quadrinhos; foi considerada diretamente a rotação ${rotuloRotacaoJustificativa} por antiguidade, sem usar o acumulado ${rotuloCorJustificativa} ou o total geral de quadrinhos como prioridade.`);
-            }
-            const houvePulosAutomaticos = militaresPuladosPorAdiantamento.length > 0 || militaresPuladosPorIndisponibilidade.length > 0;
-            if (houvePulosAutomaticos) {
-              if (ultimoMilitarAntesDosPulos) {
-                explicacao.push(`Último militar da rotação: ${obterNomeMilitar(ultimoMilitarAntesDosPulos)}.`);
-              } else {
-                explicacao.push('Não havia último militar anterior nesta rotação.');
-              }
-              if (proximoMilitarAntesDosPulos) {
-                explicacao.push(`Próximo previsto: ${obterNomeMilitar(proximoMilitarAntesDosPulos.id)}.`);
-              }
-            }
-            if (militaresPuladosPorAdiantamento.length > 0) {
-              explicacao.push(`Militares pulados por já terem cumprido esta vez antecipadamente: ${militaresPuladosPorAdiantamento.map(obterNomeMilitar).join(', ')}.`);
-            }
-            if (militaresPuladosPorIndisponibilidade.length > 0) {
-              explicacao.push(`Militares pulados por indisponibilidade, restrição semanal ou início de indisponibilidade no dia seguinte. Essas situações não geram pendência explícita de rotação; eventual diferença no acumulado dos quadrinhos será considerada nas escolhas posteriores: ${militaresPuladosPorIndisponibilidade.map(obterNomeMilitar).join(', ')}.`);
-            }
-            if (militaresComLastroPorIndisponibilidade.length > 0) {
-              const minimoLastroJustificativa = Math.max(1, Number(obterRegrasEfetivasFuncao(col.funcao, tipoFuncao).lastro?.minimoDiasIndisponibilidade || 30));
-              explicacao.push(`Lastro computado por indisponibilidade de ${minimoLastroJustificativa} dias consecutivos ou mais, incluindo registros consecutivos ou sobrepostos quando existirem: ${militaresComLastroPorIndisponibilidade.map(obterNomeMilitar).join(', ')} recebeu 1 lastro ${obterCorServicoPorId(corServico).nome.toLowerCase()} nesta vaga.`);
-            }
-            if (ultimoMilitar) {
-              explicacao.push(`${houvePulosAutomaticos ? 'Último militar da rotação após os pulos' : 'Último militar considerado nesta rotação'}: ${obterNomeMilitar(ultimoMilitar)}.`);
-            } else {
-              explicacao.push('Não havia último militar anterior nesta rotação; a escala iniciou pela ordem cadastrada.');
-            }
-            if (proximoMilitarDaRotacao) {
-              explicacao.push(`${houvePulosAutomaticos ? 'Próximo pela ordem após os pulos' : 'Próximo previsto pela ordem'}: ${obterNomeMilitar(proximoMilitarDaRotacao.id)}.`);
-            }
-            const analiseRotacao = obterAnaliseRotacaoAteEscolhido(escolhido);
-            if (analiseRotacao.length > 0) {
-              explicacao.push(`Análise da rotação até o escolhido:\n- ${analiseRotacao.join('\n- ')}`);
-            }
+
+            // Uma única frase descreve o critério principal da escolha.
             if (militarEraPendente) {
-              explicacao.push('Este militar tinha prioridade por estar pendente de uma rodada anterior.');
+              explicacao.push('Escolha: prioridade por pendência de uma rodada anterior.');
             } else if (militarEraProximo) {
               if (!usarJusticaConfiguravel) {
-                explicacao.push('Ele foi escolhido porque era o próximo da rotação geral e cumpria as regras do serviço.');
+                explicacao.push('Escolha: era o próximo militar apto da rotação geral.');
               } else if (priorizarMenorQuantidadeCor) {
-                explicacao.push(`Ele foi escolhido porque estava entre os menores acumulados de serviço ${rotuloCorJustificativa} e era o próximo no desempate pela rotação ${rotuloRotacaoJustificativa}.`);
+                explicacao.push(`Escolha: estava entre os menores acumulados de serviço ${rotuloCorJustificativa} e era o próximo no desempate pela rotação ${rotuloRotacaoJustificativa}.`);
               } else {
-                explicacao.push(`Ele foi escolhido porque era o próximo militar apto da rotação ${rotuloRotacaoJustificativa}; nenhuma contagem acumulada foi usada como prioridade.`);
+                explicacao.push(`Escolha: era o próximo militar apto da rotação ${rotuloRotacaoJustificativa}; o acumulado de quadrinhos não participou da prioridade.`);
               }
             } else if (proximoMilitarDaRotacao) {
               if (motivosProximo.length) {
-                explicacao.push(`O próximo da rotação não foi escalado porque ${motivosProximo.join('; ')}.`);
-                if (motivosProximo.includes('estava indisponível nesta data')) {
-                  explicacao.push('A indisponibilidade não gera pendência explícita de rotação.');
-                }
+                // V19 — o próximo da rotação já é detalhado na seção
+                // "Candidatos não utilizados", evitando informação duplicada.
                 if (!usarJusticaConfiguravel) {
-                  explicacao.push('Por isso, o sistema avançou na rotação geral e escolheu o primeiro candidato válido por antiguidade.');
+                  explicacao.push('Escolha: a rotação geral avançou até o primeiro candidato válido.');
                 } else if (priorizarMenorQuantidadeCor) {
-                  explicacao.push(`Entre os candidatos válidos restantes, o sistema priorizou o menor acumulado de quadrinhos ${rotuloCorJustificativa}; em empate, usou a rotação ${rotuloRotacaoJustificativa} por antiguidade.`);
+                  explicacao.push(`Escolha: entre os candidatos válidos, prevaleceu o menor acumulado ${rotuloCorJustificativa}; a rotação ${rotuloRotacaoJustificativa} foi usada no desempate.`);
                 } else {
-                  explicacao.push(`Por isso, o sistema avançou na rotação ${rotuloRotacaoJustificativa} e escolheu o primeiro candidato válido por antiguidade.`);
+                  explicacao.push(`Escolha: a rotação ${rotuloRotacaoJustificativa} avançou até o primeiro candidato válido.`);
                 }
+              } else if (usarJusticaConfiguravel && priorizarMenorQuantidadeCor) {
+                explicacao.push(`Escolha: possuía menor acumulado de quadrinhos ${rotuloCorJustificativa}; a rotação ${rotuloRotacaoJustificativa} atua apenas como desempate.`);
               } else {
-                if (!usarJusticaConfiguravel) {
-                  explicacao.push('O próximo registrado da rotação não foi o escolhido; a decisão seguiu a rotação geral efetiva reconstruída para esta vaga.');
-                } else if (priorizarMenorQuantidadeCor) {
-                  explicacao.push(`O próximo da rotação estava válido, mas outro candidato foi escolhido por possuir menor acumulado de quadrinhos ${rotuloCorJustificativa}; a antiguidade ${rotuloRotacaoJustificativa} atua como desempate.`);
-                } else {
-                  explicacao.push(`A escolha seguiu exclusivamente a rotação ${rotuloRotacaoJustificativa} efetiva por antiguidade; o acumulado de quadrinhos ${rotuloCorJustificativa} não participou da prioridade.`);
-                }
+                explicacao.push(`Escolha: seguiu a rotação ${usarJusticaConfiguravel ? rotuloRotacaoJustificativa : 'geral'} efetiva.`);
               }
+            } else {
+              explicacao.push(!usarJusticaConfiguravel
+                ? 'Escolha: primeiro candidato válido da rotação geral.'
+                : priorizarMenorQuantidadeCor
+                  ? `Escolha: menor acumulado de serviço ${rotuloCorJustificativa}, com rotação ${rotuloRotacaoJustificativa} como desempate.`
+                  : `Escolha: primeiro candidato válido da rotação ${rotuloRotacaoJustificativa}.`);
             }
+
+            // V17 — auditoria completa dos candidatos relevantes da rotação.
+            // Percorre, a partir do próximo da rotação, todos os militares até o escolhido
+            // e registra individualmente por que cada um não ocupou a vaga. Isso inclui
+            // impedimentos concretos (folga, na 24, dobraria, indisponibilidade, vermelho
+            // consecutivo, adiantamento etc.) e também candidatos válidos preteridos pelo
+            // critério de justiça/equilíbrio.
+            const analiseCandidatosNaoUtilizados = obterAnaliseRotacaoAteEscolhido(escolhido)
+              .filter(item => !item.endsWith(': escolhido para a vaga.'));
+            if (analiseCandidatosNaoUtilizados.length > 0) {
+              // V18 — melhora apenas a apresentação da auditoria: cada candidato e
+              // seus respectivos motivos ficam em uma linha própria no modal.
+              explicacao.push('Candidatos não utilizados:');
+              analiseCandidatosNaoUtilizados.forEach(item => explicacao.push(item));
+            }
+
+            // Pulos são consolidados em linhas curtas e só aparecem quando ocorrerem.
+            if (militaresPuladosPorAdiantamento.length > 0) {
+              explicacao.push(`Pulados por adiantamento anterior: ${militaresPuladosPorAdiantamento.map(obterNomeMilitar).join(', ')}.`);
+            }
+            if (militaresPuladosPorIndisponibilidade.length > 0) {
+              explicacao.push(`Pulados por indisponibilidade/restrição: ${militaresPuladosPorIndisponibilidade.map(obterNomeMilitar).join(', ')}.`);
+            }
+            if (militaresComLastroPorIndisponibilidade.length > 0) {
+              const minimoLastroJustificativa = Math.max(1, Number(obterRegrasEfetivasFuncao(col.funcao, tipoFuncao).lastro?.minimoDiasIndisponibilidade || 30));
+              explicacao.push(`Lastro: ${militaresComLastroPorIndisponibilidade.map(obterNomeMilitar).join(', ')} recebeu 1 lastro ${nomeCorServico.toLowerCase()} por indisponibilidade de ${minimoLastroJustificativa} dias ou mais.`);
+            }
+
+            // Situações excepcionais permanecem explícitas.
             if (excecaoVermelhaConsecutiva && ultimoServicoFoiVermelhoPorMilitar[escolhido.id]) {
-              explicacao.push('Foi aplicada exceção de serviço vermelho seguido porque não havia outro militar disponível para cumprir todas as regras.');
+              explicacao.push('Exceção: serviço vermelho consecutivo, pois não havia outro candidato capaz de cumprir todas as regras.');
             }
             if (militarJaEstavaAdiantado) {
-              explicacao.push('Este militar estava adiantado na rotação e só foi usado porque não havia outro candidato válido disponível neste momento.');
+              explicacao.push('Exceção: militar já estava adiantado na rotação e foi utilizado por falta de outro candidato válido.');
             }
+
+            // Apenas um registro histórico do escolhido, sem repetir toda a análise da rotação.
             if (historicoServicos[escolhido.id].length > 0) {
               const ultimoDia = historicoServicos[escolhido.id][historicoServicos[escolhido.id].length - 1];
-              explicacao.push(`Último serviço deste militar no mês: dia ${ultimoDia}.`);
+              explicacao.push(`Último serviço do militar: dia ${ultimoDia} deste mês.`);
             } else if (ultimaDataServicoPorMilitar[escolhido.id] !== undefined) {
-              explicacao.push(`Último serviço anterior deste militar: ${formatarDataBR(new Date(ultimaDataServicoPorMilitar[escolhido.id]))}.`);
+              explicacao.push(`Último serviço do militar: ${formatarDataBR(new Date(ultimaDataServicoPorMilitar[escolhido.id]))}.`);
             } else {
-              explicacao.push('Este militar ainda não tinha serviço anterior registrado no histórico considerado.');
+              explicacao.push('Histórico: sem serviço anterior registrado no período considerado.');
             }
+
             justificativas[dia][col.chave] = explicacao.join('\n');
             if (!militarEraPendente
               && (
@@ -6921,6 +6968,14 @@ try {
               && !militarEraPendente
               && !militarJaEstavaAdiantado) {
               militaresAdiantadosRotacao[chaveRotacao].add(escolhido.id);
+              // V14 — registra o fato no exato momento em que o motor cria a dívida.
+              // Este registro é a fonte de verdade para futuros recálculos.
+              adiantamentosAutomaticos[dia] ||= {};
+              adiantamentosAutomaticos[dia][col.chave] = {
+                militarId: escolhido.id,
+                chaveRotacao,
+                origem: 'gerador'
+              };
             } else if (tipoFuncao === 'semanaFimSemana' && militarEraProximo) {
               militaresAdiantadosRotacao[chaveRotacao].delete(escolhido.id);
               if (bloqueiosRotacao[chaveRotacao]) {
@@ -7005,6 +7060,7 @@ try {
               coresDias: { ...coresDias },
               dados: {},
               substituicoes: {},
+              adiantamentosAutomaticos: {},
               justificativas: {},
               compensacoesRotacao: {}
             };
@@ -7017,6 +7073,7 @@ try {
 
         escalaBase.dados ||= {};
         escalaBase.substituicoes ||= {};
+        escalaBase.adiantamentosAutomaticos ||= {};
         escalaBase.justificativas ||= {};
         escalaBase.ordemTrocaManual ||= {};
         escalaBase.tiposUsadosPorDia ||= {};
@@ -7031,6 +7088,7 @@ try {
         for (let dia = diaInicioGeracao; dia <= diaFimGeracao; dia++) {
           escalaBase.dados[dia] ||= {};
 escalaBase.substituicoes[dia] ||= {};
+escalaBase.adiantamentosAutomaticos[dia] ||= {};
 escalaBase.justificativas[dia] ||= {};
 escalaBase.ordemTrocaManual[dia] ||= {};
 escalaBase.tiposUsadosPorDia[dia] ||= {};
@@ -7041,6 +7099,13 @@ escalaBase.alteracoesManuais[dia] ||= {};
 
             if (substituicoes[dia]?.[chave]) escalaBase.substituicoes[dia][chave] = true;
             else delete escalaBase.substituicoes[dia][chave];
+
+            // V14 — célula regenerada: remove qualquer fato automático antigo e
+            // copia somente o adiantamento realmente recriado nesta geração.
+            delete escalaBase.adiantamentosAutomaticos[dia][chave];
+            if (adiantamentosAutomaticos[dia]?.[chave]) {
+              escalaBase.adiantamentosAutomaticos[dia][chave] = structuredClone(adiantamentosAutomaticos[dia][chave]);
+            }
 
             if (justificativas[dia]?.[chave]) escalaBase.justificativas[dia][chave] = justificativas[dia][chave];
             else delete escalaBase.justificativas[dia][chave];
@@ -7083,6 +7148,7 @@ delete escalaBase.alteracoesManuais[dia][chave];
 
         novaEscala = escalaBase.dados;
         substituicoes = escalaBase.substituicoes;
+        adiantamentosAutomaticos = escalaBase.adiantamentosAutomaticos;
         justificativas = escalaBase.justificativas;
         ordemTrocaManual = escalaBase.ordemTrocaManual;
         tiposUsadosPorDia = escalaBase.tiposUsadosPorDia;
@@ -7108,6 +7174,7 @@ delete escalaBase.alteracoesManuais[dia][chave];
   coresDias,
   dados: novaEscala,
   substituicoes,
+  adiantamentosAutomaticos,
   justificativas,
   compensacoesRotacao
 };
@@ -7163,6 +7230,10 @@ if (historicoAnteriorMesmoMes) {
 }
 
 estado.escalas[mesAno] = estado.escala;
+marcarEscalaComoAguardandoRepublicacao(
+  estado.escala,
+  escalaExistenteAntesGeracao?.publicadaEm || ''
+);
 
 const salvou = await salvarEstado({
   acao: historicoAnteriorMesmoMes ? 'regenerar_mes_substituindo_historico' : 'gerar_escala',
@@ -7285,14 +7356,57 @@ if (salvou) {
       const ultimasDatasAnteriores = obterUltimasDatasServicos(escalaAnterior, tiposEscala);
       const ultimosTiposAnteriores = obterUltimoServicoFoiVermelhoPorMilitar(escalaAnterior);
       const ultimoMilitarPorRotacao = {};
+      // V9 — rotação automática de referência independente da escala editada.
+      const ultimoMilitarPorRotacaoReferencia = {};
       const militaresAdiantadosRotacao = {};
       const bloqueiosRotacao = {};
       const pendenciasRotacao = {};
+      // V11 — estado de compensação da linha automática de referência.
+      // Não pode compartilhar pendências/adiantamentos/bloqueios com a escala real editada.
+      const militaresAdiantadosRotacaoReferencia = {};
+      const bloqueiosRotacaoReferencia = {};
+      const pendenciasRotacaoReferencia = {};
       const contadorEventosRotacao = {};
       const ultimoEventoPorMilitar = {};
       const ultimaDataServicoPorMilitar = {};
       const ultimoServicoFoiVermelhoPorMilitar = { ...ultimosTiposAnteriores };
       const escalaParcial = {};
+      // V11 — histórico de elegibilidade da linha automática de referência.
+      // Nenhuma edição manual do mês corrente pode contaminar estes estados.
+      const ultimoEventoPorMilitarReferencia = {};
+      const ultimaDataServicoPorMilitarReferencia = {};
+      const ultimoServicoFoiVermelhoPorMilitarReferencia = { ...ultimosTiposAnteriores };
+      const escalaParcialReferencia = {};
+      const rastreioCompensacoes = [];
+
+      // V8 — dupla linha de contagem durante o recálculo.
+      // REAL: acompanha exatamente quem ficou gravado na escala após alterações manuais.
+      // REFERÊNCIA: preserva a trajetória que o motor automático teria seguido sem a
+      // intervenção manual. A detecção de novos adiantamentos usa somente esta referência,
+      // evitando que uma edição anterior contamine o "esperado" dos dias seguintes.
+      const criarMatrizContagemRecalculo = () => Object.fromEntries(
+        estado.militares.map(m => [m.id, Object.fromEntries(
+          estruturaEscala.funcoes.map(funcao => [funcao, criarContagemQuadrinhoLastro()])
+        )])
+      );
+      const contagemSeparadaRecalculo = criarMatrizContagemRecalculo();
+      const contagemSeparadaReferencia = criarMatrizContagemRecalculo();
+
+      estruturaEscala.funcoes.forEach(funcao => {
+        const historicas = obterEscalasHistoricas()
+          .filter(e => e?.mesAno && e.mesAno < escala.mesAno)
+          .sort((a,b) => a.mesAno.localeCompare(b.mesAno));
+        const contagemRealFuncao = Object.fromEntries(
+          estado.militares.map(m => [m.id, contagemSeparadaRecalculo[m.id][funcao]])
+        );
+        const contagemReferenciaFuncao = Object.fromEntries(
+          estado.militares.map(m => [m.id, contagemSeparadaReferencia[m.id][funcao]])
+        );
+        historicas.forEach(e => {
+          obterContagemSeparadaEscala(e, contagemRealFuncao, funcao);
+          obterContagemSeparadaEscala(e, contagemReferenciaFuncao, funcao);
+        });
+      });
 
       const obterChavePeriodo = (data, ehFimDeSemana) => {
         const inicio = new Date(data);
@@ -7321,15 +7435,20 @@ if (salvou) {
       estruturaEscala.funcoes.forEach(funcao => {
         const ultimoMilitar = ultimosMilitaresPorFuncao[funcao];
         ultimoMilitarPorRotacao[`${funcao}:todos`] = ultimoMilitar;
+        ultimoMilitarPorRotacaoReferencia[`${funcao}:todos`] = ultimoMilitar;
         contadorEventosRotacao[`${funcao}:todos`] = 0;
         obterCoresServico().forEach(cor => {
           const chaveRotacao = `${funcao}:cor:${cor.id}`;
           ultimoMilitarPorRotacao[chaveRotacao] = ultimosMilitaresPorFuncaoECor[`${funcao}:${cor.id}`] || null;
+          ultimoMilitarPorRotacaoReferencia[chaveRotacao] = ultimosMilitaresPorFuncaoECor[`${funcao}:${cor.id}`] || null;
           contadorEventosRotacao[chaveRotacao] = 0;
           militaresAdiantadosRotacao[chaveRotacao] = new Set(compensacoesAnteriores[chaveRotacao]?.adiantados || []);
           bloqueiosRotacao[chaveRotacao] = { ...(compensacoesAnteriores[chaveRotacao]?.bloqueios || {}) };
+          militaresAdiantadosRotacaoReferencia[chaveRotacao] = new Set(compensacoesAnteriores[chaveRotacao]?.adiantados || []);
+          bloqueiosRotacaoReferencia[chaveRotacao] = { ...(compensacoesAnteriores[chaveRotacao]?.bloqueios || {}) };
           if (compensacoesAnteriores[chaveRotacao]?.pendente) {
             pendenciasRotacao[chaveRotacao] = compensacoesAnteriores[chaveRotacao].pendente;
+            pendenciasRotacaoReferencia[chaveRotacao] = compensacoesAnteriores[chaveRotacao].pendente;
           }
         });
       });
@@ -7337,15 +7456,18 @@ if (salvou) {
       Object.entries(ultimosEventosAnteriores).forEach(([chaveRotacao, militares]) => {
         if (militares.length > 0) {
           ultimoMilitarPorRotacao[chaveRotacao] = militares[militares.length - 1];
+          ultimoMilitarPorRotacaoReferencia[chaveRotacao] = militares[militares.length - 1];
         }
         militares.forEach(militarId => {
           ultimoEventoPorMilitar[`${militarId}:${chaveRotacao}`] = 0;
+          ultimoEventoPorMilitarReferencia[`${militarId}:${chaveRotacao}`] = 0;
         });
       });
 
       estado.militares.forEach(militar => {
         if (ultimasDatasAnteriores[militar.id] !== undefined) {
           ultimaDataServicoPorMilitar[militar.id] = ultimasDatasAnteriores[militar.id];
+          ultimaDataServicoPorMilitarReferencia[militar.id] = ultimasDatasAnteriores[militar.id];
         }
       });
 
@@ -7372,6 +7494,7 @@ if (salvou) {
         const corServico = obterCorDiaEscala(escala, dataObj, dia);
         const servicoVermelho = corServico === 'vermelho';
         escalaParcial[dia] = {};
+        escalaParcialReferencia[dia] = {};
 
         colunasVagas.forEach(col => {
           const tipoFuncao = escala.tiposUsadosPorDia?.[dia]?.[col.funcao] || tiposEscala[col.funcao] || 'corrida';
@@ -7388,12 +7511,16 @@ if (salvou) {
           let indiceProximo = ultimoIndice === -1 ? 0 : (ultimoIndice + 1) % militaresDaRotacao.length;
           let proximoMilitarDaRotacao = militaresDaRotacao[indiceProximo];
 
+          // No recálculo, quem é pulado por compensação nesta vaga não pode ter
+          // a dívida considerada quitada se a escala gravada o colocou na própria vaga.
+          const idsAdiantadosPuladosNestaVaga = new Set();
           if (tipoFuncao === 'semanaFimSemana') {
             let seguranca = 0;
             while (proximoMilitarDaRotacao
               && militaresAdiantadosRotacao[chaveRotacao]?.has(proximoMilitarDaRotacao.id)
               && seguranca < militaresDaRotacao.length) {
               const militarPulando = proximoMilitarDaRotacao;
+              idsAdiantadosPuladosNestaVaga.add(militarPulando.id);
 
               militaresAdiantadosRotacao[chaveRotacao].delete(militarPulando.id);
               if (bloqueiosRotacao[chaveRotacao]) {
@@ -7409,22 +7536,53 @@ if (salvou) {
             }
           }
 
+          // V11 — calcula e compensa a rotação da REFERÊNCIA de forma totalmente
+          // independente da rotação real. Uma edição manual não altera esta sequência.
+          let ultimoMilitarReferencia = ultimoMilitarPorRotacaoReferencia[chaveRotacao];
+          let ultimoIndiceReferencia = militaresDaRotacao.findIndex(m => m.id === ultimoMilitarReferencia);
+          let indiceProximoReferencia = ultimoIndiceReferencia === -1 ? 0 : (ultimoIndiceReferencia + 1) % militaresDaRotacao.length;
+          let proximoMilitarDaRotacaoReferencia = militaresDaRotacao[indiceProximoReferencia];
+          const idsAdiantadosPuladosReferenciaNestaVaga = new Set();
+          if (tipoFuncao === 'semanaFimSemana') {
+            let segurancaReferencia = 0;
+            while (proximoMilitarDaRotacaoReferencia
+              && militaresAdiantadosRotacaoReferencia[chaveRotacao]?.has(proximoMilitarDaRotacaoReferencia.id)
+              && segurancaReferencia < militaresDaRotacao.length) {
+              const militarPulandoReferencia = proximoMilitarDaRotacaoReferencia;
+              idsAdiantadosPuladosReferenciaNestaVaga.add(militarPulandoReferencia.id);
+              militaresAdiantadosRotacaoReferencia[chaveRotacao].delete(militarPulandoReferencia.id);
+              if (bloqueiosRotacaoReferencia[chaveRotacao]) {
+                delete bloqueiosRotacaoReferencia[chaveRotacao][militarPulandoReferencia.id];
+              }
+              ultimoMilitarPorRotacaoReferencia[chaveRotacao] = militarPulandoReferencia.id;
+              ultimoMilitarReferencia = militarPulandoReferencia.id;
+              ultimoIndiceReferencia = militaresDaRotacao.findIndex(m => m.id === ultimoMilitarReferencia);
+              indiceProximoReferencia = (ultimoIndiceReferencia + 1) % militaresDaRotacao.length;
+              proximoMilitarDaRotacaoReferencia = militaresDaRotacao[indiceProximoReferencia];
+              segurancaReferencia++;
+            }
+          }
+
           const aplicarRegraVermelha = tipoFuncao === 'semanaFimSemana' && servicoVermelho;
-          const classificarElegibilidadeNoRecalculo = militar => {
+          const classificarElegibilidadeNoRecalculo = (militar, usarReferencia = false) => {
             if (!militar || militar.funcao !== col.funcao) {
               return { elegivel: false, nivel: 'impedido' };
             }
 
-            const ultimoEvento = ultimoEventoPorMilitar[`${militar.id}:${chaveRotacao}`];
+            const mapaUltimoEvento = usarReferencia ? ultimoEventoPorMilitarReferencia : ultimoEventoPorMilitar;
+            const mapaUltimaData = usarReferencia ? ultimaDataServicoPorMilitarReferencia : ultimaDataServicoPorMilitar;
+            const mapaUltimoTipo = usarReferencia ? ultimoServicoFoiVermelhoPorMilitarReferencia : ultimoServicoFoiVermelhoPorMilitar;
+            const parcialFonte = usarReferencia ? escalaParcialReferencia : escalaParcial;
+            const ultimoEvento = mapaUltimoEvento[`${militar.id}:${chaveRotacao}`];
             if (ultimoEvento !== undefined && eventoRotacao - ultimoEvento < 2) {
               return { elegivel: false, nivel: 'impedido', motivo: 'rotacao' };
             }
 
-            const ultimaDataServico = ultimaDataServicoPorMilitar[militar.id];
+            const ultimaDataServico = mapaUltimaData[militar.id];
             const servicosParaMotor = [];
             // No recálculo, usa todos os serviços já percorridos no mês, mantendo
             // preto/vermelho independentes exatamente como no gerador e no dropdown.
-            Object.entries(escalaParcial).forEach(([diaParcial, vagasParciais]) => {
+            Object.entries(parcialFonte).forEach(([diaParcial, vagasParciais]) => {
               if (!Object.values(vagasParciais || {}).includes(militar.id)) return;
               const dataParcial = new Date(ano, mes - 1, Number(diaParcial));
               if (dataParcial.getTime() >= dataObj.getTime()) return;
@@ -7436,7 +7594,7 @@ if (salvou) {
             if (ultimaDataServico !== undefined && !servicosParaMotor.some(s => s.tempo === ultimaDataServico)) {
               servicosParaMotor.push({
                 tempo: ultimaDataServico,
-                vermelho: ultimoServicoFoiVermelhoPorMilitar[militar.id] === true
+                vermelho: mapaUltimoTipo[militar.id] === true
               });
             }
 
@@ -7453,7 +7611,7 @@ if (salvou) {
                 });
               });
             });
-            Object.entries(escalaParcial || {}).forEach(([diaParcial, vagasParciais]) => {
+            Object.entries(parcialFonte || {}).forEach(([diaParcial, vagasParciais]) => {
               const dataParcial = new Date(ano, mes - 1, Number(diaParcial));
               if (dataParcial.getTime() >= dataObj.getTime()) return;
               if (!escalaTemDiaVermelho(escala, dataParcial, Number(diaParcial))) return;
@@ -7471,7 +7629,7 @@ if (salvou) {
               tipoFuncao,
               classificacaoDiaOverride: corServico,
               servicosMilitar: servicosParaMotor,
-              idsJaEscaladosNoDia: Object.values(escalaParcial[dia]).filter(Boolean),
+              idsJaEscaladosNoDia: Object.values(parcialFonte[dia] || {}).filter(Boolean),
               verificarVermelhoConsecutivo: aplicarRegraVermelha,
               sequenciaVermelhaFuncao
             });
@@ -7493,45 +7651,98 @@ if (salvou) {
           const podeSerEscaladoNoRecalculo = militar =>
             classificarElegibilidadeNoRecalculo(militar).elegivel;
 
-          if (tipoFuncao === 'semanaFimSemana'
-            && proximoMilitarDaRotacao
-            && !pendenciasRotacao[chaveRotacao]) {
-            const classificacaoProximo =
-              classificarElegibilidadeNoRecalculo(proximoMilitarDaRotacao);
 
-            let proximoPodeAtenderRotacao =
-              classificacaoProximo.nivel === 'normal';
+          // V6 — a pendência é decidida somente depois de montar os mesmos candidatos
+          // normais usados pela geração. Isso evita transformar descanso reduzido/fallback
+          // em ausência do próximo e deslocar artificialmente a rotação.
 
-            if (classificacaoProximo.nivel === 'reduzido') {
-              const existeNormalDisponivel = militaresDaRotacao.some(militar =>
-                militar.id !== proximoMilitarDaRotacao.id
-                && classificarElegibilidadeNoRecalculo(militar).nivel === 'normal'
-              );
 
-              // Descanso reduzido é fallback: só atende a rotação
-              // quando nenhum candidato normal está disponível.
-              proximoPodeAtenderRotacao = !existeNormalDisponivel;
-            }
+          // Reproduz a escolha automática esperada para esta vaga. Só existe
+          // adiantamento quando a escala gravada diverge dessa escolha normal;
+          // sair da posição imediata da rotação por MENOR ACUMULADO é comportamento
+          // regular da escala por quadrinhos e não cria dívida de compensação.
+          const classificacoesEsperadas = new Map(
+            militaresDaRotacao.map(m => [m.id, classificarElegibilidadeNoRecalculo(m, true)])
+          );
+          // O gerador disputa primeiro com descanso NORMAL. Descanso reduzido é fallback
+          // apenas quando não existe candidato normal. A V5 misturava os dois grupos e
+          // isso alterava a escolha esperada usada para inferir adiantamentos.
+          let candidatosEsperados = militaresDaRotacao.filter(m =>
+            classificacoesEsperadas.get(m.id)?.nivel === 'normal'
+          );
+          let usandoFallbackReduzidoRecalculo = false;
+          if (candidatosEsperados.length === 0) {
+            candidatosEsperados = militaresDaRotacao.filter(m =>
+              classificacoesEsperadas.get(m.id)?.nivel === 'reduzido'
+            );
+            usandoFallbackReduzidoRecalculo = candidatosEsperados.length > 0;
+          }
 
-            if (!proximoPodeAtenderRotacao) {
-              // Indisponibilidade não cria pendência explícita de rotação.
-              // Diferenças de acumulado são recuperadas pelas escolhas futuras;
-              // indisponibilidades longas seguem tratadas pelo mecanismo de lastro.
-              const indisponivelNaData =
-                militarEstaIndisponivelNaData(proximoMilitarDaRotacao.id, dataStr);
-              const indisponivelSemanal =
-                militarTemIndisponibilidadeSemanalNaData(proximoMilitarDaRotacao.id, diaSemana);
-              const iniciaIndisponibilidadeAmanha =
-                militarIniciaIndisponibilidadeNoDiaSeguinteDaData(
-                  proximoMilitarDaRotacao.id,
-                  dataObj
-                );
+          if (tipoFuncao === 'semanaFimSemana') {
+            const semBloqueio = candidatosEsperados.filter(m => {
+              const bloqueadoAte = bloqueiosRotacaoReferencia[chaveRotacao]?.[m.id];
+              return !bloqueadoAte || chavePeriodoAtual > bloqueadoAte;
+            });
+            if (semBloqueio.length > 0) candidatosEsperados = semBloqueio;
 
-              if (!indisponivelNaData && !indisponivelSemanal && !iniciaIndisponibilidadeAmanha) {
-                pendenciasRotacao[chaveRotacao] = proximoMilitarDaRotacao.id;
+            const semAdiantados = candidatosEsperados.filter(m =>
+              !militaresAdiantadosRotacaoReferencia[chaveRotacao]?.has(m.id)
+            );
+            if (semAdiantados.length > 0) candidatosEsperados = semAdiantados;
+
+            // A pendência da REFERÊNCIA nasce somente da própria trajetória automática.
+            if (proximoMilitarDaRotacaoReferencia && !pendenciasRotacaoReferencia[chaveRotacao]
+                && !candidatosEsperados.some(m => m.id === proximoMilitarDaRotacaoReferencia.id)) {
+              const classificacaoProximo = classificacoesEsperadas.get(proximoMilitarDaRotacaoReferencia.id);
+              const indisponivelNaData = militarEstaIndisponivelNaData(proximoMilitarDaRotacaoReferencia.id, dataStr);
+              const indisponivelSemanal = militarTemIndisponibilidadeSemanalNaData(proximoMilitarDaRotacaoReferencia.id, diaSemana);
+              const iniciaIndisponibilidadeAmanha = militarIniciaIndisponibilidadeNoDiaSeguinteDaData(proximoMilitarDaRotacaoReferencia.id, dataObj);
+              const proximoEhFallbackValido = usandoFallbackReduzidoRecalculo
+                && classificacaoProximo?.nivel === 'reduzido';
+              if (!proximoEhFallbackValido && !indisponivelNaData && !indisponivelSemanal && !iniciaIndisponibilidadeAmanha) {
+                pendenciasRotacaoReferencia[chaveRotacao] = proximoMilitarDaRotacaoReferencia.id;
               }
             }
+
+            const pendenteId = pendenciasRotacaoReferencia[chaveRotacao];
+            if (pendenteId) {
+              const pendente = candidatosEsperados.find(m => m.id === pendenteId);
+              if (pendente) candidatosEsperados = [pendente];
+            }
           }
+
+          const regrasJusticaRecalculo = obterRegrasEfetivasFuncao(col.funcao, tipoFuncao);
+          const priorizarMenorCorRecalculo = tipoFuncao === 'semanaFimSemana'
+            && regrasJusticaRecalculo.justica?.separarPretoVermelho !== false;
+          // A escolha automática esperada usa a rotação de REFERÊNCIA, não a rotação real
+          // já alterada por edições manuais/compensações.
+          const ultimoIndiceRecalculo = militaresDaRotacao.findIndex(m => m.id === ultimoMilitarPorRotacaoReferencia[chaveRotacao]);
+          const distanciaRecalculo = militar => {
+            const indice = militaresDaRotacao.findIndex(m => m.id === militar.id);
+            if (ultimoIndiceRecalculo === -1) return indice;
+            const d = (indice - ultimoIndiceRecalculo + militaresDaRotacao.length) % militaresDaRotacao.length;
+            return d === 0 ? militaresDaRotacao.length : d;
+          };
+          candidatosEsperados.sort((a,b) => {
+            if (tipoFuncao !== 'semanaFimSemana' || !priorizarMenorCorRecalculo) {
+              return distanciaRecalculo(a) - distanciaRecalculo(b);
+            }
+            const ca = obterValorJusticaSeparada(
+              contagemSeparadaReferencia[a.id]?.[col.funcao] || criarContagemQuadrinhoLastro(),
+              regrasJusticaRecalculo, corServico
+            );
+            const cb = obterValorJusticaSeparada(
+              contagemSeparadaReferencia[b.id]?.[col.funcao] || criarContagemQuadrinhoLastro(),
+              regrasJusticaRecalculo, corServico
+            );
+            if (ca !== cb) return ca - cb;
+            if (regrasJusticaRecalculo.justica?.usarRotacaoDesempate !== false) {
+              const da = distanciaRecalculo(a), db = distanciaRecalculo(b);
+              if (da !== db) return da - db;
+            }
+            return distanciaRecalculo(a) - distanciaRecalculo(b);
+          });
+          const escolhidoAutomaticoEsperadoId = candidatosEsperados[0]?.id || '';
 
           const escolhidoId = escala.dados?.[dia]?.[col.chave] || '';
           escalaParcial[dia][col.chave] = escolhidoId;
@@ -7540,29 +7751,119 @@ if (salvou) {
           const escolhido = estado.militares.find(militar => militar.id === escolhidoId);
           if (!escolhido) return;
 
+          // Se o militar gravado nesta célula era justamente quem deveria ser pulado,
+          // a compensação NÃO ocorreu de fato. Mantemos esse fato separado do estado
+          // corrente para que o bloco abaixo não quite a dívida apenas porque ela foi
+          // recolocada no conjunto nesta mesma célula.
+          const compensacaoNaoRealizadaNestaVaga = tipoFuncao === 'semanaFimSemana'
+            && idsAdiantadosPuladosNestaVaga.has(escolhido.id);
+          if (compensacaoNaoRealizadaNestaVaga) {
+            militaresAdiantadosRotacao[chaveRotacao].add(escolhido.id);
+          }
+
           const militarEraPendente = pendenciasRotacao[chaveRotacao] === escolhido.id;
           const militarEraProximo = proximoMilitarDaRotacao?.id === escolhido.id;
           const militarJaEstavaAdiantado = militaresAdiantadosRotacao[chaveRotacao]?.has(escolhido.id);
+          const adiantadosAntesDaDecisao = [...(militaresAdiantadosRotacao[chaveRotacao] || [])];
+          const pendenteAntesDaDecisao = pendenciasRotacao[chaveRotacao] || null;
+          let adiantamentoCriadoNestaVaga = false;
+          let compensacaoQuitadaNestaVaga = false;
 
           if (tipoFuncao === 'semanaFimSemana' && militarEraPendente) {
             delete pendenciasRotacao[chaveRotacao];
           }
-          if (tipoFuncao === 'semanaFimSemana'
+          const houveAlteracaoManualNestaCelula = Boolean(escala.alteracoesManuais?.[dia]?.[col.chave]);
+          const registroAutomatico = escala.adiantamentosAutomaticos?.[dia]?.[col.chave] || null;
+          const adiantamentoAutomaticoRegistrado = Boolean(
+            registroAutomatico
+            && registroAutomatico.militarId === escolhido.id
+            && (!registroAutomatico.chaveRotacao || registroAutomatico.chaveRotacao === chaveRotacao)
+          );
+          // V14 — duas origens válidas e explícitas para uma dívida:
+          // 1) célula manual que realmente divergiu da referência automática;
+          // 2) fato automático gravado pelo próprio gerador no momento da decisão.
+          // Células automáticas neutras nunca criam dívida retrospectivamente.
+          const adiantamentoManualValido = Boolean(
+            houveAlteracaoManualNestaCelula
             && !militarEraProximo
             && !militarEraPendente
-            && !militarJaEstavaAdiantado) {
+            && escolhidoAutomaticoEsperadoId
+            && escolhido.id !== escolhidoAutomaticoEsperadoId
+          );
+          const deveMarcarAdiantamento = adiantamentoManualValido || adiantamentoAutomaticoRegistrado;
+
+          if (tipoFuncao === 'semanaFimSemana'
+            && !militarJaEstavaAdiantado
+            && deveMarcarAdiantamento) {
+            // Para registro automático, não reavaliamos militarEraProximo/pendente:
+            // essas condições pertencem ao instante original da geração e já estão
+            // codificadas no fato explícito adiantamentosAutomaticos.
             militaresAdiantadosRotacao[chaveRotacao].add(escolhido.id);
+            adiantamentoCriadoNestaVaga = true;
             const proximoPeriodo = new Date(dataObj);
             const diasAteProximaRodada = servicoVermelho
               ? (diaSemana === 6 ? 7 : 6)
               : (8 - diaSemana);
             proximoPeriodo.setDate(proximoPeriodo.getDate() + diasAteProximaRodada);
             bloqueiosRotacao[chaveRotacao][escolhido.id] = obterChavePeriodo(proximoPeriodo, servicoVermelho);
-          } else if (tipoFuncao === 'semanaFimSemana' && (militarEraProximo || militarJaEstavaAdiantado)) {
+          } else if (tipoFuncao === 'semanaFimSemana'
+            && !compensacaoNaoRealizadaNestaVaga
+            && (militarEraProximo || militarJaEstavaAdiantado)) {
             militaresAdiantadosRotacao[chaveRotacao].delete(escolhido.id);
+            compensacaoQuitadaNestaVaga = militarJaEstavaAdiantado && !compensacaoNaoRealizadaNestaVaga;
             if (bloqueiosRotacao[chaveRotacao]) {
               delete bloqueiosRotacao[chaveRotacao][escolhido.id];
             }
+          }
+
+          if (tipoFuncao === 'semanaFimSemana') {
+            const contagensCandidatos = militaresDaRotacao.map(m => ({
+              id: m.id,
+              nome: m.nome || '',
+              nivelElegibilidade: classificacoesEsperadas.get(m.id)?.nivel || 'impedido',
+              acumuladoCor: obterValorJusticaSeparada(
+                contagemSeparadaRecalculo[m.id]?.[col.funcao] || criarContagemQuadrinhoLastro(),
+                regrasJusticaRecalculo,
+                corServico
+              ),
+              acumuladoCorReferencia: obterValorJusticaSeparada(
+                contagemSeparadaReferencia[m.id]?.[col.funcao] || criarContagemQuadrinhoLastro(),
+                regrasJusticaRecalculo,
+                corServico
+              )
+            }));
+            rastreioCompensacoes.push({
+              data: dataStr,
+              funcao: col.funcao,
+              vaga: col.chave,
+              cor: corServico,
+              chaveRotacao,
+              proximoRotacao: proximoMilitarDaRotacao?.id || null,
+              ultimoRotacaoReferenciaAntes: ultimoMilitarPorRotacaoReferencia[chaveRotacao] || null,
+              proximoRotacaoReferencia: proximoMilitarDaRotacaoReferencia?.id || null,
+              puladosCompensacaoReferencia: [...idsAdiantadosPuladosReferenciaNestaVaga],
+              adiantadosReferencia: [...(militaresAdiantadosRotacaoReferencia[chaveRotacao] || [])],
+              pendenteReferencia: pendenciasRotacaoReferencia[chaveRotacao] || null,
+              elegibilidadeEsperadaUsaReferencia: true,
+              esperado: escolhidoAutomaticoEsperadoId || null,
+              escolhido: escolhido.id,
+              alteracaoManual: houveAlteracaoManualNestaCelula,
+              adiantamentoAutomaticoRegistrado: registroAutomatico ? structuredClone(registroAutomatico) : null,
+              origemAdiantamentoCriado: adiantamentoCriadoNestaVaga
+                ? (adiantamentoAutomaticoRegistrado ? 'automatico' : 'manual')
+                : null,
+              candidatosEsperados: candidatosEsperados.map(m => m.id),
+              contagensCandidatos,
+              puladosCompensacao: [...idsAdiantadosPuladosNestaVaga],
+              adiantadosAntes: adiantadosAntesDaDecisao,
+              adiantamentoCriado: adiantamentoCriadoNestaVaga,
+              compensacaoNaoRealizada: compensacaoNaoRealizadaNestaVaga,
+              compensacaoQuitada: compensacaoQuitadaNestaVaga,
+              adiantadosDepois: [...(militaresAdiantadosRotacao[chaveRotacao] || [])],
+              pendenteAntes: pendenteAntesDaDecisao,
+              pendenteDepois: pendenciasRotacao[chaveRotacao] || null,
+              fallbackReduzido: usandoFallbackReduzidoRecalculo
+            });
           }
 
           if (militarEraProximo || militarEraPendente || tipoFuncao !== 'semanaFimSemana') {
@@ -7571,9 +7872,49 @@ if (salvou) {
           if (tipoFuncao === 'semanaFimSemana' && tiposEscala[col.funcao] === 'corrida') {
             ultimoMilitarPorRotacao[`${col.funcao}:todos`] = escolhido.id;
           }
+          // Estado REAL: a célula efetivamente gravada altera os acumulados reais.
+          if (contagemSeparadaRecalculo[escolhido.id]?.[col.funcao]) {
+            garantirCorNaContagem(contagemSeparadaRecalculo[escolhido.id][col.funcao], corServico).quadrinhos++;
+          }
+          // Estado de REFERÊNCIA: avança com quem o motor automático esperava nesta vaga.
+          // Em uma célula manual, portanto, a alteração não contamina os acumulados usados
+          // para reconstruir as escolhas automáticas dos dias posteriores.
+          const escolhidoReferenciaId = escolhidoAutomaticoEsperadoId || escolhido.id;
+          // A escolha de referência é automática; portanto ela apenas consome estados
+          // de compensação herdados da própria referência, sem receber dívidas criadas
+          // pelas alterações da escala real.
+          if (tipoFuncao === 'semanaFimSemana' && escolhidoReferenciaId) {
+            if (pendenciasRotacaoReferencia[chaveRotacao] === escolhidoReferenciaId) {
+              delete pendenciasRotacaoReferencia[chaveRotacao];
+            }
+            if (militaresAdiantadosRotacaoReferencia[chaveRotacao]?.has(escolhidoReferenciaId)) {
+              militaresAdiantadosRotacaoReferencia[chaveRotacao].delete(escolhidoReferenciaId);
+              if (bloqueiosRotacaoReferencia[chaveRotacao]) {
+                delete bloqueiosRotacaoReferencia[chaveRotacao][escolhidoReferenciaId];
+              }
+            }
+          }
+          escalaParcialReferencia[dia][col.chave] = escolhidoReferenciaId;
+          if (contagemSeparadaReferencia[escolhidoReferenciaId]?.[col.funcao]) {
+            garantirCorNaContagem(contagemSeparadaReferencia[escolhidoReferenciaId][col.funcao], corServico).quadrinhos++;
+          }
+          // A linha de referência também mantém sua própria posição de rotação.
+          // Assim, uma edição manual altera a rotação REAL, mas não desloca a sequência
+          // usada para reconstruir o que o gerador automático teria feito originalmente.
+          if (escolhidoReferenciaId) {
+            ultimoMilitarPorRotacaoReferencia[chaveRotacao] = escolhidoReferenciaId;
+            if (tipoFuncao === 'semanaFimSemana' && tiposEscala[col.funcao] === 'corrida') {
+              ultimoMilitarPorRotacaoReferencia[`${col.funcao}:todos`] = escolhidoReferenciaId;
+            }
+          }
           ultimoEventoPorMilitar[`${escolhido.id}:${chaveRotacao}`] = eventoRotacao;
           ultimaDataServicoPorMilitar[escolhido.id] = dataObj.getTime();
           ultimoServicoFoiVermelhoPorMilitar[escolhido.id] = servicoVermelho;
+          if (escolhidoReferenciaId) {
+            ultimoEventoPorMilitarReferencia[`${escolhidoReferenciaId}:${chaveRotacao}`] = eventoRotacao;
+            ultimaDataServicoPorMilitarReferencia[escolhidoReferenciaId] = dataObj.getTime();
+            ultimoServicoFoiVermelhoPorMilitarReferencia[escolhidoReferenciaId] = servicoVermelho;
+          }
         });
 
         Object.keys(contadorEventosRotacao).forEach(chave => {
@@ -7591,6 +7932,7 @@ if (salvou) {
           pendente: pendenciasRotacao[chave] || null
         };
       });
+      escala.rastreioCompensacoesRotacao = rastreioCompensacoes;
       return compensacoesRotacao;
     }
 
@@ -7659,6 +8001,7 @@ if (salvou) {
         // Mantém no estado do sistema o status visual de publicação do mês.
         // Isso permite que o seletor continue verde após recarregar o sistema.
         escala.publicadaEm = dataHora.toISOString();
+        delete escala.alteradaAposPublicacaoEm;
         atualizarCoresMesesEscala();
         await salvarEstado('marcar_escala_publicada');
         atualizarAvisoEscalasNaoPublicadas();
@@ -7673,7 +8016,6 @@ if (salvou) {
         if (botao) botao.disabled = false;
       }
     }
-
 
     function atualizarFiltroFuncaoEscalaMobile(estruturaEscala, colunasVagas) {
       const seletor = document.getElementById('filtroFuncaoEscalaMobile');
@@ -7696,9 +8038,6 @@ if (salvou) {
       if (valorAnteriorValido) {
         seletor.value = valorAnterior;
       } else if (window.matchMedia('(max-width: 767px)').matches && funcoesDisponiveis.length) {
-        // No celular, abre a escala já em modo compacto: Dia + Sem. + todas
-        // as vagas da primeira função. O usuário pode trocar a função ou
-        // escolher "Todas as funções" a qualquer momento.
         seletor.value = encodeURIComponent(funcoesDisponiveis[0]);
       } else {
         seletor.value = '';
@@ -7991,9 +8330,11 @@ const militaresOrdenadosTroca = militaresNaOrdemBase
     // para esta data, exatamente como no motor da geração. Assim, uma regra
     // desativada/configurada como permitida não cria artificialmente exceção.
     // Entre violações realmente detectadas, a apresentação fica:
-    // normal -> vermelho consecutivo -> folga reduzida -> na 24 -> demais exceções.
-    // Se o mesmo militar acumular mais de uma condição, prevalece a de maior
-    // prioridade visual: vermelho > reduzida > na 24 > demais exceções.
+    // normal -> vermelho consecutivo -> folga reduzida -> demais exceções -> na 24/dobraria.
+    // IMPORTANTE: se o próprio motor classificou a ocorrência como descanso
+    // reduzido, ela permanece no grupo de folga reduzida mesmo que o texto
+    // operacional também contenha "ficaria na 24" ou "dobraria serviço".
+    // Situações efetivamente classificadas como na 24/dobraria ficam por último.
     const classificacao = classificarCandidatoTrocaManual(dia, col.chave, militar.id);
     const motivos = (classificacao.violacoes || []).map(v => String(v).toLowerCase());
     const temVermelhoConsecutivo = motivos.some(v => v.includes('vermelho seguido'));
@@ -8006,16 +8347,15 @@ const militaresOrdenadosTroca = militaresNaOrdemBase
     const temOutraExcecao = classificacao.violacaoFolga === true;
 
     // ETAPA 50 — filtros compostos do dropdown.
-    // A categoria principal representa a condição de descanso mais específica.
-    // Vermelho consecutivo funciona como segundo filtro e NÃO pode mascarar
-    // uma condição de folga reduzida/na 24. Ex.: vermelho + na 24 permanece
-    // no grupo "na 24"; entre candidatos equivalentes, o vermelho é usado
-    // apenas como critério secundário.
+    // Descanso reduzido tem precedência sobre a descrição operacional
+    // "na 24/dobraria", pois o alerta de descanso reduzido pode conter essa
+    // expressão. Na 24/dobraria efetiva recebe a maior prioridade numérica
+    // para permanecer no fim da lista de próximos.
     let prioridadeDropdown = 0;
-    if (ficariaNa24) prioridadeDropdown = 3;
-    else if (temFolgaReduzida) prioridadeDropdown = 2;
+    if (temFolgaReduzida) prioridadeDropdown = 2;
     else if (temVermelhoConsecutivo) prioridadeDropdown = 1;
-    else if (temOutraExcecao) prioridadeDropdown = 4;
+    else if (ficariaNa24) prioridadeDropdown = 4;
+    else if (temOutraExcecao) prioridadeDropdown = 3;
 
     const filtroVermelhoSecundario = temVermelhoConsecutivo ? 1 : 0;
 
@@ -8155,7 +8495,9 @@ const opcoes = militaresOrdenadosTroca
         : registroObservacao;
 
       estado.escalas[estado.escala.mesAno] = estado.escala;
+      marcarEscalaComoAguardandoRepublicacao(estado.escala);
       salvarEstado();
+      atualizarCoresMesesEscala();
       abrirModalJustificativa(`Justificativa - dia ${dia} - ${chaveColuna}`, estado.escala.justificativas[dia][chaveColuna], contextoJustificativaAtual);
       renderizarTabelaEscala();
     }
@@ -8818,7 +9160,7 @@ const opcoes = militaresOrdenadosTroca
       const motivo = document.getElementById('motivoAlteracaoManual').value.trim();
       const { nome: responsavelNome, saram: responsavelSaram } = obterIdentificacaoUsuarioLogado();
       if (!tipo || !motivo || !responsavelNome || !responsavelSaram) {
-        alert('Preencha o tipo da alteração e a justificativa. Não foi possível identificar nome/SARAM do usuário logado.');
+        alert('Não foi possível identificar o usuário logado. Saia do sistema e entre novamente antes de confirmar a alteração.');
         return;
       }
 
@@ -8843,6 +9185,65 @@ const opcoes = militaresOrdenadosTroca
     function formatarMesAno(mesAno) {
       const [ano, mes] = obterMesBaseEscala(mesAno).split('-');
       return `${mes}/${ano}`;
+    }
+
+    // V15 — sincroniza, após edição manual, a parte dinâmica das justificativas
+    // que depende das compensações da rotação. O rastreio do recálculo é a fonte
+    // de verdade para saber quem realmente foi pulado por adiantamento anterior.
+    function atualizarJustificativasCompensacaoAposRecalculo(escala, diaAlterado, chaveColunaAlterada) {
+      if (!escala?.justificativas || !Array.isArray(escala.rastreioCompensacoesRotacao)) return;
+
+      const funcaoAlterada = obterFuncaoDaChave(chaveColunaAlterada);
+      const rastreioOrigem = escala.rastreioCompensacoesRotacao.find(item =>
+        Number(String(item.data || '').slice(-2)) === Number(diaAlterado)
+        && item.vaga === chaveColunaAlterada
+      );
+      const chaveRotacaoAlterada = rastreioOrigem?.chaveRotacao || null;
+      if (!chaveRotacaoAlterada) return;
+
+      const porCelula = new Map();
+      escala.rastreioCompensacoesRotacao.forEach(item => {
+        const diaItem = Number(String(item.data || '').slice(-2));
+        if (!Number.isFinite(diaItem) || diaItem <= Number(diaAlterado)) return;
+        if (item.funcao !== funcaoAlterada || item.chaveRotacao !== chaveRotacaoAlterada) return;
+        porCelula.set(`${diaItem}|${item.vaga}`, item);
+      });
+
+      porCelula.forEach((item, chaveMapa) => {
+        const [diaTexto, vaga] = chaveMapa.split('|');
+        const diaJust = Number(diaTexto);
+        const linha = escala.justificativas?.[diaJust];
+        if (!linha || typeof linha[vaga] !== 'string') return;
+
+        let texto = linha[vaga];
+        // Remove a fotografia antiga dessa informação antes de aplicar o estado atual.
+        texto = texto.replace(/(?:^|\n)Pulados por adiantamento anterior:[^\n]*/g, '');
+        texto = texto.replace(/\n{3,}/g, '\n\n').trim();
+
+        const idsPulados = Array.isArray(item.puladosCompensacao) ? item.puladosCompensacao : [];
+        if (idsPulados.length) {
+          const frase = `Pulados por adiantamento anterior: ${idsPulados.map(obterNomeMilitar).join(', ')}.`;
+          // Mantém a justificativa em parágrafo corrido quando ela já era corrida.
+          texto = texto ? `${texto} ${frase}` : frase;
+        }
+        linha[vaga] = texto;
+      });
+    }
+
+    function exibirSpinnerAlteracaoManual() {
+      const overlay = document.getElementById('overlayAlteracaoManual');
+      if (overlay) overlay.classList.add('ativo');
+      document.body.setAttribute('aria-busy', 'true');
+    }
+
+    function ocultarSpinnerAlteracaoManual() {
+      const overlay = document.getElementById('overlayAlteracaoManual');
+      if (overlay) overlay.classList.remove('ativo');
+      document.body.removeAttribute('aria-busy');
+    }
+
+    function aguardarRenderizacaoSpinnerAlteracaoManual() {
+      return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     }
 
     async function atualizarEscalaManual(dia, chaveColuna, militarId) {
@@ -8920,7 +9321,21 @@ const opcoes = militaresOrdenadosTroca
           return;
         }
 
+        // V16 — a partir daqui a troca será efetivamente aplicada. Mantém a tela
+        // bloqueada até recálculo, salvamento e nova renderização terminarem.
+        exibirSpinnerAlteracaoManual();
+        await aguardarRenderizacaoSpinnerAlteracaoManual();
+        try {
+
         estado.escala.dados[dia][chaveColuna] = militarId;
+        // V15 — o fato automático pertencia à célula original. Ao substituí-la
+        // manualmente, ele deixa de ser válido e não pode contaminar recálculos futuros.
+        if (estado.escala.adiantamentosAutomaticos?.[dia]) {
+          delete estado.escala.adiantamentosAutomaticos[dia][chaveColuna];
+          if (Object.keys(estado.escala.adiantamentosAutomaticos[dia]).length === 0) {
+            delete estado.escala.adiantamentosAutomaticos[dia];
+          }
+        }
         if (estado.escala.substituicoes?.[dia]) {
           delete estado.escala.substituicoes[dia][chaveColuna];
         }
@@ -8963,14 +9378,22 @@ const opcoes = militaresOrdenadosTroca
           ? `${justificativaAnterior}\n\n${registroManual}`
           : registroManual;
         estado.escala.compensacoesRotacao = recalcularCompensacoesRotacaoDaEscala(estado.escala);
+        atualizarJustificativasCompensacaoAposRecalculo(estado.escala, dia, chaveColuna);
         estado.escala.compensacoesRecalculadasEm = new Date().toISOString();
         mesesFuturosGerados.forEach(mesEscala => {
           delete estado.escalas[mesEscala];
         });
         removerHistoricosFuturosDependentes(estado.escala.mesAno);
         estado.escalas[estado.escala.mesAno] = estado.escala;
+        marcarEscalaComoAguardandoRepublicacao(estado.escala);
         if (!await salvarEstado()) return;
         renderizarTabelaEscala();
+        atualizarCoresMesesEscala();
+        // Aguarda a tabela atualizada chegar à tela antes de liberar a interação.
+        await aguardarRenderizacaoSpinnerAlteracaoManual();
+        } finally {
+          ocultarSpinnerAlteracaoManual();
+        }
       }
     }
 
@@ -9277,7 +9700,7 @@ const opcoes = militaresOrdenadosTroca
       const motivo = document.getElementById('motivoAjusteAcumulado').value.trim();
       const { nome: responsavelNome, saram: responsavelSaram } = obterIdentificacaoUsuarioLogado();
       if (!motivo || !responsavelNome || !responsavelSaram) {
-        alert('Informe a justificativa. Não foi possível identificar nome/SARAM do usuário logado.');
+        alert('Informe a justificativa. Se a identificação do responsável não aparecer, saia do sistema e entre novamente.');
         return;
       }
 
@@ -9831,10 +10254,7 @@ async function exportarPDF() {
               .xls-saram { font-size: 10px; color: #555; font-weight: normal; }
             </style>
           </head>
-          <body>${copia.innerHTML}
-
-
-</body>
+          <body>${copia.innerHTML}</body>
         </html>
       `;
       const arquivo = new Blob(['\ufeff', conteudo], { type: 'application/vnd.ms-excel;charset=utf-8' });
@@ -9944,14 +10364,13 @@ async function exportarPDF() {
   window.addEventListener('resize', esconder);
   window.addEventListener('scroll', esconder, true);
 })();
-</script><script>
-if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js').catch(error => {
-      console.warn('SESCI: não foi possível registrar o service worker.', error);
-    });
-  });
-}
 </script>
+<div id="overlayAlteracaoManual" aria-live="polite" aria-busy="true">
+  <div class="painel-alteracao-manual">
+    <span class="spinner-alteracao-manual" aria-hidden="true"></span>
+    Aplicando alteração na escala...
+    <span class="texto-secundario-alteracao-manual">Recalculando compensações e atualizando a visualização.</span>
+  </div>
+</div>
 </body>
 </html>
