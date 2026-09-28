@@ -2474,10 +2474,19 @@ async function salvarEstadoNoServidor(
           estado.escala.diasVermelhos.sort();
         }
 
+        const publicadaEmAnterior = escala?.publicadaEm || estado.escala?.publicadaEm || '';
+        if (escala) {
+          marcarEscalaComoAguardandoRepublicacao(escala, publicadaEmAnterior);
+        }
+        if (estado.escala?.mesAno === mesAno) {
+          marcarEscalaComoAguardandoRepublicacao(estado.escala, publicadaEmAnterior);
+        }
+
         await salvarEstado();
         renderizarDiasEspeciais();
         renderizarTabelaEscala();
         renderizarResumoServicos();
+        atualizarCoresMesesEscala();
       } catch (erro) {
         console.error('Erro ao alterar classificação do dia:', erro);
         alert(`Não foi possível alterar a classificação do dia. ${erro?.message || erro}`);
@@ -2579,6 +2588,16 @@ async function salvarEstadoNoServidor(
         .sort();
     }
 
+    function marcarEscalaComoAguardandoRepublicacao(escala, publicadaEmAnterior = '') {
+      if (!escala?.mesAno) return false;
+      const publicacaoAnterior = publicadaEmAnterior || escala.publicadaEm;
+      if (!publicacaoAnterior) return false;
+
+      delete escala.publicadaEm;
+      escala.alteradaAposPublicacaoEm = new Date().toISOString();
+      return true;
+    }
+
     function abrirEscalaPendentePublicacao(mesAno) {
       if (!/^\d{4}-\d{2}$/.test(mesAno || '')) return;
       definirMesAnoEscala(mesAno);
@@ -2600,12 +2619,23 @@ async function salvarEstadoNoServidor(
         return;
       }
 
+      const alteradas = pendentes.filter(mesAno => estado.escalas?.[mesAno]?.alteradaAposPublicacaoEm);
+      const todasAlteradas = alteradas.length === pendentes.length;
+
       titulo.textContent = pendentes.length === 1
-        ? 'Há 1 escala criada aguardando publicação'
-        : `Há ${pendentes.length} escalas criadas aguardando publicação`;
+        ? (todasAlteradas
+          ? 'Há 1 escala alterada aguardando republicação'
+          : 'Há 1 escala criada aguardando publicação')
+        : (todasAlteradas
+          ? `Há ${pendentes.length} escalas alteradas aguardando republicação`
+          : `Há ${pendentes.length} escalas aguardando publicação`);
       texto.textContent = pendentes.length === 1
-        ? 'Esta escala foi criada, mas ainda não foi publicada. O aviso permanecerá até a publicação.'
-        : 'Estas escalas foram criadas, mas ainda não foram publicadas. O aviso permanecerá até que todas sejam publicadas.';
+        ? (todasAlteradas
+          ? 'Esta escala foi alterada após a última publicação. O aviso permanecerá até que ela seja republicada.'
+          : 'Esta escala foi criada, mas ainda não foi publicada. O aviso permanecerá até a publicação.')
+        : (todasAlteradas
+          ? 'Estas escalas foram alteradas após a última publicação. O aviso permanecerá até que todas sejam republicadas.'
+          : 'Há escalas novas ou alteradas que ainda precisam ser publicadas. O aviso permanecerá até que todas sejam publicadas.');
       lista.innerHTML = pendentes.map(mesAno =>
         `<button type="button" class="aviso-pendencias-mes" data-mes-ano="${escaparHTML(mesAno)}" onclick="abrirEscalaPendentePublicacao(this.dataset.mesAno)" title="Abrir ${escaparHTML(formatarMesAno(mesAno))} para publicação">${escaparHTML(formatarMesAno(mesAno))}</button>`
       ).join('');
@@ -6837,6 +6867,10 @@ if (historicoAnteriorMesmoMes) {
 }
 
 estado.escalas[mesAno] = estado.escala;
+marcarEscalaComoAguardandoRepublicacao(
+  estado.escala,
+  escalaExistenteAntesGeracao?.publicadaEm || ''
+);
 
 const salvou = await salvarEstado({
   acao: historicoAnteriorMesmoMes ? 'regenerar_mes_substituindo_historico' : 'gerar_escala',
@@ -7604,6 +7638,7 @@ if (salvou) {
         // Mantém no estado do sistema o status visual de publicação do mês.
         // Isso permite que o seletor continue verde após recarregar o sistema.
         escala.publicadaEm = dataHora.toISOString();
+        delete escala.alteradaAposPublicacaoEm;
         atualizarCoresMesesEscala();
         await salvarEstado('marcar_escala_publicada');
         atualizarAvisoEscalasNaoPublicadas();
@@ -8053,7 +8088,9 @@ const opcoes = militaresOrdenadosTroca
         : registroObservacao;
 
       estado.escalas[estado.escala.mesAno] = estado.escala;
+      marcarEscalaComoAguardandoRepublicacao(estado.escala);
       salvarEstado();
+      atualizarCoresMesesEscala();
       abrirModalJustificativa(`Justificativa - dia ${dia} - ${chaveColuna}`, estado.escala.justificativas[dia][chaveColuna], contextoJustificativaAtual);
       renderizarTabelaEscala();
     }
@@ -8941,8 +8978,10 @@ const opcoes = militaresOrdenadosTroca
         });
         removerHistoricosFuturosDependentes(estado.escala.mesAno);
         estado.escalas[estado.escala.mesAno] = estado.escala;
+        marcarEscalaComoAguardandoRepublicacao(estado.escala);
         if (!await salvarEstado()) return;
         renderizarTabelaEscala();
+        atualizarCoresMesesEscala();
         // Aguarda a tabela atualizada chegar à tela antes de liberar a interação.
         await aguardarRenderizacaoSpinnerAlteracaoManual();
         } finally {
