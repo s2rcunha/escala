@@ -410,7 +410,7 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
 <main class="cci-main"><div class="cci-page-heading"><div><h2 class="cci-page-title" id="tituloPaginaCCI">Escala Mensal</h2><p class="cci-page-sub" id="subtituloPaginaCCI">Geração, consulta e manutenção da escala mensal.</p></div></div>
 <!-- ABA 1: GERADOR E VISUALIZAÇÃO DA ESCALA -->
 <section class="aba-conteudo space-y-4" id="aba-gerador">
-<div class="bg-white p-4 rounded shadow-sm cci-subpage-panel" data-cci-subpagina="criar"><div class="mb-4"><h3 class="font-bold text-lg mb-1">Criar Escala Mensal</h3><p class="text-sm text-gray-600">Selecione o mês e o ano e gere a escala automática. Após a geração, a visualização será aberta automaticamente.</p></div>
+<div class="bg-white p-4 rounded shadow-sm cci-subpage-panel" data-cci-subpagina="criar"><div class="mb-4"><h3 class="font-bold text-lg mb-1">Criar Escala Mensal</h3><p class="text-sm text-gray-600">Selecione o mês e o ano. Você pode gerar funções automaticamente ou iniciar a elaboração manual de uma função; os dois modos podem coexistir no mesmo mês.</p></div>
 <div class="mb-4">
 <label class="block text-xs font-semibold text-gray-600 mb-1">Mês/Ano</label>
 <div class="flex flex-wrap gap-2">
@@ -431,6 +431,7 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
 </div>
 <div class="somente-edicao mt-4 flex justify-start">
 <button class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded font-bold shadow" onclick="abrirModalGeracaoEscala()">Gerar Escala Automática</button>
+<button class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded font-bold shadow ml-2" onclick="abrirModalEscalaManual()">Criar Escala Manual</button>
 </div>
 </div>
 <div class="bg-white p-6 rounded shadow-sm overflow-x-auto cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="visualizacao" id="areaEscalaPDF">
@@ -1007,6 +1008,17 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
 </div>
 </form>
 </div>
+<!-- MODAL DE CRIAÇÃO MANUAL DA ESCALA -->
+<div class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50 p-4" id="modalEscalaManual">
+<form class="w-full max-w-lg rounded bg-white shadow-xl" onsubmit="confirmarCriacaoEscalaManual(event)">
+<div class="flex items-center justify-between border-b px-5 py-4"><h3 class="text-lg font-bold text-gray-800">Criar Escala Manual</h3><button class="rounded bg-gray-100 px-3 py-1 text-lg font-bold text-gray-600 hover:bg-gray-200" onclick="fecharModalEscalaManual()" type="button">x</button></div>
+<div class="space-y-4 px-5 py-4">
+<label class="block text-sm font-semibold text-gray-700">Função<select class="mt-1 w-full rounded border p-2 text-sm font-normal" id="funcaoEscalaManual" required></select></label>
+<p class="rounded bg-blue-50 p-3 text-xs text-blue-800">A função selecionada será preparada com todas as vagas vazias para preenchimento manual. As demais funções já existentes serão preservadas e poderão continuar sendo geradas automaticamente.</p>
+<p class="rounded bg-amber-50 p-3 text-xs text-amber-800">As regras da função continuam ativas durante o preenchimento. Situações proibidas serão bloqueadas e exceções configuradas exigirão confirmação.</p>
+</div>
+<div class="flex justify-end gap-2 border-t px-5 py-3"><button class="rounded bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300" onclick="fecharModalEscalaManual()" type="button">Cancelar</button><button class="rounded bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700" type="submit">Iniciar escala manual</button></div>
+</form></div>
 <!-- OVERLAY DE PROCESSAMENTO -->
 <div class="hidden fixed inset-0 z-[9999] items-center justify-center bg-black/50" id="overlayProcessamento">
 <div class="flex min-w-64 flex-col items-center rounded-lg bg-white px-8 py-6 shadow-2xl">
@@ -5632,6 +5644,81 @@ if (
       return ultimosTipos;
     }
 
+    function funcaoEmElaboracaoManual(funcao) {
+      return estado.escala?.modosGeracao?.[funcao] === 'manual';
+    }
+
+    function abrirModalEscalaManual() {
+      const mesAno = document.getElementById('mesAnoEscala').value;
+      if (!mesAno) return alert('Selecione o mês e ano!');
+      const select = document.getElementById('funcaoEscalaManual');
+      select.innerHTML = '<option value="">Selecione a função</option>' + estado.funcoes
+        .filter(funcao => (estado.vagas[funcao] || 0) > 0)
+        .map(funcao => `<option value="${escaparHTML(funcao)}">${escaparHTML(funcao)}</option>`).join('');
+      const modal = document.getElementById('modalEscalaManual');
+      modal.classList.remove('hidden'); modal.classList.add('flex');
+    }
+
+    function fecharModalEscalaManual() {
+      const modal = document.getElementById('modalEscalaManual');
+      modal.classList.add('hidden'); modal.classList.remove('flex');
+    }
+
+    async function confirmarCriacaoEscalaManual(evento) {
+      evento.preventDefault();
+      const mesAno = document.getElementById('mesAnoEscala').value;
+      const funcao = document.getElementById('funcaoEscalaManual').value;
+      if (!mesAno || !funcao) return alert('Selecione a função.');
+      const existente = estado.escalas[mesAno] ? structuredClone(estado.escalas[mesAno]) : null;
+      if (existente?.modosGeracao?.[funcao] === 'manual') {
+        if (!confirm(`A função "${funcao}" já está em elaboração manual. Deseja limpar somente esta função e recomeçar?`)) return;
+      } else if (existente?.dados) {
+        const possuiDadosFuncao = Object.values(existente.dados).some(vagas => Object.entries(vagas || {}).some(([chave,id]) => chave.replace(/ #\d+$/, '') === funcao && id));
+        if (possuiDadosFuncao && !confirm(`A função "${funcao}" já possui militares escalados. Iniciar a elaboração manual limpará somente as vagas desta função. As demais funções serão preservadas.\n\nDeseja continuar?`)) return;
+      }
+      fecharModalEscalaManual();
+      mostrarProcessamento('Preparando escala manual, aguarde...');
+      try {
+        await new Promise(resolve => setTimeout(resolve, 40));
+        const [ano, mes] = mesAno.split('-').map(Number);
+        const diasNoMes = new Date(ano, mes, 0).getDate();
+        const tipos = obterTiposEscalaSelecionados();
+        let escala = existente || {
+          mesAno, tipos: {}, regrasEscalaSnapshot: {}, tiposUsadosPorDia: {}, ordemTrocaManual: {},
+          lastrosIndisponibilidade: {}, alteracoesManuais: {}, estrutura: { funcoes:[...estado.funcoes], vagas:{...estado.vagas} },
+          diasVermelhos: [], coresDias: {}, dados: {}, substituicoes: {}, adiantamentosAutomaticos: {}, justificativas: {}, compensacoesRotacao: {}
+        };
+        escala.modosGeracao ||= {};
+        escala.modosGeracao[funcao] = 'manual';
+        escala.tipos ||= {}; escala.tipos[funcao] = tipos[funcao] || garantirRegrasEscalaFuncao(funcao).distribuicao || 'corrida';
+        escala.regrasEscalaSnapshot ||= {};
+        escala.regrasEscalaSnapshot[funcao] = obterResumoRegrasFuncao(funcao, escala.tipos[funcao]);
+        escala.estrutura ||= { funcoes:[...estado.funcoes], vagas:{...estado.vagas} };
+        escala.estrutura.funcoes = Array.from(new Set([...(escala.estrutura.funcoes || []), funcao]));
+        escala.estrutura.vagas ||= {}; escala.estrutura.vagas[funcao] = estado.vagas[funcao] || 0;
+        for (let dia=1; dia<=diasNoMes; dia++) {
+          escala.dados[dia] ||= {}; escala.tiposUsadosPorDia[dia] ||= {};
+          escala.tiposUsadosPorDia[dia][funcao] = escala.tipos[funcao];
+          const qtd = estado.vagas[funcao] || 0;
+          for (let n=1; n<=qtd; n++) {
+            const chave = `${funcao} #${n}`;
+            escala.dados[dia][chave] = '';
+            if (escala.justificativas?.[dia]) delete escala.justificativas[dia][chave];
+            if (escala.alteracoesManuais?.[dia]) delete escala.alteracoesManuais[dia][chave];
+            if (escala.substituicoes?.[dia]) delete escala.substituicoes[dia][chave];
+            if (escala.adiantamentosAutomaticos?.[dia]) delete escala.adiantamentosAutomaticos[dia][chave];
+          }
+        }
+        estado.escala = escala; estado.escalas[mesAno] = escala;
+        marcarEscalaComoAguardandoRepublicacao(escala, existente?.publicadaEm || '');
+        const salvou = await salvarEstado({acao:'iniciar_escala_manual', mesAno, funcao});
+        if (!salvou) return;
+        renderizarTabelaEscala(); atualizarCoresMesesEscala(); atualizarAvisoEscalasNaoPublicadas();
+        abrirSubpaginaCCI('gerador','visualizacao');
+        alert(`Elaboração manual iniciada para "${funcao}".\n\nPreencha as vagas pela tabela. As regras continuam sendo verificadas em cada escolha.`);
+      } finally { ocultarProcessamento(); }
+    }
+
     function abrirModalGeracaoEscala() {
       const mesAno = document.getElementById('mesAnoEscala').value;
       if (!mesAno) return alert('Selecione o mês e ano!');
@@ -6824,8 +6911,10 @@ if (deveMesclarResultado) {
   estado.escala.tipos = {
     ...(escalaExistenteAntesGeracao?.tipos || {})
   };
+  estado.escala.modosGeracao = { ...(escalaExistenteAntesGeracao?.modosGeracao || estado.escala.modosGeracao || {}) };
   funcoesGeradas.forEach(funcao => {
     estado.escala.tipos[funcao] = tiposEscala[funcao] || 'corrida';
+    estado.escala.modosGeracao[funcao] = 'automatica';
   });
 
   estado.escala.regrasEscalaSnapshot = {
@@ -7909,8 +7998,14 @@ const militaresOrdenadosTroca = militaresNaOrdemBase
     // imediatamente anterior ou posterior não deve ser oferecido como opção.
     // A busca usa timestamps reais e percorre todas as escalas, portanto também
     // funciona corretamente nas viradas de mês/ano.
-    if (militarTemServicoNoTempoTroca(militar.id, tempoAnteriorTroca)) return false;
-    if (militarTemServicoNoTempoTroca(militar.id, tempoSeguinteTroca)) return false;
+    const elaboracaoManualFuncao = funcaoEmElaboracaoManual(col.funcao);
+    // Na elaboração manual todos os candidatos da função precisam poder ser avaliados
+    // pelo motor. Assim situações de descanso/24h aparecem como alerta em vez de
+    // desaparecerem silenciosamente do seletor. Na edição comum mantém o filtro histórico.
+    if (!elaboracaoManualFuncao) {
+      if (militarTemServicoNoTempoTroca(militar.id, tempoAnteriorTroca)) return false;
+      if (militarTemServicoNoTempoTroca(militar.id, tempoSeguinteTroca)) return false;
+    }
 
     const tipoTrocaEfetivo = estado.escala.tiposUsadosPorDia?.[dia]?.[col.funcao]
       || obterTiposEscalaDaEscala(estado.escala)[col.funcao]
@@ -8917,7 +9012,11 @@ const opcoes = militaresOrdenadosTroca
           }
         }
 
-        const dadosJustificativaManual = await solicitarJustificativaAlteracaoManual();
+        const funcaoEdicao = obterFuncaoDaChave(chaveColuna);
+        const preenchimentoInicialManual = funcaoEmElaboracaoManual(funcaoEdicao) && !militarIdAnterior;
+        const dadosJustificativaManual = preenchimentoInicialManual
+          ? { tipo: 'elaboracao_manual', motivo: 'Preenchimento inicial da escala manual.', responsavelNome: usuarioLogado?.nome || '', responsavelSaram: usuarioLogado?.saram || '' }
+          : await solicitarJustificativaAlteracaoManual();
         if (!dadosJustificativaManual) {
           renderizarTabelaEscala();
           return;
@@ -8957,7 +9056,8 @@ const opcoes = militaresOrdenadosTroca
         const rotulosTipoAlteracao = {
           troca: 'Militar trocou o serviço',
           puxado: 'Militar foi puxado',
-          outros: 'Outros'
+          outros: 'Outros',
+          elaboracao_manual: 'Elaboração manual inicial'
         };
         const registroManual = [
           'ALTERAÇÃO MANUAL:',
