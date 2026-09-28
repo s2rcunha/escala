@@ -8347,15 +8347,24 @@ const militaresOrdenadosTroca = militaresNaOrdemBase
     const temOutraExcecao = classificacao.violacaoFolga === true;
 
     // ETAPA 50 — filtros compostos do dropdown.
-    // Descanso reduzido tem precedência sobre a descrição operacional
-    // "na 24/dobraria", pois o alerta de descanso reduzido pode conter essa
-    // expressão. Na 24/dobraria efetiva recebe a maior prioridade numérica
-    // para permanecer no fim da lista de próximos.
+    // "Dobrar serviço" (mesmo militar duas vezes no mesmo dia) é impedimento
+    // absoluto tratado pela elegibilidade e NÃO entra no dropdown.
+    //
+    // Entre os candidatos que podem aparecer, cada militar pertence ao grupo
+    // da condição MAIS RESTRITIVA que acumula:
+    // 0 = normal;
+    // 1 = vermelho consecutivo;
+    // 2 = folga reduzida;
+    // 3 = demais exceções de folga;
+    // 4 = na 24.
+    //
+    // Assim, vermelho + folga reduzida cai no grupo 2 e
+    // vermelho/folga reduzida + na 24 cai no grupo 4.
     let prioridadeDropdown = 0;
-    if (temFolgaReduzida) prioridadeDropdown = 2;
+    if (ficariaNa24) prioridadeDropdown = 4;
+    else if (temOutraExcecao && !temFolgaReduzida && !temVermelhoConsecutivo) prioridadeDropdown = 3;
+    else if (temFolgaReduzida) prioridadeDropdown = 2;
     else if (temVermelhoConsecutivo) prioridadeDropdown = 1;
-    else if (ficariaNa24) prioridadeDropdown = 4;
-    else if (temOutraExcecao) prioridadeDropdown = 3;
 
     const filtroVermelhoSecundario = temVermelhoConsecutivo ? 1 : 0;
 
