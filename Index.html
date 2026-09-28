@@ -6385,9 +6385,23 @@ try {
           // fora da disputa DESTA vaga. Sem isso, o critério de menor acumulado
           // poderia selecionar novamente o mesmo militar que acabou de ser pulado.
           const idsPuladosPorAdiantamentoNestaVaga = new Set(militaresPuladosPorAdiantamento);
-          let candidatos = obterMilitaresParaEscala(col.funcao)
-            .filter(m => podeSerEscalado(m))
+
+          // CORREÇÃO TESTE 2 — primeiro preserva a lista de candidatos realmente
+          // elegíveis pelas regras operacionais. A exclusão de quem foi pulado por
+          // adiantamento é uma preferência de rotação, não um impedimento absoluto.
+          const candidatosElegiveisAntesCompensacao = obterMilitaresParaEscala(col.funcao)
+            .filter(m => podeSerEscalado(m));
+
+          let candidatos = candidatosElegiveisAntesCompensacao
             .filter(m => !idsPuladosPorAdiantamentoNestaVaga.has(m.id));
+
+          // Se a preferência de compensação eliminaria TODOS os candidatos, volta
+          // para os elegíveis originais. Isso restaura a cobertura da vaga sem
+          // liberar militar indisponível nem quebrar as regras de elegibilidade.
+          if (candidatos.length === 0 && candidatosElegiveisAntesCompensacao.length > 0) {
+            candidatos = [...candidatosElegiveisAntesCompensacao];
+          }
+
           let excecaoVermelhaConsecutiva = false;
           let excecaoCorConsecutiva = false;
           const regraCorAtual = garantirRegrasCorServico(corServico);
@@ -8920,6 +8934,13 @@ const opcoes = militaresOrdenadosTroca
     // de verdade para saber quem realmente foi pulado por adiantamento anterior.
     function atualizarJustificativasCompensacaoAposRecalculo(escala, diaAlterado, chaveColunaAlterada) {
       if (!escala?.justificativas || !Array.isArray(escala.rastreioCompensacoesRotacao)) return;
+
+      // CORREÇÃO TESTE 2 — esta rotina é externa a gerarEscalaAutomatica().
+      // Portanto não pode depender do obterNomeMilitar local daquela função.
+      const obterNomeMilitar = militarId => {
+        const militar = estado.militares.find(item => item.id === militarId);
+        return militar ? `${militar.nome} (${militar.saram})` : 'Sem militar';
+      };
 
       const funcaoAlterada = obterFuncaoDaChave(chaveColunaAlterada);
       const rastreioOrigem = escala.rastreioCompensacoesRotacao.find(item =>
