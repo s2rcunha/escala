@@ -345,6 +345,37 @@ body.cci-menu-recolhido .cci-nav-arrow{display:none}
 .cci-sidebar-credito{margin:8px 12px 14px;padding:11px 8px 4px;border-top:1px solid #ffffff18;color:#8f989f;font-size:10px;line-height:1.35;text-align:center;white-space:nowrap;transition:opacity .12s ease}
 body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
 @media(max-width:767px){body.cci-menu-recolhido .cci-sidebar-credito{opacity:1;pointer-events:auto}}
+
+/* CORREÇÃO — aviso de dados/página desatualizados sempre visível abaixo do cabeçalho */
+#bannerConflitoServidor{
+  position:fixed;
+  top:var(--cci-top);
+  left:var(--cci-side);
+  right:0;
+  z-index:1250;
+  margin:0!important;
+  border-radius:0!important;
+  box-shadow:0 3px 10px rgba(0,0,0,.18)!important;
+}
+body.cci-menu-recolhido #bannerConflitoServidor{
+  left:var(--cci-side-mini);
+}
+@media(max-width:767px){
+  #bannerConflitoServidor{
+    left:0;
+    right:0;
+    top:var(--cci-top);
+    padding:10px!important;
+    gap:8px!important;
+  }
+  #bannerConflitoServidor p{
+    line-height:1.25;
+  }
+  #bannerConflitoServidor button{
+    white-space:nowrap;
+  }
+}
+
 </style></head>
 <body class="bg-gray-100 font-sans text-gray-800">
 <!-- =====================================================
