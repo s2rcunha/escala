@@ -1031,7 +1031,7 @@ body.cci-menu-recolhido #bannerConflitoServidor{
             <input class="mt-1 w-full rounded border p-2 text-sm font-normal" disabled="" id="diaFimGeracaoEscala" min="1" type="number"/>
 </label>
 </div>
-<p class="rounded bg-amber-50 p-3 text-xs text-amber-800">Somente a função e o período selecionados serão recriados. As demais funções e os dias fora do período serão preservados.</p>
+<p class="rounded bg-amber-50 p-3 text-xs text-amber-800">Ao escolher uma função específica, somente ela será recriada. Ao escolher <b>Todas as funções</b>, funções já iniciadas em modo manual serão preservadas e apenas as demais serão geradas automaticamente. Os dias fora do período selecionado também serão preservados.</p>
 </div>
 <div class="flex justify-end gap-2 border-t px-5 py-3">
 <button class="rounded bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300" onclick="fecharModalGeracaoEscala()" type="button">Cancelar</button>
@@ -5821,9 +5821,15 @@ if (!mesAno) return;
   ? 'o mês inteiro'
   : `os dias ${diaInicio} a ${diaFim}`;
 
+const funcoesManuaisExistentes = Object.entries(estado.escalas[mesAno]?.modosGeracao || {})
+  .filter(([nomeFuncao, modo]) => modo === 'manual' && (estado.vagas[nomeFuncao] || 0) > 0)
+  .map(([nomeFuncao]) => nomeFuncao);
+
+const preservarFuncoesManuais = !funcao && funcoesManuaisExistentes.length > 0;
+
 const descricaoFuncao = funcao
   ? `a função "${funcao}"`
-  : 'todas as funções';
+  : (preservarFuncoesManuais ? 'todas as funções restantes' : 'todas as funções');
 
 let mensagemConfirmacao =
   `Recriar ${descricaoFuncao} em ${descricaoPeriodo}?`;
@@ -5831,6 +5837,12 @@ let mensagemConfirmacao =
 if (funcao) {
   mensagemConfirmacao +=
     '\n\nAs demais funções e os dias fora desse período serão preservados.';
+} else if (preservarFuncoesManuais) {
+  mensagemConfirmacao +=
+    `\n\nAs funções em elaboração manual serão preservadas integralmente:\n- ${funcoesManuaisExistentes.join('\n- ')}`;
+  if (!mesInteiro) {
+    mensagemConfirmacao += '\n\nOs dias fora desse período também serão preservados.';
+  }
 } else if (!mesInteiro) {
   mensagemConfirmacao +=
     '\n\nOs dias fora desse período serão preservados.';
@@ -5842,7 +5854,12 @@ if (funcao) {
 if (existeEscala && !confirm(mensagemConfirmacao)) return;
 
       fecharModalGeracaoEscala();
-      await gerarEscalaAutomatica({ funcao, diaInicio, diaFim });
+      await gerarEscalaAutomatica({
+        funcao,
+        diaInicio,
+        diaFim,
+        preservarFuncoesManuais
+      });
       abrirSubpaginaCCI('gerador', 'visualizacao');
     }
 
@@ -5866,6 +5883,14 @@ try {
       const funcaoGeracao = configuracao?.funcao || null;
       const diaInicioGeracao = configuracao?.diaInicio || 1;
       const diaFimGeracao = configuracao?.diaFim || diasNoMes;
+      const preservarFuncoesManuais = !funcaoGeracao && !!configuracao?.preservarFuncoesManuais;
+      const funcoesManuaisProtegidas = preservarFuncoesManuais
+        ? new Set(
+            Object.entries(escalaExistenteAntesGeracao?.modosGeracao || {})
+              .filter(([funcao, modo]) => modo === 'manual' && (estado.vagas[funcao] || 0) > 0)
+              .map(([funcao]) => funcao)
+          )
+        : new Set();
 
       let novaEscala = {};
       let substituicoes = {};
@@ -6811,8 +6836,7 @@ try {
       // mesmo se o mês ainda não possuir escala. Nesse caso criamos uma base
       // mensal vazia e aplicamos somente a função escolhida, deixando as demais
       // funções sem militares até que sejam geradas posteriormente.
-      const deveMesclarResultado = !!funcaoGeracao
-        || (!!escalaExistenteAntesGeracao && geracaoParcial);
+      const deveMesclarResultado = !!escalaExistenteAntesGeracao && (funcaoGeracao || diaInicioGeracao > 1 || diaFimGeracao < diasNoMes || funcoesManuaisProtegidas.size > 0);
 
       if (deveMesclarResultado) {
         const escalaBase = escalaExistenteAntesGeracao
@@ -6951,7 +6975,10 @@ delete escalaBase.alteracoesManuais[dia][chave];
 if (deveMesclarResultado) {
   const funcoesGeradas = funcaoGeracao
     ? [funcaoGeracao]
-    : estado.funcoes.filter(funcao => (estado.vagas[funcao] || 0) > 0);
+    : estado.funcoes.filter(funcao =>
+        (estado.vagas[funcao] || 0) > 0 &&
+        !funcoesManuaisProtegidas.has(funcao)
+      );
 
   estado.escala.tipos = {
     ...(escalaExistenteAntesGeracao?.tipos || {})
@@ -6981,6 +7008,54 @@ if (deveMesclarResultado) {
   estado.escala.estrutura.vagas ||= {};
   funcoesGeradas.forEach(funcao => {
     estado.escala.estrutura.vagas[funcao] = estado.vagas[funcao] || 0;
+  });
+}
+
+// PROTEÇÃO DE FUNÇÕES MANUAIS — quando a geração em lote for usada,
+ // restaura integralmente as vagas e metadados por célula das funções manuais.
+if (funcoesManuaisProtegidas.size > 0 && escalaExistenteAntesGeracao?.dados) {
+  for (let dia = 1; dia <= diasNoMes; dia++) {
+    estado.escala.dados[dia] ||= {};
+    const dadosAnterioresDia = escalaExistenteAntesGeracao.dados?.[dia] || {};
+
+    Object.keys(dadosAnterioresDia).forEach(chave => {
+      const funcaoDaChave = chave.replace(/ #\d+$/, '');
+      if (!funcoesManuaisProtegidas.has(funcaoDaChave)) return;
+
+      estado.escala.dados[dia][chave] = dadosAnterioresDia[chave];
+
+      ['justificativas', 'alteracoesManuais', 'substituicoes', 'adiantamentosAutomaticos'].forEach(campo => {
+        estado.escala[campo] ||= {};
+        estado.escala[campo][dia] ||= {};
+        const anterior = escalaExistenteAntesGeracao[campo]?.[dia]?.[chave];
+        if (anterior === undefined) delete estado.escala[campo][dia][chave];
+        else estado.escala[campo][dia][chave] = structuredClone(anterior);
+      });
+    });
+
+    // Também remove qualquer vaga manual criada apenas pela geração temporária.
+    Object.keys(estado.escala.dados[dia]).forEach(chave => {
+      const funcaoDaChave = chave.replace(/ #\d+$/, '');
+      if (!funcoesManuaisProtegidas.has(funcaoDaChave)) return;
+      if (!(chave in dadosAnterioresDia)) {
+        delete estado.escala.dados[dia][chave];
+        ['justificativas', 'alteracoesManuais', 'substituicoes', 'adiantamentosAutomaticos'].forEach(campo => {
+          if (estado.escala[campo]?.[dia]) delete estado.escala[campo][dia][chave];
+        });
+      }
+    });
+  }
+
+  estado.escala.modosGeracao ||= {};
+  funcoesManuaisProtegidas.forEach(funcao => {
+    estado.escala.modosGeracao[funcao] = 'manual';
+    if (escalaExistenteAntesGeracao.tipos?.[funcao] !== undefined) {
+      estado.escala.tipos[funcao] = escalaExistenteAntesGeracao.tipos[funcao];
+    }
+    if (escalaExistenteAntesGeracao.regrasEscalaSnapshot?.[funcao] !== undefined) {
+      estado.escala.regrasEscalaSnapshot[funcao] =
+        structuredClone(escalaExistenteAntesGeracao.regrasEscalaSnapshot[funcao]);
+    }
   });
 }
 
