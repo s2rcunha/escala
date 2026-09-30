@@ -649,9 +649,45 @@ body.cci-menu-recolhido #bannerConflitoServidor{
       <div><h3 class="font-bold text-lg">Quadrinhos e Totais — Escalas Eventuais</h3><p class="text-xs text-gray-500">Contadores exclusivos deste módulo; não alteram os quadrinhos da Escala Mensal.</p></div>
       <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold" onclick="renderizarQuadrinhosEventuais()" title="Recalcule a exibição dos quadrinhos das Escalas Eventuais.">Atualizar</button>
     </div>
+    <div class="mb-3 flex flex-wrap items-end gap-3 rounded border bg-gray-50 p-3">
+      <label class="block text-sm font-semibold">Tipo de Missão
+        <select id="filtroTipoMissaoQuadrinhosEventuais" class="mt-1 min-w-64 border p-2 rounded text-sm font-normal" onchange="renderizarQuadrinhosEventuais()" title="Selecione um Tipo de Missão para exibir somente seus quadrinhos, lastros, totais e botões de ajuste.">
+          <option value="">Todos os Tipos de Missão</option>
+        </select>
+      </label>
+      <label class="block text-sm font-semibold">Função
+        <select id="filtroFuncaoQuadrinhosEventuais" class="mt-1 min-w-56 border p-2 rounded text-sm font-normal" onchange="renderizarQuadrinhosEventuais()" title="Após selecionar um Tipo de Missão, escolha uma função para exibir somente os militares habilitados nela." disabled>
+          <option value="">Todas as funções</option>
+        </select>
+      </label>
+      <p class="pb-2 text-xs text-gray-500">Os filtros alteram somente a visualização; os acumulados e ajustes permanecem vinculados ao respectivo Tipo de Missão e função.</p>
+    </div>
     <div id="quadrinhosEventuaisConteudo" class="overflow-x-auto"></div>
   </div>
 </section>
+
+<!-- MODAL: AJUSTE MANUAL DE LASTRO — ESCALAS EVENTUAIS -->
+<div class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50 p-4" id="modalAjusteLastroEventual">
+  <form class="w-full max-w-lg rounded bg-white shadow-xl" onsubmit="salvarAjusteLastroEventual(event)">
+    <div class="border-b p-4">
+      <h3 class="font-bold text-lg">Ajustar lastro — Escalas Eventuais</h3>
+      <p class="mt-1 text-xs text-gray-500" id="descricaoAjusteLastroEventual"></p>
+    </div>
+    <div class="space-y-4 p-4">
+      <label class="block text-sm font-semibold">Lastro manual
+        <input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="valorAjusteLastroEventual" min="0" required step="1" type="number"/>
+      </label>
+      <label class="block text-sm font-semibold">Justificativa
+        <textarea class="mt-1 w-full rounded border p-2 text-sm font-normal" id="justificativaAjusteLastroEventual" required rows="3" placeholder="Informe o motivo do ajuste."></textarea>
+      </label>
+      <p class="text-xs text-gray-500">O ajuste altera somente o lastro deste Tipo de Missão e desta função. Os quadrinhos permanecem vinculados aos serviços efetivamente escalados. Em distribuição por Quadrinho, Q + L participa da equalização; em Corrida, o lastro não altera a rotação.</p>
+    </div>
+    <div class="flex justify-end gap-2 border-t p-4">
+      <button class="bg-gray-500 text-white px-4 py-2 rounded font-semibold" onclick="fecharAjusteLastroEventual()" type="button">Cancelar</button>
+      <button class="bg-blue-600 text-white px-4 py-2 rounded font-semibold" type="submit">Salvar ajuste</button>
+    </div>
+  </form>
+</div>
 
 <!-- ABA 2: GESTÃO DE MILITARES -->
 <section class="somente-edicao aba-conteudo hidden space-y-4" id="aba-militares">
@@ -3040,6 +3076,7 @@ async function inicializar() {
       validarSessao: ['token'],
       carregarDados: ['token'],
       carregarEscalasEventuais: ['token'],
+      ajustarLastroEventual: ['ajuste', 'versaoCliente', 'token'],
       salvarEscalaEventual: ['missao', 'versaoCliente', 'token'],
       excluirEscalaEventual: ['missaoId', 'versaoCliente', 'token'],
       salvarFuncaoEventual: ['funcao', 'versaoCliente', 'token'],
@@ -3591,6 +3628,13 @@ async function inicializar() {
       });
       return {contagemCorrida,contagemDiferenciada,ultimoServico};
     }
+
+    function obterLastroEventual(tipoMissaoId, funcao, militarId) {
+      const valor = bancoEscalasEventuais?.lastrosEventuais?.[tipoMissaoId]?.[funcao]?.[militarId];
+      const numero = Number(valor);
+      return Number.isFinite(numero) && numero >= 0 ? Math.floor(numero) : 0;
+    }
+
     function gerarEscalaEventualLocal(missao) {
       const datas=datasDaMissaoEventual(missao.dataInicio,missao.dataFim),escala={},avisos=[];
       const historico=construirHistoricoEventual(missao.id),fixa=(missao.permanencia||'fixa')==='fixa';
@@ -3600,6 +3644,7 @@ async function inicializar() {
         .map(m=>{
           const total=missao.tipoDistribuicao==='diferenciada'
             ? (historico.contagemDiferenciada[`${item.funcao}|${missao.categoria||'geral'}|${m.id}`]||0)
+              + obterLastroEventual(missao.tipoMissaoId, item.funcao, m.id)
             : (historico.contagemCorrida[`${item.funcao}|${m.id}`]||0);
           return {m,total,ultimo:historico.ultimoServico[m.id]||''};
         }).sort((a,b)=>a.total-b.total||a.ultimo.localeCompare(b.ultimo)||(b.m.ordem??0)-(a.m.ordem??0));
@@ -3995,32 +4040,105 @@ async function inicializar() {
       }).join('');
     }
 
+    let contextoAjusteLastroEventual = null;
+
     function renderizarQuadrinhosEventuais() {
       const alvo=document.getElementById('quadrinhosEventuaisConteudo');
       if(!alvo)return;
       if(!bancoEscalasEventuais){alvo.innerHTML='<p class="text-gray-400">Abra o módulo para carregar os dados.</p>';return;}
-      const tipos=new Map((bancoEscalasEventuais.tiposMissao||[]).map(t=>[t.id,t]));
+      const listaTipos=(bancoEscalasEventuais.tiposMissao||[]);
+      const tipos=new Map(listaTipos.map(t=>[t.id,t]));
+      const filtro=document.getElementById('filtroTipoMissaoQuadrinhosEventuais');
+      if(filtro){
+        const valorAtual=filtro.value;
+        filtro.innerHTML='<option value="">Todos os Tipos de Missão</option>'+listaTipos
+          .slice()
+          .sort((a,b)=>String(a.nome||'').localeCompare(String(b.nome||''),'pt-BR'))
+          .map(t=>`<option value="${escaparHTML(t.id)}">${escaparHTML(t.nome||'Tipo de Missão')}</option>`).join('');
+        filtro.value=listaTipos.some(t=>t.id===valorAtual)?valorAtual:'';
+      }
+      const tipoSelecionado=filtro?.value||'';
+      const filtroFuncao=document.getElementById('filtroFuncaoQuadrinhosEventuais');
+      let funcaoSelecionada='';
+      if(filtroFuncao){
+        const valorFuncaoAtual=filtroFuncao.value;
+        const tipoAtual=listaTipos.find(t=>t.id===tipoSelecionado);
+        const funcoesDisponiveis=tipoAtual
+          ? [...new Set((tipoAtual.funcoes||[]).map(item=>String(item.funcao||'').trim()).filter(Boolean))]
+              .sort((a,b)=>a.localeCompare(b,'pt-BR'))
+          : [];
+        filtroFuncao.innerHTML='<option value="">Todas as funções</option>'+funcoesDisponiveis
+          .map(funcao=>`<option value="${escaparHTML(funcao)}">${escaparHTML(funcao)}</option>`).join('');
+        filtroFuncao.disabled=!tipoSelecionado;
+        filtroFuncao.value=funcoesDisponiveis.includes(valorFuncaoAtual)?valorFuncaoAtual:'';
+        funcaoSelecionada=tipoSelecionado?(filtroFuncao.value||''):'';
+      }
       const linhas={};
+
+      // Cria também linhas com Q=0 para todos os militares habilitados no Tipo de Missão.
+      (bancoEscalasEventuais.tiposMissao||[]).forEach(tipo=>{
+        (tipo.funcoes||[]).forEach(item=>{
+          (item.participantes||[]).forEach(militarId=>{
+            const chave=`${tipo.id}|${item.funcao}|${militarId}`;
+            linhas[chave]||={tipoId:tipo.id,tipoNome:tipo.nome,distribuicao:tipo.tipoDistribuicao||'corrida',funcao:item.funcao,militarId,corrida:0,diferenciadas:{}};
+          });
+        });
+      });
+
       (bancoEscalasEventuais.missoes||[]).forEach(m=>{
-        const tipoId=m.tipoMissaoId||'legado', tipoNome=tipos.get(tipoId)?.nome||m.nome||'Legado';
+        const tipoId=m.tipoMissaoId||'legado', tipo=tipos.get(tipoId), tipoNome=tipo?.nome||m.nome||'Legado';
         const categoria=m.tipoDistribuicao==='diferenciada'?(m.categoria||'geral'):'Corrida';
         const vistosFixos=new Set();
         Object.values(m.escala||{}).forEach(vagas=>Object.values(vagas||{}).forEach(v=>{
           if(!v?.militarId||!v?.funcao)return;
           const chave=`${tipoId}|${v.funcao}|${v.militarId}`;
           if((m.permanencia||'fixa')==='fixa'){if(vistosFixos.has(chave))return;vistosFixos.add(chave);}
-          linhas[chave]||={tipoId,tipoNome,funcao:v.funcao,militarId:v.militarId,corrida:0,diferenciadas:{}};
+          linhas[chave]||={tipoId,tipoNome,distribuicao:tipo?.tipoDistribuicao||m.tipoDistribuicao||'corrida',funcao:v.funcao,militarId:v.militarId,corrida:0,diferenciadas:{}};
           if(m.tipoDistribuicao==='diferenciada')linhas[chave].diferenciadas[categoria]=(linhas[chave].diferenciadas[categoria]||0)+1;
           else linhas[chave].corrida++;
         }));
       });
-      const dados=Object.values(linhas).sort((a,b)=>a.tipoNome.localeCompare(b.tipoNome)||a.funcao.localeCompare(b.funcao)||(obterMilitarEventual(a.militarId)?.ordem??9999)-(obterMilitarEventual(b.militarId)?.ordem??9999));
-      if(!dados.length){alvo.innerHTML='<p class="p-5 text-center text-gray-400">Ainda não existem serviços eventuais gerados para contabilizar.</p>';return;}
+
+      const dados=Object.values(linhas)
+        .filter(x=>(!tipoSelecionado||x.tipoId===tipoSelecionado)&&(!funcaoSelecionada||x.funcao===funcaoSelecionada))
+        .sort((a,b)=>a.tipoNome.localeCompare(b.tipoNome)||a.funcao.localeCompare(b.funcao)||(obterMilitarEventual(a.militarId)?.ordem??9999)-(obterMilitarEventual(b.militarId)?.ordem??9999));
+      if(!dados.length){alvo.innerHTML='<p class="p-5 text-center text-gray-400">Cadastre um Tipo de Missão com militares habilitados para acompanhar quadrinhos e lastros.</p>';return;}
       const porTipo={};dados.forEach(x=>(porTipo[x.tipoId]||=[]).push(x));
       alvo.innerHTML=Object.entries(porTipo).map(([tipoId,itens])=>{
-        const categorias=[...new Set(itens.flatMap(x=>Object.keys(x.diferenciadas)))].sort();
-        return `<div class="mb-6"><h4 class="font-bold text-base mb-2">${escaparHTML(itens[0].tipoNome)}</h4><table class="w-full border-collapse text-sm"><thead><tr class="bg-gray-100"><th class="border p-2 text-left">Função</th><th class="border p-2 text-left">Militar</th><th class="border p-2 text-center">Corrida</th>${categorias.map(c=>`<th class="border p-2 text-center">${escaparHTML(c)}</th>`).join('')}<th class="border p-2 text-center font-bold">Total</th></tr></thead><tbody>${itens.map(x=>{const mil=obterMilitarEventual(x.militarId),total=x.corrida+Object.values(x.diferenciadas).reduce((a,b)=>a+b,0);return `<tr><td class="border p-2">${escaparHTML(x.funcao)}</td><td class="border p-2">${escaparHTML(mil?.nome||'Militar não encontrado')}</td><td class="border p-2 text-center">${x.corrida}</td>${categorias.map(c=>`<td class="border p-2 text-center">${x.diferenciadas[c]||0}</td>`).join('')}<td class="border p-2 text-center font-bold">${total}</td></tr>`}).join('')}</tbody></table></div>`;
+        const tipo=tipos.get(tipoId), distribuicao=tipo?.tipoDistribuicao||itens[0].distribuicao||'corrida';
+        return `<div class="mb-6"><div class="mb-2 flex flex-wrap items-center justify-between gap-2"><h4 class="font-bold text-base">${escaparHTML(itens[0].tipoNome)}</h4><span class="text-xs text-gray-500">Distribuição: ${distribuicao==='diferenciada'?'Quadrinho':'Corrida'}</span></div><table class="w-full border-collapse text-sm"><thead><tr class="bg-gray-100"><th class="border p-2 text-left">Função</th><th class="border p-2 text-left">Militar</th><th class="border p-2 text-center">Q</th><th class="border p-2 text-center">L</th><th class="border p-2 text-center font-bold">Total</th><th class="border p-2 text-right">Ações</th></tr></thead><tbody>${itens.map(x=>{const mil=obterMilitarEventual(x.militarId),q=x.corrida+Object.values(x.diferenciadas).reduce((a,b)=>a+b,0),l=obterLastroEventual(tipoId,x.funcao,x.militarId),total=q+l;return `<tr><td class="border p-2">${escaparHTML(x.funcao)}</td><td class="border p-2">${escaparHTML(mil?.nome||'Militar não encontrado')}</td><td class="border p-2 text-center">${q}</td><td class="border p-2 text-center text-gray-600">${l}</td><td class="border p-2 text-center font-bold">${total}</td><td class="border p-2 text-right">${podeEditarSistema()&&tipoId!=='legado'?`<button class="bg-blue-600 text-white px-3 py-1 rounded" onclick="abrirAjusteLastroEventual('${encodeURIComponent(tipoId)}','${encodeURIComponent(x.funcao)}','${encodeURIComponent(x.militarId)}')" title="Ajuste somente o lastro eventual deste militar nesta função e Tipo de Missão.">Ajustar</button>`:''}</td></tr>`}).join('')}</tbody></table></div>`;
       }).join('');
+    }
+
+    function abrirAjusteLastroEventual(tipoIdCodificado, funcaoCodificada, militarIdCodificado) {
+      if(!podeEditarSistema())return;
+      const tipoId=decodeURIComponent(tipoIdCodificado),funcao=decodeURIComponent(funcaoCodificada),militarId=decodeURIComponent(militarIdCodificado);
+      const tipo=(bancoEscalasEventuais?.tiposMissao||[]).find(t=>t.id===tipoId),militar=obterMilitarEventual(militarId);
+      if(!tipo||!militar)return alert('Não foi possível localizar o Tipo de Missão ou o militar.');
+      contextoAjusteLastroEventual={tipoMissaoId:tipoId,funcao,militarId};
+      document.getElementById('descricaoAjusteLastroEventual').textContent=`${tipo.nome} · ${funcao} · ${militar.nome}`;
+      document.getElementById('valorAjusteLastroEventual').value=obterLastroEventual(tipoId,funcao,militarId);
+      document.getElementById('justificativaAjusteLastroEventual').value='';
+      const modal=document.getElementById('modalAjusteLastroEventual');modal.classList.remove('hidden');modal.classList.add('flex');
+    }
+
+    function fecharAjusteLastroEventual() {
+      contextoAjusteLastroEventual=null;
+      const modal=document.getElementById('modalAjusteLastroEventual');if(!modal)return;modal.classList.add('hidden');modal.classList.remove('flex');
+    }
+
+    async function salvarAjusteLastroEventual(evento) {
+      evento.preventDefault();
+      if(!podeEditarSistema()||!contextoAjusteLastroEventual)return;
+      const valor=Number(document.getElementById('valorAjusteLastroEventual').value),justificativa=document.getElementById('justificativaAjusteLastroEventual').value.trim();
+      if(!Number.isInteger(valor)||valor<0)return alert('Informe um lastro inteiro e não negativo.');
+      if(!justificativa)return alert('Informe a justificativa do ajuste.');
+      mostrarProcessamento('Salvando ajuste de lastro eventual...');
+      try{
+        bancoEscalasEventuais=await executarAppsScript('ajustarLastroEventual',{...contextoAjusteLastroEventual,valor,justificativa},Number(bancoEscalasEventuais.versao)||1,tokenSessao);
+        fecharAjusteLastroEventual();renderizarQuadrinhosEventuais();
+      }catch(erro){console.error('Erro ao ajustar lastro eventual:',erro);alert(`Não foi possível salvar o ajuste. ${erro?.message||erro}`);}
+      finally{ocultarProcessamento();}
     }
 
     document.addEventListener('DOMContentLoaded', () => {
