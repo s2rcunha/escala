@@ -1546,6 +1546,31 @@ estado.escala = {};
       }
 }
 
+    let anosEscalasDisponiveis = [];
+    const anosEscalasCarregados = new Set();
+    const promessasCargaAnoEscala = new Map();
+
+    async function garantirAnoEscalasCarregado(ano) {
+      ano=Number(ano); if(!Number.isInteger(ano)) return;
+      if(anosEscalasCarregados.has(ano)) return;
+      if(promessasCargaAnoEscala.has(ano)) return promessasCargaAnoEscala.get(ano);
+      const promessa=(async()=>{
+        const pacote=await executarAppsScript('carregarEscalasAno',ano,tokenSessao);
+        if(Number(pacote?.versao)!==Number(versaoServidor)) {
+          conflitoServidor=true; mostrarBannerConflitoServidor();
+          throw new Error('Os dados foram alterados durante o carregamento do histórico. Atualize a página.');
+        }
+        estado.escalas ||= {}; estado.historicoEscalasExcluidas ||= {};
+        Object.assign(estado.escalas,pacote?.escalas||{});
+        Object.assign(estado.historicoEscalasExcluidas,pacote?.historicoEscalasExcluidas||{});
+        anosEscalasCarregados.add(ano);
+      })().finally(()=>promessasCargaAnoEscala.delete(ano));
+      promessasCargaAnoEscala.set(ano,promessa); return promessa;
+    }
+    async function garantirTodosAnosEscalasCarregados(){
+      for(const ano of anosEscalasDisponiveis) await garantirAnoEscalasCarregado(ano);
+    }
+
     async function carregarEstado() {
     try {
       const dados = await executarAppsScript('carregarDados', tokenSessao);
@@ -1554,10 +1579,16 @@ estado.escala = {};
       }
       estado = dados.estado;
       versaoServidor = Number(dados.versao);
+      anosEscalasDisponiveis = Array.isArray(dados.anosDisponiveis) ? dados.anosDisponiveis.map(Number).filter(Number.isInteger) : [];
+      anosEscalasCarregados.clear();
       conflitoServidor = false;
       falhaSalvamentoServidor = false;
       normalizarEstadoAtual();
-      console.log('Estado carregado do servidor. Versão:', versaoServidor);
+      const anoAtual=new Date().getFullYear();
+      await garantirAnoEscalasCarregado(anoAtual);
+      if(anosEscalasDisponiveis.includes(anoAtual-1)) await garantirAnoEscalasCarregado(anoAtual-1);
+      normalizarEstadoAtual();
+      console.log('Estado carregado do servidor. Versão:', versaoServidor, 'Anos em cache:', [...anosEscalasCarregados]);
     } catch (erro) {
       console.error('Erro ao carregar dados do servidor:', erro);
       alert('Não foi possível carregar os dados do servidor.\n\nVerifique sua conexão com a internet.');
@@ -1645,7 +1676,7 @@ async function salvarEstadoNoServidor(
     }
 
     try {
-      const resultado = await executarAppsScript('salvarDados', estadoParaSalvar, versaoServidor, tokenSessao, contextoOperacao);
+      const resultado = await executarAppsScript('salvarDados', estadoParaSalvar, versaoServidor, tokenSessao, contextoOperacao, [...anosEscalasCarregados]);
 
       if (!resultado) {
         falhaSalvamentoServidor = true;
@@ -2810,11 +2841,12 @@ async function salvarEstadoNoServidor(
       atualizarAvisoEscalasNaoPublicadas();
     }
 
-    function atualizarMesAnoEscala() {
+    async function atualizarMesAnoEscala() {
       const mes = document.getElementById('mesEscala')?.value || '';
       const ano = document.getElementById('anoEscala')?.value || '';
       const campo = document.getElementById('mesAnoEscala');
       if (campo) campo.value = (ano && mes) ? `${ano}-${mes}` : '';
+      if (ano) await garantirAnoEscalasCarregado(Number(ano));
       const mesVisualizacao = document.getElementById('mesEscalaVisualizacao');
       const anoVisualizacao = document.getElementById('anoEscalaVisualizacao');
       const mesQuadrinhos = document.getElementById('mesEscalaQuadrinhos');
@@ -2829,7 +2861,7 @@ async function salvarEstadoNoServidor(
       renderizarResumoServicos();
     }
 
-    function atualizarPeriodoPelaVisualizacao() {
+    async function atualizarPeriodoPelaVisualizacao() {
       const mes = document.getElementById('mesEscalaVisualizacao')?.value || '';
       const ano = document.getElementById('anoEscalaVisualizacao')?.value || '';
       if (!mes || !ano) return;
@@ -2837,10 +2869,10 @@ async function salvarEstadoNoServidor(
       const selectAno = document.getElementById('anoEscala');
       if (selectMes) selectMes.value = mes;
       if (selectAno) selectAno.value = ano;
-      atualizarMesAnoEscala();
+      await atualizarMesAnoEscala();
     }
 
-    function atualizarPeriodoPelosQuadrinhos() {
+    async function atualizarPeriodoPelosQuadrinhos() {
       const mes = document.getElementById('mesEscalaQuadrinhos')?.value || '';
       const ano = document.getElementById('anoEscalaQuadrinhos')?.value || '';
       if (!mes || !ano) return;
@@ -2848,7 +2880,8 @@ async function salvarEstadoNoServidor(
       const selectAno = document.getElementById('anoEscala');
       if (selectMes) selectMes.value = mes;
       if (selectAno) selectAno.value = ano;
-      atualizarMesAnoEscala();
+      await garantirTodosAnosEscalasCarregados();
+      await atualizarMesAnoEscala();
     }
 
     function definirMesAnoEscala(valor) {
@@ -3039,6 +3072,7 @@ async function inicializar() {
       logout: ['token'],
       validarSessao: ['token'],
       carregarDados: ['token'],
+      carregarEscalasAno: ['ano', 'token'],
       carregarEscalasEventuais: ['token'],
       salvarEscalaEventual: ['missao', 'versaoCliente', 'token'],
       excluirEscalaEventual: ['missaoId', 'versaoCliente', 'token'],
@@ -3046,7 +3080,7 @@ async function inicializar() {
       salvarTipoMissaoEventual: ['tipoMissao', 'versaoCliente', 'token'],
       excluirTipoMissaoEventual: ['tipoMissaoId', 'versaoCliente', 'token'],
       excluirFuncaoEventual: ['funcaoId', 'versaoCliente', 'token'],
-      salvarDados: ['novoEstado', 'versaoCliente', 'token', 'contextoOperacao'],
+      salvarDados: ['novoEstado', 'versaoCliente', 'token', 'contextoOperacao', 'anosCarregados'],
       criarBackupManual: ['token'],
       listarBackups: ['token'],
       restaurarBackup: ['arquivoId', 'versaoCliente', 'token'],
@@ -6694,7 +6728,8 @@ if (
       return estado.escala?.modosGeracao?.[funcao] === 'manual';
     }
 
-    function abrirModalEscalaManual() {
+    async function abrirModalEscalaManual() {
+      await garantirTodosAnosEscalasCarregados();
       const mesAno = document.getElementById('mesAnoEscala').value;
       if (!mesAno) return alert('Selecione o mês e ano!');
       const select = document.getElementById('funcaoEscalaManual');
@@ -6765,7 +6800,8 @@ if (
       } finally { ocultarProcessamento(); }
     }
 
-    function abrirModalGeracaoEscala() {
+    async function abrirModalGeracaoEscala() {
+      await garantirTodosAnosEscalasCarregados();
       const mesAno = document.getElementById('mesAnoEscala').value;
       if (!mesAno) return alert('Selecione o mês e ano!');
 
@@ -10747,6 +10783,19 @@ const opcoes = militaresOrdenadosTroca
     }
 
     async function zerarHistoricoEscalas() {
+      // O histórico completo precisa estar em memória antes de calcular o que será
+      // apagado. Sem isso, o lazy loading preservaria silenciosamente anos antigos.
+      mostrarProcessamento('Preparando reinício do histórico...');
+      try {
+        await garantirTodosAnosEscalasCarregados();
+      } catch (erro) {
+        console.error('Erro ao carregar histórico completo antes de zerar:', erro);
+        alert('Não foi possível carregar todo o histórico. A operação foi cancelada sem alterar os dados.');
+        return;
+      } finally {
+        ocultarProcessamento();
+      }
+
       const mesesAtivos = Object.keys(estado.escalas || {}).sort();
       const mesesHistoricos = Object.keys(estado.historicoEscalasExcluidas || {}).sort();
       const quantidadeEscalas = mesesAtivos.length;
@@ -10928,7 +10977,27 @@ const opcoes = militaresOrdenadosTroca
           };
 
           normalizarEstadoAtual();
-          if (!await salvarEstado()) return;
+
+          // Importação é uma substituição completa do banco consolidado. Além dos
+          // anos que já existiam no servidor, marque também todos os anos presentes
+          // no backup como carregados. Assim anos ausentes do backup são removidos e
+          // anos novos existentes somente no backup também são persistidos.
+          const anosImportados = new Set();
+          [...Object.keys(estado.escalas || {}), ...Object.keys(estado.historicoEscalasExcluidas || {})]
+            .forEach(mesAno => {
+              const ano = Number(String(mesAno).slice(0, 4));
+              if (Number.isInteger(ano)) anosImportados.add(ano);
+            });
+          const anosSubstituicaoTotal = new Set([
+            ...anosEscalasDisponiveis,
+            ...anosEscalasCarregados,
+            ...anosImportados
+          ]);
+          anosEscalasCarregados.clear();
+          anosSubstituicaoTotal.forEach(ano => anosEscalasCarregados.add(ano));
+
+          if (!await salvarEstado({ acao: 'importar_banco_dados' })) return;
+          anosEscalasDisponiveis = [...anosImportados].sort((a, b) => a - b);
           renderizarSelectFuncoes();
           renderizarMilitares();
           renderizarFuncoes();
