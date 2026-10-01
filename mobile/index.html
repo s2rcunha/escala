@@ -345,11 +345,41 @@ body.cci-menu-recolhido .cci-nav-arrow{display:none}
 .cci-sidebar-credito{margin:8px 12px 14px;padding:11px 8px 4px;border-top:1px solid #ffffff18;color:#8f989f;font-size:10px;line-height:1.35;text-align:center;white-space:nowrap;transition:opacity .12s ease}
 body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
 @media(max-width:767px){body.cci-menu-recolhido .cci-sidebar-credito{opacity:1;pointer-events:auto}}
-</style>
-<style>
+
+/* CORREÇÃO — aviso de dados/página desatualizados sempre visível abaixo do cabeçalho */
+#bannerConflitoServidor{
+  position:fixed;
+  top:var(--cci-top);
+  left:var(--cci-side);
+  right:0;
+  z-index:1250;
+  margin:0!important;
+  border-radius:0!important;
+  box-shadow:0 3px 10px rgba(0,0,0,.18)!important;
+}
+body.cci-menu-recolhido #bannerConflitoServidor{
+  left:var(--cci-side-mini);
+}
+@media(max-width:767px){
+  #bannerConflitoServidor{
+    left:0;
+    right:0;
+    top:var(--cci-top);
+    padding:10px!important;
+    gap:8px!important;
+  }
+  #bannerConflitoServidor p{
+    line-height:1.25;
+  }
+  #bannerConflitoServidor button{
+    white-space:nowrap;
+  }
+}
+
+</style><style>
 /* ==========================================================
-   OTIMIZACAO MOBILE - SESCI
-   Foco: visualizacao da escala, justificativas e dropdowns.
+   OTIMIZAÇÃO MOBILE — SESCI
+   Foco: visualização da escala, justificativas e dropdowns.
    Apenas responsividade/ergonomia; regras do motor preservadas.
    ========================================================== */
 @media (max-width: 767px) {
@@ -359,6 +389,7 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
     -webkit-text-size-adjust: 100%;
   }
 
+  /* Área útil */
   .cci-main,
   body.cci-menu-recolhido .cci-main {
     padding: 56px 4px 12px !important;
@@ -372,6 +403,7 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
     gap: 6px !important;
   }
 
+  /* Painel Visualizar Escala ocupa praticamente toda a largura */
   #areaEscalaPDF {
     width: 100% !important;
     max-width: 100% !important;
@@ -406,6 +438,7 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
     line-height: 1.35;
   }
 
+  /* Ações da visualização: duas colunas e alvos de toque maiores */
   #statusPublicacaoEscala + .flex {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -438,6 +471,7 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
     line-height: 1.25;
   }
 
+  /* Rolagem horizontal natural no toque */
   #scrollTabelaEscala {
     width: 100%;
     overflow-x: auto !important;
@@ -459,6 +493,7 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
     padding: 4px !important;
   }
 
+  /* Dia e dia da semana continuam visíveis, mas ocupam menos tela */
   #areaEscalaPDF #tabelaEscalaPrincipal th:nth-child(1),
   #areaEscalaPDF #tabelaEscalaPrincipal td:nth-child(1) {
     left: 0 !important;
@@ -490,6 +525,7 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
     gap: 4px !important;
   }
 
+  /* Nome do militar vira um alvo de toque confortável para justificativa */
   #areaEscalaPDF .botao-justificativa {
     min-width: 108px !important;
     min-height: 44px !important;
@@ -501,6 +537,7 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
     background: rgba(255,255,255,.42);
   }
 
+  /* Dropdown de troca/consulta: maior no toque, mantendo o nome no botão */
   #areaEscalaPDF .celula-escala select {
     width: 44px !important;
     min-width: 44px !important;
@@ -511,12 +548,14 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
     touch-action: manipulation;
   }
 
+  /* Barra inferior de rolagem mais fácil de manipular */
   #areaEscalaPDF .cci-escala-scrollbar-sticky {
     height: 22px !important;
     bottom: 0;
     -webkit-overflow-scrolling: touch;
   }
 
+  /* Dropdown de classificação do dia vira painel inferior no celular */
   .dropdown-cor-dia {
     left: 8px !important;
     right: 8px !important;
@@ -535,6 +574,7 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
     font-size: 16px !important;
   }
 
+  /* Justificativa em formato quase tela cheia, sem conteúdo cortado */
   #modalJustificativa {
     padding: 6px !important;
     align-items: stretch !important;
@@ -611,6 +651,7 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
     margin: 0 !important;
   }
 
+  /* Demais modais ligados à edição da escala */
   #modalAlteracaoManual {
     padding: 6px !important;
     align-items: stretch !important;
@@ -629,11 +670,13 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
     min-height: 44px !important;
   }
 
+  /* Evita tooltip de desktop cobrindo conteúdo em telas touch */
   #cciMenuTooltip {
     display: none !important;
   }
 }
 
+/* Celulares muito estreitos */
 @media (max-width: 380px) {
   #areaEscalaPDF #tabelaEscalaPrincipal th:nth-child(1),
   #areaEscalaPDF #tabelaEscalaPrincipal td:nth-child(1) {
@@ -656,7 +699,7 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
 }
 </style>
 <style>
-/* MOBILE - filtro de funcao na visualizacao da escala */
+/* MOBILE — filtro de função na visualização da escala */
 .cci-filtro-funcao-mobile { display:none; }
 
 .cci-coluna-funcao-oculta {
@@ -693,6 +736,8 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
     background:#fff !important;
   }
 
+  /* Com uma função selecionada, a tabela passa a ocupar apenas a largura
+     necessária para Dia + Sem. + quantidade real de vagas dessa função. */
   #areaEscalaPDF #tabelaEscalaPrincipal {
     min-width:max-content !important;
   }
@@ -702,6 +747,40 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
   }
 }
 </style>
+
+<style>
+/* ANDROID 2026-10-01 — ergonomia mobile complementar.
+   Não altera regras de escala; somente apresentação e alvos de toque. */
+@media (max-width:767px) {
+  .aba-conteudo { gap:8px !important; }
+  .aba-conteudo > div.bg-white, .aba-conteudo > div[class*="bg-white"] {
+    padding:9px !important; max-width:100%; overflow-wrap:anywhere;
+  }
+  .aba-conteudo input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+  .aba-conteudo select, .aba-conteudo textarea {
+    width:100%; max-width:100%; min-height:44px !important; font-size:16px !important;
+  }
+  .aba-conteudo textarea { min-height:88px !important; }
+  .aba-conteudo button { min-height:42px; touch-action:manipulation; }
+  .aba-conteudo .overflow-x-auto { -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain; }
+  #aba-eventuais table, #aba-militares table, #aba-vagas table,
+  #aba-indisponibilidades table, #aba-backups table, #aba-usuarios table {
+    min-width:max-content;
+  }
+  #aba-eventuais th, #aba-eventuais td { padding:6px !important; }
+  #aba-eventuais .grid, #aba-militares .grid, #aba-vagas .grid,
+  #aba-indisponibilidades .grid, #aba-backups .grid, #aba-usuarios .grid {
+    gap:8px !important;
+  }
+  .fixed.inset-0 { padding:8px !important; }
+  .fixed.inset-0 > form, .fixed.inset-0 > div[class*="bg-white"] {
+    width:min(100%, 96vw) !important; max-height:92vh; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  }
+  #avisoEscalasNaoPublicadas { max-height:42vh; overflow-y:auto; }
+  .cci-page-sub { line-height:1.3; }
+}
+</style>
+
 </head>
 <body class="bg-gray-100 font-sans text-gray-800">
 <!-- =====================================================
@@ -763,11 +842,11 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
   <div class="aviso-pendencias-lista" id="listaAvisoEscalasNaoPublicadas"></div>
 </div>
 <header class="cci-topbar"><div class="cci-brand"><button aria-label="Abrir menu" class="cci-mobile" onclick="alternarMenuLateral()" type="button">☰</button><div class="cci-brand-mark">SESCI</div><div><div class="cci-brand-title">Sistema de Escala de Serviço - CCI</div><div class="cci-brand-sub">Gestão e geração automática de escalas de serviço</div></div></div><div class="cci-user"><div class="flex shrink-0 items-center gap-3 whitespace-nowrap" id="areaUsuarioLogado"><div class="text-right leading-tight"><div class="text-sm font-bold" id="nomeUsuarioLogado"></div><div class="text-xs" id="perfilUsuarioLogado"></div></div><button class="rounded px-3 py-2 text-sm font-semibold text-white" onclick="sairDoSistema()" type="button">Sair</button></div></div></header>
-<aside class="cci-sidebar" id="menuLateralCCI"><button class="cci-toggle" data-cci-descricao="Expanda ou recolha o menu lateral para aumentar a área de trabalho." onclick="alternarMenuLateral()" title="Expanda ou recolha o menu lateral para aumentar a área de trabalho." type="button"><span class="cci-nav-icon">☰</span><span class="cci-toggle-label">Recolher menu</span></button><div class="cci-nav-title">ESCALA</div><nav class="cci-nav"><div class="cci-nav-group" data-grupo="gerador"><button class="cci-nav-btn cci-nav-parent ativo" data-aba="gerador" data-cci-descricao="Gere, consulte e acompanhe a escala mensal de serviço." onclick="alternarSubmenuCCI('gerador')" title="Gere, consulte e acompanhe a escala mensal de serviço." type="button"><span class="cci-nav-icon">▦</span><span class="cci-nav-label">Escala Mensal</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu aberto" data-submenu="gerador"><button class="cci-submenu-btn ativo" data-aba="gerador" data-cci-descricao="Selecione o período e gere automaticamente uma nova escala mensal." data-subpagina="criar" onclick="abrirSubpaginaCCI('gerador','criar')" title="Selecione o período e gere automaticamente uma nova escala mensal." type="button"><span class="cci-submenu-dot">•</span><span>Criar Escala</span></button><button class="cci-submenu-btn" data-aba="gerador" data-cci-descricao="Consulte, edite, publique e exporte a escala mensal gerada." data-subpagina="visualizacao" onclick="abrirSubpaginaCCI('gerador','visualizacao')" title="Consulte, edite, publique e exporte a escala mensal gerada." type="button"><span class="cci-submenu-dot">•</span><span>Visualizar Escala</span></button><button class="cci-submenu-btn" data-aba="gerador" data-cci-descricao="Consulte os quadrinhos, lastros e totais acumulados dos militares." data-subpagina="quadrinhos" onclick="abrirSubpaginaCCI('gerador','quadrinhos')" title="Consulte os quadrinhos, lastros e totais acumulados dos militares." type="button"><span class="cci-submenu-dot">•</span><span>Quadrinhos e Totais</span></button></div></div><div class="somente-edicao cci-nav-group" data-grupo="militares"><button class="cci-nav-btn cci-nav-parent" data-aba="militares" data-cci-descricao="Cadastre e gerencie os militares que compõem as escalas." onclick="alternarSubmenuCCI('militares')" title="Cadastre e gerencie os militares que compõem as escalas." type="button"><span class="cci-nav-icon">♟</span><span class="cci-nav-label">Militares</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="militares"><button class="cci-submenu-btn" data-aba="militares" data-cci-descricao="Inclua um novo militar, sua função e posição de antiguidade." data-subpagina="cadastrar" onclick="abrirSubpaginaCCI('militares','cadastrar')" title="Inclua um novo militar, sua função e posição de antiguidade." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar Militar</span></button><button class="cci-submenu-btn" data-aba="militares" data-cci-descricao="Consulte, edite e organize os militares já cadastrados." data-subpagina="efetivo" onclick="abrirSubpaginaCCI('militares','efetivo')" title="Consulte, edite e organize os militares já cadastrados." type="button"><span class="cci-submenu-dot">•</span><span>Militares Cadastrados</span></button></div></div><div class="somente-edicao cci-nav-group" data-grupo="vagas"><button class="cci-nav-btn cci-nav-parent" data-aba="vagas" data-cci-descricao="Configure as funções, vagas e regras usadas na montagem das escalas." onclick="alternarSubmenuCCI('vagas')" title="Configure as funções, vagas e regras usadas na montagem das escalas." type="button"><span class="cci-nav-icon">☷</span><span class="cci-nav-label">Estrutura da Equipe</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="vagas"><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Cadastre e mantenha as funções existentes na equipe de serviço." data-subpagina="funcoes" onclick="abrirSubpaginaCCI('vagas','funcoes')" title="Cadastre e mantenha as funções existentes na equipe de serviço." type="button"><span class="cci-submenu-dot">•</span><span>Funções da Equipe</span></button><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina quantas vagas de cada função são necessárias em cada serviço." data-subpagina="dimensionamento" onclick="abrirSubpaginaCCI('vagas','dimensionamento')" title="Defina quantas vagas de cada função são necessárias em cada serviço." type="button"><span class="cci-submenu-dot">•</span><span>Dimensionamento do Serviço</span></button><button class="cci-submenu-btn cci-submenu-parent" data-aba="vagas" data-cci-descricao="Configure a distribuição, descanso, lastro, justiça e classificação dos dias." data-submenu-pai="regras" onclick="alternarSubmenuRegrasCCI()" title="Configure a distribuição, descanso, lastro, justiça e classificação dos dias." type="button"><span class="cci-submenu-dot">•</span><span>Regras das Escalas</span><span class="cci-submenu-arrow">›</span></button><div class="cci-submenu-nivel2" data-submenu-nivel2="regras"><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina as regras de geração da escala para cada função do serviço." data-subpagina="regras" onclick="abrirSubpaginaCCI('vagas','regras')" title="Defina as regras de geração da escala para cada função do serviço." type="button"><span class="cci-submenu-dot">·</span><span>Configurações das Regras</span></button><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina as cores dos dias da semana e cadastre exceções por data." data-subpagina="classificacao" onclick="abrirSubpaginaCCI('vagas','classificacao')" title="Defina as cores dos dias da semana e cadastre exceções por data." type="button"><span class="cci-submenu-dot">·</span><span>Classificação dos Dias</span></button></div></div></div><div class="somente-edicao cci-nav-group" data-grupo="indisponibilidades"><button class="cci-nav-btn cci-nav-parent" data-aba="indisponibilidades" data-cci-descricao="Registre períodos e restrições em que militares não podem concorrer à escala." onclick="alternarSubmenuCCI('indisponibilidades')" title="Registre períodos e restrições em que militares não podem concorrer à escala." type="button"><span class="cci-nav-icon">⊘</span><span class="cci-nav-label">Indisponibilidades</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="indisponibilidades"><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Cadastre férias, cursos, missões, licenças e outras indisponibilidades por período." data-subpagina="periodo" onclick="abrirSubpaginaCCI('indisponibilidades','periodo')" title="Cadastre férias, cursos, missões, licenças e outras indisponibilidades por período." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar por Período</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Defina indisponibilidades recorrentes em determinados dias da semana." data-subpagina="semanal" onclick="abrirSubpaginaCCI('indisponibilidades','semanal')" title="Defina indisponibilidades recorrentes em determinados dias da semana." type="button"><span class="cci-submenu-dot">•</span><span>Indisponibilidade Semanal</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Importe várias indisponibilidades de uma só vez por arquivo CSV." data-subpagina="importar" onclick="abrirSubpaginaCCI('indisponibilidades','importar')" title="Importe várias indisponibilidades de uma só vez por arquivo CSV." type="button"><span class="cci-submenu-dot">•</span><span>Importar CSV</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Consulte e gerencie todas as indisponibilidades já cadastradas." data-subpagina="registros" onclick="abrirSubpaginaCCI('indisponibilidades','registros')" title="Consulte e gerencie todas as indisponibilidades já cadastradas." type="button"><span class="cci-submenu-dot">•</span><span>Registros Cadastrados</span></button></div></div><div class="somente-administrador cci-nav-group" data-grupo="backups"><button class="cci-nav-btn cci-nav-parent" data-aba="backups" data-cci-descricao="Proteja os dados do sistema por meio de exportação, importação e backups." onclick="alternarSubmenuCCI('backups')" title="Proteja os dados do sistema por meio de exportação, importação e backups." type="button"><span class="cci-nav-icon">↻</span><span class="cci-nav-label">Backups</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="backups"><button class="cci-submenu-btn" data-aba="backups" data-cci-descricao="Exporte, importe e gerencie as ferramentas de cópia de segurança." data-subpagina="gerenciar" onclick="abrirSubpaginaCCI('backups','gerenciar')" title="Exporte, importe e gerencie as ferramentas de cópia de segurança." type="button"><span class="cci-submenu-dot">•</span><span>Gerenciar Backups</span></button><button class="cci-submenu-btn" data-aba="backups" data-cci-descricao="Consulte, restaure e gerencie os backups armazenados." data-subpagina="lista" onclick="abrirSubpaginaCCI('backups','lista')" title="Consulte, restaure e gerencie os backups armazenados." type="button"><span class="cci-submenu-dot">•</span><span>Lista de Backups</span></button></div></div><div class="somente-administrador cci-nav-group" data-grupo="usuarios"><button class="cci-nav-btn cci-nav-parent" data-aba="usuarios" data-cci-descricao="Administre usuários, permissões de acesso e histórico de alterações." onclick="alternarSubmenuCCI('usuarios')" title="Administre usuários, permissões de acesso e histórico de alterações." type="button"><span class="cci-nav-icon">▣</span><span class="cci-nav-label">Usuários / Auditoria</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="usuarios"><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Crie um novo usuário e defina seu perfil de acesso ao sistema." data-subpagina="cadastrar" onclick="abrirSubpaginaCCI('usuarios','cadastrar')" title="Crie um novo usuário e defina seu perfil de acesso ao sistema." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar Usuário</span></button><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Consulte e gerencie os usuários cadastrados e suas permissões." data-subpagina="lista" onclick="abrirSubpaginaCCI('usuarios','lista')" title="Consulte e gerencie os usuários cadastrados e suas permissões." type="button"><span class="cci-submenu-dot">•</span><span>Usuários Cadastrados</span></button><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Consulte o histórico das alterações administrativas realizadas no sistema." data-subpagina="auditoria" onclick="abrirSubpaginaCCI('usuarios','auditoria')" title="Consulte o histórico das alterações administrativas realizadas no sistema." type="button"><span class="cci-submenu-dot">•</span><span>Auditoria do Sistema</span></button></div></div></nav><div class="cci-sidebar-credito">Desenvolvido por Sgt R.Cunha ®</div></aside><div aria-hidden="true" id="cciMenuTooltip" role="tooltip"></div>
+<aside class="cci-sidebar" id="menuLateralCCI"><button class="cci-toggle" data-cci-descricao="Expanda ou recolha o menu lateral para aumentar a área de trabalho." onclick="alternarMenuLateral()" title="Expanda ou recolha o menu lateral para aumentar a área de trabalho." type="button"><span class="cci-nav-icon">☰</span><span class="cci-toggle-label">Recolher menu</span></button><div class="cci-nav-title">ESCALA</div><nav class="cci-nav"><div class="cci-nav-group" data-grupo="gerador"><button class="cci-nav-btn cci-nav-parent ativo" data-aba="gerador" data-cci-descricao="Gere, consulte e acompanhe a escala mensal de serviço." onclick="alternarSubmenuCCI('gerador')" title="Gere, consulte e acompanhe a escala mensal de serviço." type="button"><span class="cci-nav-icon">▦</span><span class="cci-nav-label">Escala Mensal</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu aberto" data-submenu="gerador"><button class="cci-submenu-btn ativo" data-aba="gerador" data-cci-descricao="Selecione o período e gere automaticamente uma nova escala mensal." data-subpagina="criar" onclick="abrirSubpaginaCCI('gerador','criar')" title="Selecione o período e gere automaticamente uma nova escala mensal." type="button"><span class="cci-submenu-dot">•</span><span>Criar Escala</span></button><button class="cci-submenu-btn" data-aba="gerador" data-cci-descricao="Consulte, edite, publique e exporte a escala mensal gerada." data-subpagina="visualizacao" onclick="abrirSubpaginaCCI('gerador','visualizacao')" title="Consulte, edite, publique e exporte a escala mensal gerada." type="button"><span class="cci-submenu-dot">•</span><span>Visualizar Escala</span></button><button class="cci-submenu-btn" data-aba="gerador" data-cci-descricao="Consulte os quadrinhos, lastros e totais acumulados dos militares." data-subpagina="quadrinhos" onclick="abrirSubpaginaCCI('gerador','quadrinhos')" title="Consulte os quadrinhos, lastros e totais acumulados dos militares." type="button"><span class="cci-submenu-dot">•</span><span>Quadrinhos e Totais</span></button></div></div><div class="cci-nav-group" data-grupo="eventuais"><button class="cci-nav-btn cci-nav-parent" data-aba="eventuais" data-cci-descricao="Crie e gerencie escalas de missões e serviços eventuais em banco independente." onclick="alternarSubmenuCCI('eventuais')" title="Crie e gerencie escalas de missões e serviços eventuais em banco independente." type="button"><span class="cci-nav-icon">◆</span><span class="cci-nav-label">Escalas Eventuais</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="eventuais"><button class="somente-edicao cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Cadastre os modelos permanentes das missões eventuais, suas funções, distribuição, permanência e militares habilitados." title="Cadastre os modelos permanentes das missões eventuais, suas funções, distribuição, permanência e militares habilitados." data-subpagina="funcoes" onclick="abrirSubpaginaCCI('eventuais','tipos')" type="button"><span class="cci-submenu-dot">•</span><span>Tipos de Missão</span></button><button class="somente-edicao cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Crie uma ocorrência a partir de um Tipo de Missão, definindo período e quantidade de vagas necessárias." title="Crie uma ocorrência a partir de um Tipo de Missão, definindo período e quantidade de vagas necessárias." data-subpagina="criar" onclick="abrirSubpaginaCCI('eventuais','criar')" type="button"><span class="cci-submenu-dot">•</span><span>Criar Escala Eventual</span></button><button class="cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Consulte as ocorrências eventuais, gere a escala, faça ajustes, publique e exporte." title="Consulte as ocorrências eventuais, gere a escala, faça ajustes, publique e exporte." data-subpagina="lista" onclick="abrirSubpaginaCCI('eventuais','lista')" type="button"><span class="cci-submenu-dot">•</span><span>Visualizar Escalas</span></button><button class="cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Consulte os quadrinhos acumulados exclusivamente pelas escalas eventuais, separados por Tipo de Missão." title="Consulte os quadrinhos acumulados exclusivamente pelas escalas eventuais, separados por Tipo de Missão." data-subpagina="quadrinhos" onclick="abrirSubpaginaCCI('eventuais','quadrinhos')" type="button"><span class="cci-submenu-dot">•</span><span>Quadrinhos e Totais</span></button></div></div><div class="somente-edicao cci-nav-group" data-grupo="militares"><button class="cci-nav-btn cci-nav-parent" data-aba="militares" data-cci-descricao="Cadastre e gerencie os militares que compõem as escalas." onclick="alternarSubmenuCCI('militares')" title="Cadastre e gerencie os militares que compõem as escalas." type="button"><span class="cci-nav-icon">♟</span><span class="cci-nav-label">Militares</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="militares"><button class="cci-submenu-btn" data-aba="militares" data-cci-descricao="Inclua um novo militar, sua função e posição de antiguidade." data-subpagina="cadastrar" onclick="abrirSubpaginaCCI('militares','cadastrar')" title="Inclua um novo militar, sua função e posição de antiguidade." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar Militar</span></button><button class="cci-submenu-btn" data-aba="militares" data-cci-descricao="Consulte, edite e organize os militares já cadastrados." data-subpagina="efetivo" onclick="abrirSubpaginaCCI('militares','efetivo')" title="Consulte, edite e organize os militares já cadastrados." type="button"><span class="cci-submenu-dot">•</span><span>Militares Cadastrados</span></button></div></div><div class="somente-edicao cci-nav-group" data-grupo="vagas"><button class="cci-nav-btn cci-nav-parent" data-aba="vagas" data-cci-descricao="Configure as funções, vagas e regras usadas na montagem das escalas." onclick="alternarSubmenuCCI('vagas')" title="Configure as funções, vagas e regras usadas na montagem das escalas." type="button"><span class="cci-nav-icon">☷</span><span class="cci-nav-label">Estrutura da Equipe</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="vagas"><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Cadastre e mantenha as funções existentes na equipe de serviço." data-subpagina="funcoes" onclick="abrirSubpaginaCCI('vagas','funcoes')" title="Cadastre e mantenha as funções existentes na equipe de serviço." type="button"><span class="cci-submenu-dot">•</span><span>Funções da Equipe</span></button><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina quantas vagas de cada função são necessárias em cada serviço." data-subpagina="dimensionamento" onclick="abrirSubpaginaCCI('vagas','dimensionamento')" title="Defina quantas vagas de cada função são necessárias em cada serviço." type="button"><span class="cci-submenu-dot">•</span><span>Dimensionamento do Serviço</span></button><button class="cci-submenu-btn cci-submenu-parent" data-aba="vagas" data-cci-descricao="Configure a distribuição, descanso, lastro, justiça e classificação dos dias." data-submenu-pai="regras" onclick="alternarSubmenuRegrasCCI()" title="Configure a distribuição, descanso, lastro, justiça e classificação dos dias." type="button"><span class="cci-submenu-dot">•</span><span>Regras das Escalas</span><span class="cci-submenu-arrow">›</span></button><div class="cci-submenu-nivel2" data-submenu-nivel2="regras"><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina as regras de geração da escala para cada função do serviço." data-subpagina="regras" onclick="abrirSubpaginaCCI('vagas','regras')" title="Defina as regras de geração da escala para cada função do serviço." type="button"><span class="cci-submenu-dot">·</span><span>Configurações das Regras</span></button><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina as cores dos dias da semana e cadastre exceções por data." data-subpagina="classificacao" onclick="abrirSubpaginaCCI('vagas','classificacao')" title="Defina as cores dos dias da semana e cadastre exceções por data." type="button"><span class="cci-submenu-dot">·</span><span>Classificação dos Dias</span></button></div></div></div><div class="somente-edicao cci-nav-group" data-grupo="indisponibilidades"><button class="cci-nav-btn cci-nav-parent" data-aba="indisponibilidades" data-cci-descricao="Registre períodos e restrições em que militares não podem concorrer à escala." onclick="alternarSubmenuCCI('indisponibilidades')" title="Registre períodos e restrições em que militares não podem concorrer à escala." type="button"><span class="cci-nav-icon">⊘</span><span class="cci-nav-label">Indisponibilidades</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="indisponibilidades"><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Cadastre férias, cursos, missões, licenças e outras indisponibilidades por período." data-subpagina="periodo" onclick="abrirSubpaginaCCI('indisponibilidades','periodo')" title="Cadastre férias, cursos, missões, licenças e outras indisponibilidades por período." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar por Período</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Defina indisponibilidades recorrentes em determinados dias da semana." data-subpagina="semanal" onclick="abrirSubpaginaCCI('indisponibilidades','semanal')" title="Defina indisponibilidades recorrentes em determinados dias da semana." type="button"><span class="cci-submenu-dot">•</span><span>Indisponibilidade Semanal</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Importe várias indisponibilidades de uma só vez por arquivo CSV." data-subpagina="importar" onclick="abrirSubpaginaCCI('indisponibilidades','importar')" title="Importe várias indisponibilidades de uma só vez por arquivo CSV." type="button"><span class="cci-submenu-dot">•</span><span>Importar CSV</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Consulte e gerencie todas as indisponibilidades já cadastradas." data-subpagina="registros" onclick="abrirSubpaginaCCI('indisponibilidades','registros')" title="Consulte e gerencie todas as indisponibilidades já cadastradas." type="button"><span class="cci-submenu-dot">•</span><span>Registros Cadastrados</span></button></div></div><div class="somente-administrador cci-nav-group" data-grupo="backups"><button class="cci-nav-btn cci-nav-parent" data-aba="backups" data-cci-descricao="Proteja os dados do sistema por meio de exportação, importação e backups." onclick="alternarSubmenuCCI('backups')" title="Proteja os dados do sistema por meio de exportação, importação e backups." type="button"><span class="cci-nav-icon">↻</span><span class="cci-nav-label">Backups</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="backups"><button class="cci-submenu-btn" data-aba="backups" data-cci-descricao="Exporte, importe e gerencie as ferramentas de cópia de segurança." data-subpagina="gerenciar" onclick="abrirSubpaginaCCI('backups','gerenciar')" title="Exporte, importe e gerencie as ferramentas de cópia de segurança." type="button"><span class="cci-submenu-dot">•</span><span>Gerenciar Backups</span></button><button class="cci-submenu-btn" data-aba="backups" data-cci-descricao="Consulte, restaure e gerencie os backups armazenados." data-subpagina="lista" onclick="abrirSubpaginaCCI('backups','lista')" title="Consulte, restaure e gerencie os backups armazenados." type="button"><span class="cci-submenu-dot">•</span><span>Lista de Backups</span></button></div></div><div class="somente-administrador cci-nav-group" data-grupo="usuarios"><button class="cci-nav-btn cci-nav-parent" data-aba="usuarios" data-cci-descricao="Administre usuários, permissões de acesso e histórico de alterações." onclick="alternarSubmenuCCI('usuarios')" title="Administre usuários, permissões de acesso e histórico de alterações." type="button"><span class="cci-nav-icon">▣</span><span class="cci-nav-label">Usuários / Auditoria</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="usuarios"><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Crie um novo usuário e defina seu perfil de acesso ao sistema." data-subpagina="cadastrar" onclick="abrirSubpaginaCCI('usuarios','cadastrar')" title="Crie um novo usuário e defina seu perfil de acesso ao sistema." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar Usuário</span></button><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Consulte e gerencie os usuários cadastrados e suas permissões." data-subpagina="lista" onclick="abrirSubpaginaCCI('usuarios','lista')" title="Consulte e gerencie os usuários cadastrados e suas permissões." type="button"><span class="cci-submenu-dot">•</span><span>Usuários Cadastrados</span></button><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Consulte o histórico das alterações administrativas realizadas no sistema." data-subpagina="auditoria" onclick="abrirSubpaginaCCI('usuarios','auditoria')" title="Consulte o histórico das alterações administrativas realizadas no sistema." type="button"><span class="cci-submenu-dot">•</span><span>Auditoria do Sistema</span></button></div></div></nav><div class="cci-sidebar-credito">Desenvolvido por Sgt R.Cunha ®</div></aside><div aria-hidden="true" id="cciMenuTooltip" role="tooltip"></div>
 <main class="cci-main"><div class="cci-page-heading"><div><h2 class="cci-page-title" id="tituloPaginaCCI">Escala Mensal</h2><p class="cci-page-sub" id="subtituloPaginaCCI">Geração, consulta e manutenção da escala mensal.</p></div></div>
 <!-- ABA 1: GERADOR E VISUALIZAÇÃO DA ESCALA -->
 <section class="aba-conteudo space-y-4" id="aba-gerador">
-<div class="bg-white p-4 rounded shadow-sm cci-subpage-panel" data-cci-subpagina="criar"><div class="mb-4"><h3 class="font-bold text-lg mb-1">Criar Escala Mensal</h3><p class="text-sm text-gray-600">Selecione o mês e o ano e gere a escala automática. Após a geração, a visualização será aberta automaticamente.</p></div>
+<div class="bg-white p-4 rounded shadow-sm cci-subpage-panel" data-cci-subpagina="criar"><div class="mb-4"><h3 class="font-bold text-lg mb-1">Criar Escala Mensal</h3><p class="text-sm text-gray-600">Selecione o mês e o ano. Você pode gerar funções automaticamente ou iniciar a elaboração manual de uma função; os dois modos podem coexistir no mesmo mês.</p></div>
 <div class="mb-4">
 <label class="block text-xs font-semibold text-gray-600 mb-1">Mês/Ano</label>
 <div class="flex flex-wrap gap-2">
@@ -788,6 +867,7 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
 </div>
 <div class="somente-edicao mt-4 flex justify-start">
 <button class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded font-bold shadow" onclick="abrirModalGeracaoEscala()">Gerar Escala Automática</button>
+<button class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded font-bold shadow ml-2" onclick="abrirModalEscalaManual()">Criar Escala Manual</button>
 </div>
 </div>
 <div class="bg-white p-6 rounded shadow-sm overflow-x-auto cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="visualizacao" id="areaEscalaPDF">
@@ -886,6 +966,140 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
 </table>
 </div>
 </section>
+
+<!-- MÓDULO: ESCALAS EVENTUAIS -->
+<section class="aba-conteudo hidden space-y-4" id="aba-eventuais">
+  <div class="somente-edicao bg-white p-4 rounded shadow-sm cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="tipos">
+    <div class="mb-4">
+      <h3 class="font-bold text-lg mb-1">Tipos de Missão</h3>
+      <p class="text-sm text-gray-600">Cadastre uma vez o modelo permanente da missão, suas funções e os militares habilitados. As ocorrências futuras reutilizam este cadastro e informam apenas o efetivo necessário em cada função.</p>
+    </div>
+    <form id="formTipoMissaoEventual" class="space-y-4" onsubmit="salvarTipoMissaoEventualInterface(event)">
+      <input id="tipoMissaoEventualId" type="hidden">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <label class="block text-sm font-semibold">Nome do tipo de missão
+          <input id="tipoMissaoEventualNome" title="Informe o nome do modelo permanente que será reutilizado nas futuras ocorrências desta missão." class="mt-1 w-full border p-2 rounded text-sm" placeholder="Ex.: Missão Presidencial" required>
+        </label>
+        <label class="block text-sm font-semibold">Sistema de distribuição
+          <select id="tipoMissaoEventualDistribuicao" title="Corrida mantém uma sequência de rotação. Quadrinho prioriza a equalização pela quantidade de quadrinhos deste Tipo de Missão." class="mt-1 w-full border p-2 rounded text-sm">
+            <option value="corrida">Corrida</option>
+            <option value="diferenciada">Quadrinho</option>
+          </select>
+        </label>
+        <label class="block text-sm font-semibold md:col-span-3">Permanência da equipe
+          <select id="tipoMissaoEventualPermanencia" title="Equipe fixa mantém os mesmos escalados durante toda a ocorrência. Rotação diária permite nova seleção a cada dia." class="mt-1 w-full border p-2 rounded text-sm">
+            <option value="fixa">Equipe fixa durante toda a missão — 1 quadrinho por missão</option>
+            <option value="diaria">Rotação diária — segue a ordem a cada dia</option>
+          </select>
+        </label>
+      </div>
+      <div class="border rounded p-3 bg-gray-50">
+        <div class="flex items-center justify-between gap-2 mb-2">
+          <div><h4 class="font-bold">Funções e militares habilitados</h4><p class="text-xs text-gray-500">A quantidade de vagas não é definida aqui; ela será informada em cada ocorrência.</p></div>
+          <button type="button" class="bg-blue-600 text-white px-3 py-2 rounded text-sm font-semibold" onclick="adicionarLinhaTipoMissaoEventual()" title="Adicione uma função eventual ao Tipo de Missão e escolha quais militares poderão exercê-la.">+ Função</button>
+        </div>
+        <div id="tipoMissaoEventualFuncoes" class="space-y-2"></div>
+      </div>
+      <div class="flex gap-2">
+        <button class="bg-green-600 text-white px-5 py-2 rounded font-bold" type="submit" title="Salve este Tipo de Missão e sua configuração para reutilização em futuras ocorrências.">Salvar tipo de missão</button>
+        <button class="bg-gray-500 text-white px-5 py-2 rounded font-bold" type="button" onclick="limparTipoMissaoEventualFormulario()" title="Limpe os campos do formulário sem excluir Tipos de Missão já cadastrados.">Limpar</button>
+      </div>
+    </form>
+    <div class="border-t mt-5 pt-4"><h4 class="font-bold mb-2">Tipos cadastrados</h4><div id="listaTiposMissaoEventual" class="space-y-2"></div></div>
+  </div>
+
+  <div class="somente-edicao bg-white p-4 rounded shadow-sm cci-subpage-panel" data-cci-subpagina="criar">
+    <div class="mb-4">
+      <h3 class="font-bold text-lg mb-1">Criar Ocorrência Eventual</h3>
+      <p class="text-sm text-gray-600">Selecione um Tipo de Missão já cadastrado, informe a data e ajuste apenas a quantidade de vagas necessária nesta ocorrência.</p>
+    </div>
+    <form id="formEscalaEventual" class="grid grid-cols-1 md:grid-cols-2 gap-4" onsubmit="salvarMissaoEventualInterface(event)">
+      <input id="eventualId" type="hidden"/>
+      <label class="block text-sm font-semibold md:col-span-2">Tipo de missão
+        <select id="eventualTipoMissaoId" title="Selecione o modelo de missão que fornecerá as funções, militares habilitados e regras desta ocorrência." class="mt-1 w-full border p-2 rounded text-sm" required onchange="carregarEstruturaOcorrenciaDoTipo()">
+          <option value="">Selecione um tipo de missão</option>
+        </select>
+      </label>
+      <label class="block text-sm font-semibold">Data inicial
+        <input id="eventualDataInicio" title="Informe o primeiro dia desta ocorrência eventual." type="date" class="mt-1 w-full border p-2 rounded text-sm" required/>
+      </label>
+      <label class="block text-sm font-semibold">Data final
+        <input id="eventualDataFim" title="Informe o último dia desta ocorrência eventual. Para missão de um dia, use a mesma data inicial." type="date" class="mt-1 w-full border p-2 rounded text-sm" required/>
+      </label>
+      <label class="block text-sm font-semibold md:col-span-2">Descrição / observações desta ocorrência
+        <textarea id="eventualDescricao" title="Registre informações específicas desta ocorrência. Este texto não altera as regras de distribuição." class="mt-1 w-full border p-2 rounded text-sm" rows="2" placeholder="Ex.: Visita presidencial de 29/10"></textarea>
+      </label>
+      <div class="md:col-span-2 border rounded p-3 bg-gray-50">
+        <h4 class="font-bold">Efetivo necessário nesta ocorrência</h4>
+        <p class="text-xs text-gray-500 mb-3">As funções e participantes vêm do Tipo de Missão. Aqui você altera somente quantas vagas serão necessárias desta vez. Use 0 para não utilizar uma função nesta ocorrência.</p>
+        <div id="estruturaEventualLista" class="space-y-2"></div>
+      </div>
+      <div class="md:col-span-2 flex flex-wrap gap-2">
+        <button class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded font-bold" type="submit" title="Salve a ocorrência com o período e o efetivo necessário informados.">Salvar ocorrência</button>
+        <button class="bg-gray-500 hover:bg-gray-600 text-white px-5 py-2 rounded font-bold" type="button" onclick="limparFormularioEventual()" title="Limpe o formulário da ocorrência sem excluir ocorrências já cadastradas.">Limpar</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="bg-white p-4 rounded shadow-sm cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="lista">
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+      <div><h3 class="font-bold text-lg">Escalas Eventuais</h3><p class="text-xs text-gray-500" id="statusBancoEventual">Banco eventual ainda não carregado.</p></div>
+      <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold" onclick="carregarEscalasEventuaisInterface(true)" title="Recarregue do banco de dados as ocorrências e escalas eventuais.">Atualizar</button>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-sm">
+        <thead><tr class="bg-gray-100 border-b"><th class="p-2 text-left">Missão</th><th class="p-2">Período</th><th class="p-2">Tipo</th><th class="p-2">Estrutura</th><th class="p-2">Situação</th><th class="p-2 text-right">Ações</th></tr></thead>
+        <tbody id="tabelaEscalasEventuais"><tr><td colspan="6" class="p-6 text-center text-gray-400">Abra o módulo para carregar as escalas eventuais.</td></tr></tbody>
+      </table>
+    </div>
+    <div id="detalheEscalaEventual" class="hidden mt-5 border-t pt-4"></div>
+  </div>
+
+  <div class="bg-white p-4 rounded shadow-sm cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="quadrinhos">
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+      <div><h3 class="font-bold text-lg">Quadrinhos e Totais — Escalas Eventuais</h3><p class="text-xs text-gray-500">Contadores exclusivos deste módulo; não alteram os quadrinhos da Escala Mensal.</p></div>
+      <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold" onclick="renderizarQuadrinhosEventuais()" title="Recalcule a exibição dos quadrinhos das Escalas Eventuais.">Atualizar</button>
+    </div>
+    <div class="mb-3 flex flex-wrap items-end gap-3 rounded border bg-gray-50 p-3">
+      <label class="block text-sm font-semibold">Tipo de Missão
+        <select id="filtroTipoMissaoQuadrinhosEventuais" class="mt-1 min-w-64 border p-2 rounded text-sm font-normal" onchange="renderizarQuadrinhosEventuais()" title="Selecione um Tipo de Missão para exibir somente seus quadrinhos, lastros, totais e botões de ajuste.">
+          <option value="">Todos os Tipos de Missão</option>
+        </select>
+      </label>
+      <label class="block text-sm font-semibold">Função
+        <select id="filtroFuncaoQuadrinhosEventuais" class="mt-1 min-w-56 border p-2 rounded text-sm font-normal" onchange="renderizarQuadrinhosEventuais()" title="Após selecionar um Tipo de Missão, escolha uma função para exibir somente os militares habilitados nela." disabled>
+          <option value="">Todas as funções</option>
+        </select>
+      </label>
+      <p class="pb-2 text-xs text-gray-500">Os filtros alteram somente a visualização; os acumulados e ajustes permanecem vinculados ao respectivo Tipo de Missão e função.</p>
+    </div>
+    <div id="quadrinhosEventuaisConteudo" class="overflow-x-auto"></div>
+  </div>
+</section>
+
+<!-- MODAL: AJUSTE MANUAL DE LASTRO — ESCALAS EVENTUAIS -->
+<div class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50 p-4" id="modalAjusteLastroEventual">
+  <form class="w-full max-w-lg rounded bg-white shadow-xl" onsubmit="salvarAjusteLastroEventual(event)">
+    <div class="border-b p-4">
+      <h3 class="font-bold text-lg">Ajustar lastro — Escalas Eventuais</h3>
+      <p class="mt-1 text-xs text-gray-500" id="descricaoAjusteLastroEventual"></p>
+    </div>
+    <div class="space-y-4 p-4">
+      <label class="block text-sm font-semibold">Lastro manual
+        <input class="mt-1 w-full rounded border p-2 text-sm font-normal" id="valorAjusteLastroEventual" min="0" required step="1" type="number"/>
+      </label>
+      <label class="block text-sm font-semibold">Justificativa
+        <textarea class="mt-1 w-full rounded border p-2 text-sm font-normal" id="justificativaAjusteLastroEventual" required rows="3" placeholder="Informe o motivo do ajuste."></textarea>
+      </label>
+      <p class="text-xs text-gray-500">O ajuste altera somente o lastro deste Tipo de Missão e desta função. Os quadrinhos permanecem vinculados aos serviços efetivamente escalados. Em distribuição por Quadrinho, Q + L participa da equalização; em Corrida, o lastro não altera a rotação.</p>
+    </div>
+    <div class="flex justify-end gap-2 border-t p-4">
+      <button class="bg-gray-500 text-white px-4 py-2 rounded font-semibold" onclick="fecharAjusteLastroEventual()" type="button">Cancelar</button>
+      <button class="bg-blue-600 text-white px-4 py-2 rounded font-semibold" type="submit">Salvar ajuste</button>
+    </div>
+  </form>
+</div>
+
 <!-- ABA 2: GESTÃO DE MILITARES -->
 <section class="somente-edicao aba-conteudo hidden space-y-4" id="aba-militares">
 <div class="bg-white p-4 rounded shadow-sm cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="cadastrar">
@@ -1362,7 +1576,7 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
             <input class="mt-1 w-full rounded border p-2 text-sm font-normal" disabled="" id="diaFimGeracaoEscala" min="1" type="number"/>
 </label>
 </div>
-<p class="rounded bg-amber-50 p-3 text-xs text-amber-800">Somente a função e o período selecionados serão recriados. As demais funções e os dias fora do período serão preservados.</p>
+<p class="rounded bg-amber-50 p-3 text-xs text-amber-800">Ao escolher uma função específica, somente ela será recriada. Ao escolher <b>Todas as funções</b>, funções já iniciadas em modo manual serão preservadas e apenas as demais serão geradas automaticamente. Os dias fora do período selecionado também serão preservados.</p>
 </div>
 <div class="flex justify-end gap-2 border-t px-5 py-3">
 <button class="rounded bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300" onclick="fecharModalGeracaoEscala()" type="button">Cancelar</button>
@@ -1370,6 +1584,17 @@ body.cci-menu-recolhido .cci-sidebar-credito{opacity:0;pointer-events:none}
 </div>
 </form>
 </div>
+<!-- MODAL DE CRIAÇÃO MANUAL DA ESCALA -->
+<div class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50 p-4" id="modalEscalaManual">
+<form class="w-full max-w-lg rounded bg-white shadow-xl" onsubmit="confirmarCriacaoEscalaManual(event)">
+<div class="flex items-center justify-between border-b px-5 py-4"><h3 class="text-lg font-bold text-gray-800">Criar Escala Manual</h3><button class="rounded bg-gray-100 px-3 py-1 text-lg font-bold text-gray-600 hover:bg-gray-200" onclick="fecharModalEscalaManual()" type="button">x</button></div>
+<div class="space-y-4 px-5 py-4">
+<label class="block text-sm font-semibold text-gray-700">Função<select class="mt-1 w-full rounded border p-2 text-sm font-normal" id="funcaoEscalaManual" required></select></label>
+<p class="rounded bg-blue-50 p-3 text-xs text-blue-800">A função selecionada será preparada com todas as vagas vazias para preenchimento manual. As demais funções já existentes serão preservadas e poderão continuar sendo geradas automaticamente.</p>
+<p class="rounded bg-amber-50 p-3 text-xs text-amber-800">As regras da função continuam ativas durante o preenchimento. Situações proibidas serão bloqueadas e exceções configuradas exigirão confirmação.</p>
+</div>
+<div class="flex justify-end gap-2 border-t px-5 py-3"><button class="rounded bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300" onclick="fecharModalEscalaManual()" type="button">Cancelar</button><button class="rounded bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700" type="submit">Iniciar escala manual</button></div>
+</form></div>
 <!-- OVERLAY DE PROCESSAMENTO -->
 <div class="hidden fixed inset-0 z-[9999] items-center justify-center bg-black/50" id="overlayProcessamento">
 <div class="flex min-w-64 flex-col items-center rounded-lg bg-white px-8 py-6 shadow-2xl">
@@ -3178,7 +3403,7 @@ async function inicializar() {
   }
 }
 
-    const PAGINAS_CCI={gerador:['Escala Mensal','Geração, consulta e manutenção da escala mensal.'],militares:['Militares','Cadastro, organização e gerenciamento do efetivo.'],vagas:['Estrutura da Equipe','Funções, dimensionamento diário e regras de geração.'],indisponibilidades:['Indisponibilidades','Férias, missões, licenças e restrições semanais.'],backups:['Backups','Cópias de segurança e recuperação dos dados do sistema.'],usuarios:['Usuários e Auditoria','Controle de acesso e histórico administrativo.']};
+    const PAGINAS_CCI={gerador:['Escala Mensal','Geração, consulta e manutenção da escala mensal.'],eventuais:['Escalas Eventuais','Missões e serviços eventuais em banco independente.'],militares:['Militares','Cadastro, organização e gerenciamento do efetivo.'],vagas:['Estrutura da Equipe','Funções, dimensionamento diário e regras de geração.'],indisponibilidades:['Indisponibilidades','Férias, missões, licenças e restrições semanais.'],backups:['Backups','Cópias de segurança e recuperação dos dados do sistema.'],usuarios:['Usuários e Auditoria','Controle de acesso e histórico administrativo.']};
     function alternarMenuLateral(){if(innerWidth<768){document.body.classList.toggle('cci-menu-mobile-aberto');return}document.body.classList.toggle('cci-menu-recolhido');try{localStorage.setItem('cci_menu_recolhido',document.body.classList.contains('cci-menu-recolhido')?'1':'0')}catch(_){}}
     function atualizarNavegacaoCCI(nomeAba){document.querySelectorAll('.cci-nav-btn[data-aba]').forEach(b=>b.classList.toggle('ativo',b.dataset.aba===nomeAba));const info=PAGINAS_CCI[nomeAba]||[nomeAba,''];const t=document.getElementById('tituloPaginaCCI'),st=document.getElementById('subtituloPaginaCCI');if(t)t.textContent=info[0];if(st)st.textContent=info[1];if(innerWidth<768)document.body.classList.remove('cci-menu-mobile-aberto')}
     try{if(localStorage.getItem('cci_menu_recolhido')==='1'&&innerWidth>=768)document.body.classList.add('cci-menu-recolhido')}catch(_){}
@@ -3186,6 +3411,7 @@ async function inicializar() {
 
     const SUBPAGINAS_CCI = {
       gerador: { padrao:'criar', titulos:{criar:['Escala Mensal — Criar Escala','Selecione o período e gere a escala automática.'],visualizacao:['Escala Mensal — Visualizar Escala','Consulta, edição, exportação e publicação da escala mensal gerada.'],quadrinhos:['Escala Mensal — Quadrinhos e Totais','Lastros e totais acumulados até o mês selecionado.']}},
+      eventuais: { padrao:'lista', titulos:{tipos:['Escalas Eventuais — Tipos de Missão','Modelos permanentes com funções e militares habilitados.'],criar:['Escalas Eventuais — Criar Ocorrência','Nova ocorrência a partir de um tipo de missão cadastrado.'],lista:['Escalas Eventuais — Visualizar','Consulta e manutenção das missões cadastradas.'],quadrinhos:['Escalas Eventuais — Quadrinhos e Totais','Contadores independentes das escalas eventuais.']}}, 
       militares: { padrao:'cadastrar', titulos:{cadastrar:['Militares — Cadastrar','Inclusão de um novo militar no efetivo.'],efetivo:['Militares — Efetivo Cadastrado','Consulta, organização e gerenciamento dos militares cadastrados.']}},
       vagas: { padrao:'funcoes', titulos:{funcoes:['Estrutura da Equipe — Funções','Cadastro e manutenção das funções da equipe.'],dimensionamento:['Estrutura da Equipe — Dimensionamento','Quantidade de vagas necessárias por função em cada serviço.'],regras:['Estrutura da Equipe — Regras das Escalas','Configurações utilizadas pelo motor de geração das escalas.'],classificacao:['Regras das Escalas — Classificação dos Dias','Classificação semanal e exceções por data utilizadas na geração das escalas.']}},
       indisponibilidades: { padrao:'periodo', titulos:{periodo:['Indisponibilidades — Por Período','Férias, missões, cursos, licenças e outros períodos.'],semanal:['Indisponibilidades — Semanal','Restrições recorrentes por dia da semana.'],importar:['Indisponibilidades — Importar CSV','Importação em lote de indisponibilidades.'],registros:['Indisponibilidades — Registros','Consulta e manutenção das indisponibilidades cadastradas.']}},
@@ -3232,6 +3458,7 @@ async function inicializar() {
 
     function trocarAba(nomeAba, subpaginaSolicitada) {
       if (['militares', 'vagas', 'indisponibilidades'].includes(nomeAba) && !podeEditarSistema()) return;
+      if (nomeAba === 'eventuais' && subpaginaSolicitada === 'criar' && !podeEditarSistema()) return;
       if (['backups', 'usuarios'].includes(nomeAba) && obterPerfilAtual() !== 'administrador') return;
       document.querySelectorAll('.aba-conteudo').forEach(el => el.classList.add('hidden'));
       const aba = document.getElementById(`aba-${nomeAba}`);
@@ -3240,6 +3467,7 @@ async function inicializar() {
       atualizarNavegacaoCCI(nomeAba);
       const cfgSub = SUBPAGINAS_CCI[nomeAba];
       if (cfgSub) mostrarSubpaginaCCI(nomeAba, subpaginaSolicitada || ultimaSubpaginaCCI[nomeAba] || cfgSub.padrao);
+      if (nomeAba === 'eventuais') carregarEscalasEventuaisInterface();
       if (nomeAba === 'backups') carregarListaBackups();
       if (nomeAba === 'usuarios') {
         carregarUsuariosInterface();
@@ -3258,6 +3486,14 @@ async function inicializar() {
       logout: ['token'],
       validarSessao: ['token'],
       carregarDados: ['token'],
+      carregarEscalasEventuais: ['token'],
+      ajustarLastroEventual: ['ajuste', 'versaoCliente', 'token'],
+      salvarEscalaEventual: ['missao', 'versaoCliente', 'token'],
+      excluirEscalaEventual: ['missaoId', 'versaoCliente', 'token'],
+      salvarFuncaoEventual: ['funcao', 'versaoCliente', 'token'],
+      salvarTipoMissaoEventual: ['tipoMissao', 'versaoCliente', 'token'],
+      excluirTipoMissaoEventual: ['tipoMissaoId', 'versaoCliente', 'token'],
+      excluirFuncaoEventual: ['funcaoId', 'versaoCliente', 'token'],
       salvarDados: ['novoEstado', 'versaoCliente', 'token', 'contextoOperacao'],
       criarBackupManual: ['token'],
       listarBackups: ['token'],
@@ -3332,6 +3568,994 @@ async function inicializar() {
         }
       }
     }
+
+    // =========================================================
+    // ESCALAS EVENTUAIS — ETAPA 2
+    // Banco independente + estrutura + geração + quadrinhos
+    // =========================================================
+    let bancoEscalasEventuais = null;
+    let carregandoBancoEventual = null;
+
+    async function carregarEscalasEventuaisInterface(forcar = false) {
+      if (bancoEscalasEventuais && !forcar) {
+        renderizarFuncoesEventuais();
+        sincronizarSelectsFuncoesEventuais();
+        renderizarEscalasEventuais();
+        renderizarQuadrinhosEventuais();
+        return bancoEscalasEventuais;
+      }
+      if (carregandoBancoEventual && !forcar) return carregandoBancoEventual;
+      const status = document.getElementById('statusBancoEventual');
+      if (status) status.textContent = 'Carregando banco de escalas eventuais...';
+
+      carregandoBancoEventual = (async () => {
+        try {
+          bancoEscalasEventuais = await executarAppsScript('carregarEscalasEventuais', tokenSessao);
+          renderizarFuncoesEventuais();
+          sincronizarSelectsFuncoesEventuais();
+          renderizarEscalasEventuais();
+          renderizarQuadrinhosEventuais();
+          return bancoEscalasEventuais;
+        } catch (erro) {
+          if (status) status.textContent = 'Falha ao carregar: ' + (erro.message || erro);
+          throw erro;
+        } finally {
+          carregandoBancoEventual = null;
+        }
+      })();
+      return carregandoBancoEventual;
+    }
+
+    function formatarDataEventual(valor) {
+      const p = String(valor || '').split('-');
+      return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : valor || '';
+    }
+
+    function datasDaMissaoEventual(inicio, fim) {
+      if (!inicio || !fim) return [];
+      const datas = [];
+      const [ai,mi,di] = inicio.split('-').map(Number);
+      const [af,mf,df] = fim.split('-').map(Number);
+      const atual = new Date(ai, mi - 1, di);
+      const final = new Date(af, mf - 1, df);
+      while (atual <= final) {
+        datas.push(`${atual.getFullYear()}-${String(atual.getMonth()+1).padStart(2,'0')}-${String(atual.getDate()).padStart(2,'0')}`);
+        atual.setDate(atual.getDate() + 1);
+      }
+      return datas;
+    }
+
+    function opcoesFiltroFuncaoOriginalEventual() {
+      // Exatamente o catálogo de funções da tela principal.
+      const funcoes=Array.isArray(estado?.funcoes)?estado.funcoes:[];
+      return `<option value="">Todas as funções</option>${funcoes.map(f=>`<option value="${escaparHTML(f)}">${escaparHTML(f)}</option>`).join('')}`;
+    }
+
+    function idsParticipantesMarcadosEventual(bloco) {
+      return new Set([...bloco.querySelectorAll('.tipo-missao-participante:checked')].map(cb=>cb.value));
+    }
+
+    function militaresOficiaisPorFiltroEventual(funcao='') {
+      // REGRA: quando há filtro, usa a MESMA função da lista principal.
+      // Não lê tipo de missão, escala eventual, snapshot ou função exercida na missão.
+      if(funcao){
+        return obterMilitaresOrdenados(funcao).filter(m=>m.ativo!==false);
+      }
+      return (Array.isArray(estado?.funcoes)?estado.funcoes:[])
+        .flatMap(f=>obterMilitaresOrdenados(f).filter(m=>m.ativo!==false))
+        .filter((m,i,arr)=>arr.findIndex(x=>x.id===m.id)===i);
+    }
+
+    function htmlParticipantesOficiaisEventual(militares,selecionados) {
+      return militares.map(m=>`<label class="tipo-missao-participante-item flex items-center gap-2 p-1 text-sm">
+        <input type="checkbox" class="tipo-missao-participante" value="${escaparHTML(m.id)}" ${selecionados.has(m.id)?'checked':''}>
+        <span>${escaparHTML(m.nome)} <span class="text-xs text-gray-500">— ${escaparHTML(m.funcao||'Sem função')}</span></span>
+      </label>`).join('');
+    }
+
+    function filtrarMilitaresFuncaoOriginalEventual(select) {
+      const bloco=select.closest('.tipo-missao-funcao');if(!bloco)return;
+      // Preserva habilitações já marcadas, mas a LISTA VISÍVEL é recriada exclusivamente do cadastro principal.
+      const selecionados=idsParticipantesMarcadosEventual(bloco);
+      // Inclui IDs previamente salvos na linha, inclusive os que estão ocultos pelo filtro atual.
+      (bloco._participantesEventuaisSelecionados||[]).forEach(id=>selecionados.add(id));
+      bloco._participantesEventuaisSelecionados=[...selecionados];
+      const militares=militaresOficiaisPorFiltroEventual(select.value);
+      const lista=bloco.querySelector('.lista-participantes-oficiais-eventual');
+      if(lista)lista.innerHTML=htmlParticipantesOficiaisEventual(militares,selecionados);
+      const contador=bloco.querySelector('.contador-filtro-funcao-eventual');
+      if(contador)contador.textContent=`${militares.length} militar${militares.length===1?'':'es'} exibido${militares.length===1?'':'s'}`;
+    }
+
+    function atualizarSelecoesOcultasEventual(bloco) {
+      const mapa=new Set(bloco._participantesEventuaisSelecionados||[]);
+      bloco.querySelectorAll('.tipo-missao-participante').forEach(cb=>{
+        if(cb.checked)mapa.add(cb.value);else mapa.delete(cb.value);
+      });
+      bloco._participantesEventuaisSelecionados=[...mapa];
+    }
+
+    function marcarParticipantesVisiveisEventual(botao,marcar) {
+      const bloco=botao.closest('.tipo-missao-funcao');if(!bloco)return;
+      bloco.querySelectorAll('.tipo-missao-participante').forEach(cb=>cb.checked=marcar);
+      atualizarSelecoesOcultasEventual(bloco);
+    }
+
+    function adicionarLinhaTipoMissaoEventual(funcao='',participantes=[]) {
+      const lista=document.getElementById('tipoMissaoEventualFuncoes');if(!lista)return;
+      const linha=document.createElement('div');linha.className='tipo-missao-funcao border rounded p-3 bg-white';
+      linha._participantesEventuaisSelecionados=[...new Set((participantes||[]).map(String))];
+      const ativos=militaresOficiaisPorFiltroEventual('');
+      const selecionados=new Set(linha._participantesEventuaisSelecionados);
+      linha.innerHTML=`<div class="grid grid-cols-12 gap-2 items-center">
+        <input class="tipo-missao-funcao-nome col-span-10 border p-2 rounded text-sm" required value="${escaparHTML(funcao)}" placeholder="Ex.: Chefe de Equipe" title="Informe o nome da função que será exercida nesta missão eventual.">
+        <button type="button" class="col-span-2 bg-red-600 text-white p-2 rounded text-sm" onclick="this.closest('.tipo-missao-funcao').remove()" title="Remova esta função do formulário do Tipo de Missão.">Remover</button>
+      </div>
+      <div class="mt-2">
+        <div class="flex flex-wrap items-end justify-between gap-2 mb-2">
+          <label class="text-sm font-semibold">Militares habilitados
+            <select class="filtro-funcao-original-eventual mt-1 block border p-2 rounded text-sm font-normal min-w-52" title="Filtre a lista usando a função oficial atual do militar no cadastro principal do SESCI." onchange="filtrarMilitaresFuncaoOriginalEventual(this)">
+              ${opcoesFiltroFuncaoOriginalEventual()}
+            </select>
+          </label>
+          <div class="flex items-center gap-1">
+            <span class="contador-filtro-funcao-eventual text-xs text-gray-500 mr-2">${ativos.length} militares exibidos</span>
+            <button type="button" class="text-xs bg-slate-600 text-white px-2 py-1 rounded" onclick="marcarParticipantesVisiveisEventual(this,true)" title="Marque todos os militares atualmente exibidos pelo filtro.">Marcar exibidos</button>
+            <button type="button" class="text-xs bg-gray-500 text-white px-2 py-1 rounded" onclick="marcarParticipantesVisiveisEventual(this,false)" title="Desmarque todos os militares atualmente exibidos pelo filtro.">Desmarcar exibidos</button>
+          </div>
+        </div>
+        <div class="lista-participantes-oficiais-eventual grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1 max-h-48 overflow-y-auto border rounded p-2" onchange="atualizarSelecoesOcultasEventual(this.closest('.tipo-missao-funcao'))">
+          ${htmlParticipantesOficiaisEventual(ativos,selecionados)}
+        </div>
+      </div>`;
+      lista.appendChild(linha);
+    }
+
+    function obterFuncoesTipoMissaoFormulario() {
+      const itens=[...document.querySelectorAll('.tipo-missao-funcao')].map(l=>{
+        atualizarSelecoesOcultasEventual(l);
+        return {
+          funcao:l.querySelector('.tipo-missao-funcao-nome')?.value||'',
+          participantes:[...new Set(l._participantesEventuaisSelecionados||[])]
+            // IDs precisam continuar existindo no cadastro oficial.
+            .filter(id=>(estado.militares||[]).some(m=>m.id===id&&m.ativo!==false))
+        };
+      }).filter(x=>x.funcao);
+      if(!itens.length)throw new Error('Adicione pelo menos uma função ao tipo de missão.');
+      if(new Set(itens.map(x=>x.funcao)).size!==itens.length)throw new Error('A mesma função não pode aparecer duas vezes no tipo de missão.');
+      const sem=itens.find(x=>!x.participantes.length); if(sem)throw new Error(`Selecione pelo menos um militar para "${sem.funcao}".`);
+      return itens;
+    }
+
+    function limparTipoMissaoEventualFormulario(){
+      document.getElementById('formTipoMissaoEventual')?.reset();
+      document.getElementById('tipoMissaoEventualId').value='';
+      document.getElementById('tipoMissaoEventualFuncoes').innerHTML='';
+      adicionarLinhaTipoMissaoEventual();
+    }
+
+    async function salvarTipoMissaoEventualInterface(e){
+      e.preventDefault(); if(!podeEditarSistema())return; await carregarEscalasEventuaisInterface();
+      let funcoes; try{funcoes=obterFuncoesTipoMissaoFormulario()}catch(err){return alert(err.message||err)}
+      const tipoMissao={
+        id:document.getElementById('tipoMissaoEventualId').value,
+        nome:document.getElementById('tipoMissaoEventualNome').value.trim(),
+        tipoDistribuicao:document.getElementById('tipoMissaoEventualDistribuicao').value,
+        permanencia:document.getElementById('tipoMissaoEventualPermanencia').value||'fixa',
+        funcoes
+      };
+      mostrarProcessamento('Salvando tipo de missão...');
+      try{
+        bancoEscalasEventuais=await executarAppsScript('salvarTipoMissaoEventual',tipoMissao,Number(bancoEscalasEventuais.versao)||1,tokenSessao);
+        limparTipoMissaoEventualFormulario(); renderizarTiposMissaoEventual(); atualizarSelectTiposMissaoEventual(); renderizarQuadrinhosEventuais();
+      }catch(err){alert(err.message||err)}finally{ocultarProcessamento()}
+    }
+
+    function editarTipoMissaoEventual(id){
+      const t=(bancoEscalasEventuais?.tiposMissao||[]).find(x=>x.id===id); if(!t)return;
+      document.getElementById('tipoMissaoEventualId').value=t.id;
+      document.getElementById('tipoMissaoEventualNome').value=t.nome||'';
+      document.getElementById('tipoMissaoEventualDistribuicao').value=t.tipoDistribuicao||'corrida';
+      document.getElementById('tipoMissaoEventualPermanencia').value=t.permanencia||'fixa';
+      document.getElementById('tipoMissaoEventualFuncoes').innerHTML='';
+      (t.funcoes||[]).forEach(f=>adicionarLinhaTipoMissaoEventual(f.funcao,f.participantes||[]));
+      abrirSubpaginaCCI('eventuais','tipos');
+    }
+
+    async function excluirTipoMissaoEventualInterface(id){
+      if(!podeEditarSistema()||!confirm('Excluir este tipo de missão?'))return;
+      try{
+        bancoEscalasEventuais=await executarAppsScript('excluirTipoMissaoEventual',id,Number(bancoEscalasEventuais.versao)||1,tokenSessao);
+        renderizarTiposMissaoEventual(); atualizarSelectTiposMissaoEventual();
+      }catch(err){alert(err.message||err)}
+    }
+
+    function renderizarTiposMissaoEventual(){
+      const alvo=document.getElementById('listaTiposMissaoEventual'); if(!alvo)return;
+      const tipos=[...(bancoEscalasEventuais?.tiposMissao||[])].sort((a,b)=>a.nome.localeCompare(b.nome));
+      alvo.innerHTML=tipos.length?tipos.map(t=>`<div class="border rounded p-3 flex flex-wrap justify-between gap-2"><div><b>${escaparHTML(t.nome)}</b><div class="text-xs text-gray-500">${t.tipoDistribuicao==='diferenciada'?'Diferenciada — '+escaparHTML(t.categoria||'geral'):'Corrida'} · ${t.permanencia==='diaria'?'Rotação diária':'Equipe fixa'} · ${(t.funcoes||[]).map(f=>`${escaparHTML(f.funcao)} (${f.participantes?.length||0})`).join(' · ')}</div></div><div><button class="bg-blue-600 text-white px-3 py-1 rounded text-sm mr-1" onclick="editarTipoMissaoEventual('${t.id}')" title="Carregue este Tipo de Missão no formulário para alterar sua configuração.">Editar</button><button class="bg-red-600 text-white px-3 py-1 rounded text-sm" onclick="excluirTipoMissaoEventualInterface('${t.id}')" title="Exclua este Tipo de Missão. A exclusão será impedida se houver ocorrência vinculada.">Excluir</button></div></div>`).join(''):'<div class="text-sm text-gray-500">Nenhum tipo de missão cadastrado.</div>';
+    }
+
+    function atualizarSelectTiposMissaoEventual(){
+      const s=document.getElementById('eventualTipoMissaoId'); if(!s)return;
+      const atual=s.value;
+      s.innerHTML='<option value="">Selecione um tipo de missão</option>'+[...(bancoEscalasEventuais?.tiposMissao||[])].sort((a,b)=>a.nome.localeCompare(b.nome)).map(t=>`<option value="${escaparHTML(t.id)}">${escaparHTML(t.nome)}</option>`).join('');
+      if((bancoEscalasEventuais?.tiposMissao||[]).some(t=>t.id===atual))s.value=atual;
+    }
+
+    function carregarEstruturaOcorrenciaDoTipo(vagasSalvas=null){
+      const id=document.getElementById('eventualTipoMissaoId')?.value;
+      const t=(bancoEscalasEventuais?.tiposMissao||[]).find(x=>x.id===id);
+      const lista=document.getElementById('estruturaEventualLista'); if(!lista)return;
+      lista.innerHTML=''; if(!t)return;
+      (t.funcoes||[]).forEach(f=>{
+        const vagas=vagasSalvas?.[f.funcao]??0;
+        const div=document.createElement('div'); div.className='estrutura-eventual-linha grid grid-cols-12 gap-2 items-center border rounded p-2 bg-white';
+        div.dataset.funcao=f.funcao;
+        div.innerHTML=`<div class="col-span-7 md:col-span-8"><b>${escaparHTML(f.funcao)}</b><div class="text-xs text-gray-500">${f.participantes?.length||0} militar(es) habilitado(s)</div></div><label class="col-span-5 md:col-span-4 text-sm font-semibold">Vagas nesta ocorrência<input title="Defina quantas vagas desta função serão usadas nesta ocorrência. Use 0 para não utilizar a função." class="eventual-estrutura-vagas mt-1 w-full border p-2 rounded text-center" type="number" min="0" step="1" value="${Math.max(0,Number(vagas)||0)}"></label>`;
+        lista.appendChild(div);
+      });
+    }
+
+    function atualizarCamposTipoEventual() {
+      const diferenciada = document.getElementById('eventualTipo')?.value === 'diferenciada';
+      document.getElementById('grupoCategoriaEventual')?.classList.toggle('hidden', !diferenciada);
+      if (!diferenciada && document.getElementById('eventualCategoria')) document.getElementById('eventualCategoria').value = '';
+    }
+
+    function opcoesFuncoesEventuais(selecionada = '') {
+      return (bancoEscalasEventuais?.funcoesEventuais || []).map(f =>
+        `<option value="${escaparHTML(f.nome)}" ${f.nome === selecionada ? 'selected' : ''}>${escaparHTML(f.nome)}</option>`
+      ).join('');
+    }
+
+    function sincronizarSelectsFuncoesEventuais() {
+      const funcoes = bancoEscalasEventuais?.funcoesEventuais || [];
+      document.querySelectorAll('.eventual-estrutura-funcao').forEach(select => {
+        const atual = select.value;
+        select.innerHTML = `<option value="">Selecione a função eventual</option>` +
+          funcoes.map(f =>
+            `<option value="${escaparHTML(f.nome)}">${escaparHTML(f.nome)}</option>`
+          ).join('');
+        if (funcoes.some(f => f.nome === atual)) select.value = atual;
+      });
+    }
+
+    function militaresAtivosEventuais() {
+      // FONTE ÚNICA: cadastro oficial do SESCI. Nunca usa snapshots, tipos ou escalas eventuais.
+      return (Array.isArray(estado?.militares) ? estado.militares : [])
+        .filter(m => m && m.id && m.ativo !== false)
+        .map(m => m);
+    }
+
+    function obterMilitarOficialEventual(militarOuId) {
+      const id=typeof militarOuId==='string'?militarOuId:militarOuId?.id;
+      return (Array.isArray(estado?.militares)?estado.militares:[]).find(m=>m?.id===id)||null;
+    }
+
+    function nomeFuncaoOriginalMilitarEventual(militarOuId) {
+      // Resolve novamente pelo ID no cadastro oficial, impedindo que função eventual/snapshot contamine o filtro.
+      const oficial=obterMilitarOficialEventual(militarOuId);
+      return String(oficial?.funcao || oficial?.funcaoPrincipal || 'Sem função').trim() || 'Sem função';
+    }
+
+    function adicionarLinhaEstruturaEventual(funcao = '', vagas = 1, participantes = []) {
+      const lista = document.getElementById('estruturaEventualLista');
+      if (!lista) return;
+      const linha = document.createElement('div');
+      linha.className = 'estrutura-eventual-linha border rounded p-3 bg-white';
+      const ativos = militaresAtivosEventuais();
+      linha.innerHTML = `
+        <div class="grid grid-cols-12 gap-2 items-center">
+          <select class="eventual-estrutura-funcao col-span-7 md:col-span-8 border p-2 rounded text-sm" required>
+            <option value="">Selecione a função eventual</option>${opcoesFuncoesEventuais(funcao)}
+          </select>
+          <input title="Defina quantas vagas desta função serão usadas nesta ocorrência. Use 0 para não utilizar a função." class="eventual-estrutura-vagas col-span-3 md:col-span-2 border p-2 rounded text-sm text-center" type="number" min="1" step="1" value="${Math.max(1, Number(vagas)||1)}" required>
+          <button type="button" class="col-span-2 bg-red-600 text-white p-2 rounded text-sm" onclick="this.closest('.estrutura-eventual-linha').remove(); atualizarDisponibilidadeParticipantesEventuais()">Remover</button>
+        </div>
+        <div class="mt-3">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <span class="text-sm font-semibold">Militares habilitados para esta função</span>
+            <div class="flex gap-2">
+              <button type="button" class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded" onclick="marcarTodosParticipantesEventuais(this,true)">Todos</button>
+              <button type="button" class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded" onclick="marcarTodosParticipantesEventuais(this,false)">Nenhum</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1 max-h-52 overflow-y-auto border rounded p-2">
+            ${ativos.map(m=>`<label class="flex items-center gap-2 p-1 hover:bg-gray-50 rounded text-sm"><input type="checkbox" class="eventual-participante" value="${escaparHTML(m.id)}" ${participantes.includes(m.id)?'checked':''} onchange="atualizarDisponibilidadeParticipantesEventuais()"><span>${escaparHTML(m.nome)} <span class="text-xs text-gray-500">— ${escaparHTML(nomeFuncaoOriginalMilitarEventual(m))}</span></span></label>`).join('')}
+          </div>
+        </div>`;
+      lista.appendChild(linha);
+      atualizarDisponibilidadeParticipantesEventuais();
+    }
+
+    function marcarTodosParticipantesEventuais(botao, marcar) {
+      const linha = botao.closest('.estrutura-eventual-linha');
+      linha?.querySelectorAll('.eventual-participante').forEach(c => {
+        if (marcar) {
+          if (!c.disabled) c.checked = true;
+        } else {
+          c.checked = false;
+        }
+      });
+      atualizarDisponibilidadeParticipantesEventuais();
+    }
+
+    function atualizarDisponibilidadeParticipantesEventuais() {
+      const linhas = [...document.querySelectorAll('.estrutura-eventual-linha')];
+      const selecionadosPorLinha = linhas.map(linha =>
+        new Set([...linha.querySelectorAll('.eventual-participante:checked')].map(c => c.value))
+      );
+
+      linhas.forEach((linha, indiceLinha) => {
+        const selecionadosOutras = new Set();
+        selecionadosPorLinha.forEach((ids, outroIndice) => {
+          if (outroIndice !== indiceLinha) ids.forEach(id => selecionadosOutras.add(id));
+        });
+
+        linha.querySelectorAll('.eventual-participante').forEach(c => {
+          const bloqueado = selecionadosOutras.has(c.value) && !c.checked;
+          c.disabled = bloqueado;
+          const label = c.closest('label');
+          if (label) {
+            label.classList.toggle('opacity-40', bloqueado);
+            label.classList.toggle('cursor-not-allowed', bloqueado);
+            label.title = bloqueado ? 'Este militar já está habilitado em outra função desta missão.' : '';
+          }
+        });
+      });
+    }
+
+    function obterEstruturaFormularioEventual() {
+      const estrutura = [...document.querySelectorAll('.estrutura-eventual-linha')].map(linha => ({
+        funcao: linha.querySelector('.eventual-estrutura-funcao')?.value || '',
+        vagas: Math.max(0, Math.floor(Number(linha.querySelector('.eventual-estrutura-vagas')?.value) || 0)),
+        participantes: [...linha.querySelectorAll('.eventual-participante:checked')].map(c => c.value)
+      })).filter(x => x.funcao && x.vagas > 0);
+      if (!estrutura.length) throw new Error('Adicione pelo menos uma função à estrutura da missão.');
+      if (new Set(estrutura.map(x => x.funcao)).size !== estrutura.length) throw new Error('A mesma função eventual não pode aparecer duas vezes na estrutura.');
+      const semParticipantes = estrutura.find(x => !x.participantes.length);
+      if (semParticipantes) throw new Error(`Selecione pelo menos um militar para a função "${semParticipantes.funcao}".`);
+
+      const funcaoPorMilitar = new Map();
+      for (const item of estrutura) {
+        for (const militarId of item.participantes) {
+          if (funcaoPorMilitar.has(militarId)) {
+            const militar = (estado.militares || []).find(m => m.id === militarId);
+            throw new Error(`${militar?.nome || 'Um militar'} está selecionado nas funções "${funcaoPorMilitar.get(militarId)}" e "${item.funcao}". Cada militar pode concorrer a apenas uma função dentro da mesma missão.`);
+          }
+          funcaoPorMilitar.set(militarId, item.funcao);
+        }
+      }
+      const insuficiente = estrutura.find(x => x.participantes.length < x.vagas);
+      if (insuficiente) throw new Error(`A função "${insuficiente.funcao}" possui ${insuficiente.vagas} vaga(s), mas somente ${insuficiente.participantes.length} militar(es) habilitado(s).`);
+      return estrutura;
+    }
+
+    function limparFormularioEventual() {
+      document.getElementById('formEscalaEventual')?.reset();
+      document.getElementById('eventualId').value='';
+      document.getElementById('estruturaEventualLista').innerHTML='';
+      atualizarSelectTiposMissaoEventual();
+    }
+
+    function assinaturaConfiguracaoEventual(m) {
+      return JSON.stringify({tipoMissaoId:m?.tipoMissaoId||'',inicio:m?.dataInicio||'',fim:m?.dataFim||'',estrutura:(m?.estrutura||[]).map(x=>({funcao:x.funcao,vagas:Number(x.vagas)||0}))});
+    }
+
+    async function salvarMissaoEventualInterface(evento) {
+      evento.preventDefault(); if(!podeEditarSistema())return; await carregarEscalasEventuaisInterface();
+      const tipoMissaoId=document.getElementById('eventualTipoMissaoId').value;
+      const tipoModelo=(bancoEscalasEventuais.tiposMissao||[]).find(t=>t.id===tipoMissaoId);
+      if(!tipoModelo)return alert('Selecione um Tipo de Missão cadastrado.');
+      const estrutura=[...document.querySelectorAll('#estruturaEventualLista .estrutura-eventual-linha')].map(l=>({
+        funcao:l.dataset.funcao,
+        vagas:Math.max(0,Math.floor(Number(l.querySelector('.eventual-estrutura-vagas')?.value)||0)),
+        participantes:[...(tipoModelo.funcoes.find(f=>f.funcao===l.dataset.funcao)?.participantes||[])]
+      })).filter(x=>x.vagas>0);
+      if(!estrutura.length)return alert('Informe pelo menos uma vaga para esta ocorrência.');
+      const insuf=estrutura.find(x=>x.vagas>x.participantes.length);
+      if(insuf)return alert(`A função "${insuf.funcao}" pede ${insuf.vagas} vaga(s), mas o tipo de missão possui apenas ${insuf.participantes.length} militar(es) habilitado(s).`);
+      const id=document.getElementById('eventualId').value;
+      const anterior=(bancoEscalasEventuais.missoes||[]).find(x=>x.id===id);
+      const missao={
+        id,tipoMissaoId,nome:tipoModelo.nome,descricao:document.getElementById('eventualDescricao').value,
+        dataInicio:document.getElementById('eventualDataInicio').value,dataFim:document.getElementById('eventualDataFim').value,
+        tipoDistribuicao:tipoModelo.tipoDistribuicao||'corrida',categoria:tipoModelo.categoria||'geral',permanencia:tipoModelo.permanencia||'fixa',
+        status:anterior?.status||'planejamento',estrutura,escala:anterior?.escala||{},
+        publicadaEm:anterior?.publicadaEm||'',publicadaPor:anterior?.publicadaPor||null,
+        alteracoesManuais:anterior?.alteracoesManuais||[],geradaEm:anterior?.geradaEm||'',geradaPor:anterior?.geradaPor||null
+      };
+      if(!missao.dataInicio||!missao.dataFim||missao.dataFim<missao.dataInicio)return alert('Informe um período válido.');
+      if(anterior&&Object.keys(anterior.escala||{}).length&&assinaturaConfiguracaoEventual(anterior)!==assinaturaConfiguracaoEventual(missao)){
+        if(!confirm('O tipo, período ou quantidade de vagas foi alterado. A escala já gerada será limpa. Continuar?'))return;
+        missao.escala={};missao.alteracoesManuais=[];missao.geradaEm='';missao.geradaPor=null;missao.status='planejamento';missao.publicadaEm='';missao.publicadaPor=null;
+      }
+      mostrarProcessamento('Salvando ocorrência eventual...');
+      try{
+        bancoEscalasEventuais=await executarAppsScript('salvarEscalaEventual',missao,Number(bancoEscalasEventuais.versao)||1,tokenSessao);
+        limparFormularioEventual();renderizarEscalasEventuais();renderizarQuadrinhosEventuais();abrirSubpaginaCCI('eventuais','lista');
+      }catch(err){alert(err.message||err)}finally{ocultarProcessamento()}
+    }
+
+    async function editarMissaoEventual(id) {
+      await carregarEscalasEventuaisInterface();
+      const m=(bancoEscalasEventuais.missoes||[]).find(x=>x.id===id); if(!m)return alert('Ocorrência não encontrada.');
+      document.getElementById('eventualId').value=m.id||'';
+      atualizarSelectTiposMissaoEventual(); document.getElementById('eventualTipoMissaoId').value=m.tipoMissaoId||'';
+      document.getElementById('eventualDescricao').value=m.descricao||'';
+      document.getElementById('eventualDataInicio').value=m.dataInicio||'';
+      document.getElementById('eventualDataFim').value=m.dataFim||'';
+      const vagas={};(m.estrutura||[]).forEach(x=>vagas[x.funcao]=x.vagas);
+      carregarEstruturaOcorrenciaDoTipo(vagas); abrirSubpaginaCCI('eventuais','criar');
+    }
+
+    async function excluirMissaoEventualInterface(id) {
+      if (!podeEditarSistema()) return;
+      await carregarEscalasEventuaisInterface();
+      const m = (bancoEscalasEventuais.missoes || []).find(x => x.id === id);
+      if (!m || !confirm(`Excluir a escala eventual "${m.nome}"?`)) return;
+      mostrarProcessamento('Excluindo escala eventual...');
+      try {
+        bancoEscalasEventuais = await executarAppsScript('excluirEscalaEventual', id, Number(bancoEscalasEventuais.versao)||1, tokenSessao);
+        renderizarEscalasEventuais();
+        renderizarQuadrinhosEventuais();
+        document.getElementById('detalheEscalaEventual')?.classList.add('hidden');
+      } catch (erro) { alert(erro.message || erro); }
+      finally { ocultarProcessamento(); }
+    }
+
+    function militarIndisponivelEventual(militarId, dataStr) {
+      const [a,m,d] = dataStr.split('-').map(Number);
+      const diaSemana = new Date(a,m-1,d).getDay();
+      const periodo = (estado.indisponibilidades || []).some(i =>
+        i.militarId === militarId && i.inicio && i.fim && dataStr >= i.inicio && dataStr <= i.fim
+      );
+      const semanal = (estado.indisponibilidadesSemana || []).some(i =>
+        i.militarId === militarId && Number(i.diaSemana) === diaSemana
+      );
+      return periodo || semanal;
+    }
+
+    function construirHistoricoEventual(missaoIgnoradaId='') {
+      const contagemCorrida={},contagemDiferenciada={},ultimoServico={};
+      const ref=(bancoEscalasEventuais?.missoes||[]).find(x=>x.id===missaoIgnoradaId);
+      (bancoEscalasEventuais?.missoes||[]).forEach(m=>{
+        if(m.id===missaoIgnoradaId)return;
+        if(ref?.tipoMissaoId&&m.tipoMissaoId!==ref.tipoMissaoId)return;
+        const vistosFixos=new Set();
+        Object.entries(m.escala||{}).forEach(([data,vagas])=>Object.values(vagas||{}).forEach(v=>{
+          if(!v?.militarId||!v?.funcao)return;
+          const unica=`${v.funcao}|${v.militarId}`;
+          if((m.permanencia||'fixa')==='fixa'){
+            if(vistosFixos.has(unica))return;
+            vistosFixos.add(unica);
+          }
+          const cc=`${v.funcao}|${v.militarId}`;contagemCorrida[cc]=(contagemCorrida[cc]||0)+1;
+          const cat=m.tipoDistribuicao==='diferenciada'?(m.categoria||'geral'):'geral';
+          const cd=`${v.funcao}|${cat}|${v.militarId}`;contagemDiferenciada[cd]=(contagemDiferenciada[cd]||0)+1;
+          if(!ultimoServico[v.militarId]||data>ultimoServico[v.militarId])ultimoServico[v.militarId]=data;
+        }));
+      });
+      return {contagemCorrida,contagemDiferenciada,ultimoServico};
+    }
+
+    function obterLastroEventual(tipoMissaoId, funcao, militarId) {
+      const valor = bancoEscalasEventuais?.lastrosEventuais?.[tipoMissaoId]?.[funcao]?.[militarId];
+      const numero = Number(valor);
+      return Number.isFinite(numero) && numero >= 0 ? Math.floor(numero) : 0;
+    }
+
+    function gerarEscalaEventualLocal(missao) {
+      const datas=datasDaMissaoEventual(missao.dataInicio,missao.dataFim),escala={},avisos=[];
+      const historico=construirHistoricoEventual(missao.id),fixa=(missao.permanencia||'fixa')==='fixa';
+
+      const candidatos=(item,data,usados)=>militaresAtivosEventuais()
+        .filter(m=>(item.participantes||[]).includes(m.id)&&!usados.has(m.id)&&!militarIndisponivelEventual(m.id,data))
+        .map(m=>{
+          const total=missao.tipoDistribuicao==='diferenciada'
+            ? (historico.contagemDiferenciada[`${item.funcao}|${missao.categoria||'geral'}|${m.id}`]||0)
+              + obterLastroEventual(missao.tipoMissaoId, item.funcao, m.id)
+            : (historico.contagemCorrida[`${item.funcao}|${m.id}`]||0);
+          return {m,total,ultimo:historico.ultimoServico[m.id]||''};
+        }).sort((a,b)=>a.total-b.total||a.ultimo.localeCompare(b.ultimo)||(b.m.ordem??0)-(a.m.ordem??0));
+
+      if(fixa){
+        const usados=new Set(),equipe=[];
+        (missao.estrutura||[]).forEach(item=>{
+          for(let n=1;n<=Number(item.vagas||0);n++){
+            const lista=candidatos(item,datas[0],usados).filter(x=>datas.every(d=>!militarIndisponivelEventual(x.m.id,d)));
+            const escolhido=lista[0]?.m||null;if(escolhido)usados.add(escolhido.id);
+            else avisos.push(`${item.funcao} #${n}: nenhum militar disponível durante todo o período.`);
+            equipe.push({chave:`${item.funcao} #${n}`,funcao:item.funcao,militarId:escolhido?.id||null});
+          }
+        });
+        datas.forEach(data=>{escala[data]={};equipe.forEach(v=>escala[data][v.chave]={funcao:v.funcao,militarId:v.militarId,motivo:v.militarId?'Equipe fixa':'Sem candidato'});});
+      }else{
+        datas.forEach(data=>{
+          escala[data]={};const usados=new Set();
+          (missao.estrutura||[]).forEach(item=>{for(let n=1;n<=Number(item.vagas||0);n++){
+            const lista=candidatos(item,data,usados),escolhido=lista[0]?.m||null;
+            if(escolhido){
+              usados.add(escolhido.id);
+              if(missao.tipoDistribuicao==='diferenciada'){
+                const k=`${item.funcao}|${missao.categoria||'geral'}|${escolhido.id}`;historico.contagemDiferenciada[k]=(historico.contagemDiferenciada[k]||0)+1;
+              }else{
+                const k=`${item.funcao}|${escolhido.id}`;historico.contagemCorrida[k]=(historico.contagemCorrida[k]||0)+1;
+              }
+              historico.ultimoServico[escolhido.id]=data;
+            }else avisos.push(`${formatarDataEventual(data)} — ${item.funcao} #${n}: sem candidato.`);
+            escala[data][`${item.funcao} #${n}`]={funcao:item.funcao,militarId:escolhido?.id||null,motivo:escolhido?'Rotação diária':'Sem candidato'};
+          }});
+        });
+      }
+      return {escala,avisos};
+    }
+    async function gerarEscalaEventualInterface(id) {
+      if (!podeEditarSistema()) return;
+      await carregarEscalasEventuaisInterface();
+      const m = (bancoEscalasEventuais.missoes || []).find(x => x.id === id);
+      if (!m) return alert('Missão não encontrada.');
+      if (!(m.estrutura || []).length) return alert('Defina a estrutura da missão antes de gerar a escala.');
+      if (Object.keys(m.escala || {}).length && !confirm('Esta missão já possui uma escala gerada. Deseja recriá-la?')) return;
+
+      mostrarProcessamento('Gerando escala eventual...');
+      try {
+        const resultado = gerarEscalaEventualLocal(m);
+        const atualizada = {
+          ...m,
+          escala: resultado.escala,
+          alteracoesManuais: [],
+          status: resultado.avisos.length ? 'gerada com pendências' : 'gerada',
+          publicadaEm: '',
+          publicadaPor: null,
+          geradaEm: new Date().toISOString(),
+          geradaPor: (() => { const u = obterUsuarioSessaoEventual(); return (u.nome || u.usuario) ? u : null; })()
+        };
+        bancoEscalasEventuais = await executarAppsScript('salvarEscalaEventual', atualizada, Number(bancoEscalasEventuais.versao)||1, tokenSessao);
+        renderizarEscalasEventuais();
+        renderizarQuadrinhosEventuais();
+        visualizarMissaoEventual(id);
+        if (resultado.avisos.length) alert(`Escala gerada com ${resultado.avisos.length} vaga(s) sem militar elegível.\n\n${resultado.avisos.slice(0,8).join('\n')}${resultado.avisos.length>8?'\n...':''}`);
+      } catch (erro) { alert(erro.message || erro); }
+      finally { ocultarProcessamento(); }
+    }
+
+    function obterMilitarEventual(id) {
+      // Nome e dados pessoais sempre vêm do cadastro oficial.
+      return obterMilitarOficialEventual(id);
+    }
+
+    function obterItemEstruturaEventual(missao, funcao) {
+      return (missao?.estrutura || []).find(e => e.funcao === funcao);
+    }
+
+    function contarServicosEventuaisMilitar(militarId,funcao,missaoAtual) {
+      let total=0;
+      (bancoEscalasEventuais?.missoes||[]).forEach(m=>{
+        if(missaoAtual?.tipoMissaoId&&m.tipoMissaoId!==missaoAtual.tipoMissaoId)return;
+        if(m.tipoDistribuicao!==missaoAtual.tipoDistribuicao)return;
+        let achou=false;
+        Object.values(m.escala||{}).forEach(vagas=>Object.values(vagas||{}).forEach(v=>{
+          if(v?.militarId===militarId&&v?.funcao===funcao){if((m.permanencia||'fixa')==='fixa')achou=true;else total++;}
+        }));
+        if(achou)total++;
+      });
+      return total;
+    }
+    function candidatosProximosEventual(missao,data,chaveVaga,vagaAtual) {
+      const estrutura=obterItemEstruturaEventual(missao,vagaAtual.funcao);if(!estrutura)return[];
+      const fixa=(missao.permanencia||'fixa')==='fixa',usados=new Set();
+      const diaBase=fixa?Object.keys(missao.escala||{}).sort()[0]:data;
+      Object.entries(missao.escala?.[diaBase]||{}).filter(([k,v])=>k!==chaveVaga&&v?.militarId).forEach(([,v])=>usados.add(v.militarId));
+      const datas=fixa?datasDaMissaoEventual(missao.dataInicio,missao.dataFim):[data];
+      return militaresAtivosEventuais().filter(m=>(estrutura.participantes||[]).includes(m.id)&&!usados.has(m.id)&&datas.every(d=>!militarIndisponivelEventual(m.id,d)))
+        .map(m=>({militar:m,total:contarServicosEventuaisMilitar(m.id,vagaAtual.funcao,missao)}))
+        .sort((a,b)=>a.total-b.total||(b.militar.ordem??0)-(a.militar.ordem??0));
+    }
+    function idDropdownEventual(missaoId,data,chave) {
+      return `eventual-proximos-${missaoId}-${data}-${encodeURIComponent(chave).replace(/%/g,'')}`;
+    }
+
+    function abrirDropdownProximosEventual(missaoId,data,chaveCodificada) {
+      const chave=decodeURIComponent(chaveCodificada);
+      const missao=(bancoEscalasEventuais?.missoes||[]).find(m=>m.id===missaoId);
+      const vaga=missao?.escala?.[data]?.[chave];
+      if(!missao||!vaga)return;
+      const alvo=document.getElementById(idDropdownEventual(missaoId,data,chave));
+      if(!alvo)return;
+      if(!alvo.classList.contains('hidden')){alvo.classList.add('hidden');return;}
+      const candidatos=candidatosProximosEventual(missao,data,chave,vaga);
+      alvo.innerHTML=candidatos.length?candidatos.map((x,i)=>`
+        <button type="button" class="w-full text-left px-3 py-2 hover:bg-blue-50 border-b last:border-b-0 text-sm"
+          onclick="trocarMilitarEventual('${missaoId}','${data}','${encodeURIComponent(chave)}','${x.militar.id}')">
+          <div class="font-semibold">${i+1}. ${escaparHTML(x.militar.nome)}</div>
+          <div class="text-xs text-gray-500">${escaparHTML(nomeFuncaoOriginalMilitarEventual(x.militar))} · ${x.total} quadrinho(s) eventual(is)</div>
+        </button>`).join(''):'<div class="p-3 text-sm text-gray-500">Nenhum outro militar disponível para esta função.</div>';
+      alvo.classList.remove('hidden');
+    }
+
+    async function trocarMilitarEventual(missaoId,data,chaveCodificada,novoId) {
+      if(!podeEditarSistema())return;
+      const chave=decodeURIComponent(chaveCodificada);
+      const missao=(bancoEscalasEventuais?.missoes||[]).find(m=>m.id===missaoId);
+      const vaga=missao?.escala?.[data]?.[chave];
+      const novo=obterMilitarEventual(novoId), anterior=obterMilitarEventual(vaga?.militarId);
+      if(!missao||!vaga||!novo)return alert('Não foi possível localizar os dados da troca.');
+      if(!candidatosProximosEventual(missao,data,chave,vaga).some(x=>x.militar.id===novoId))
+        return alert('Este militar não está mais disponível para esta vaga.');
+
+      const justificativa=prompt(`Justifique a alteração de ${anterior?.nome||'vaga sem militar'} para ${novo.nome} em ${formatarDataEventual(data)}:`);
+      if(justificativa===null)return;
+      if(!justificativa.trim())return alert('A justificativa é obrigatória.');
+
+      const atualizada=JSON.parse(JSON.stringify(missao));
+      if((atualizada.permanencia||'fixa')==='fixa'){
+        Object.keys(atualizada.escala||{}).forEach(d=>{if(atualizada.escala[d]?.[chave]){atualizada.escala[d][chave].militarId=novoId;atualizada.escala[d][chave].motivo='Alteração manual — equipe fixa';}});
+      }else{
+        atualizada.escala[data][chave].militarId=novoId;atualizada.escala[data][chave].motivo='Alteração manual';
+      }
+      atualizada.alteracoesManuais=Array.isArray(atualizada.alteracoesManuais)?atualizada.alteracoesManuais:[];
+      atualizada.alteracoesManuais.push({
+        data,chaveVaga:chave,funcao:vaga.funcao,militarAnteriorId:vaga.militarId||null,
+        militarNovoId:novoId,justificativa:justificativa.trim(),alteradoEm:new Date().toISOString(),
+        alteradoPor:(()=>{const u=obterUsuarioSessaoEventual();return (u.nome||u.usuario)?u:null})()
+      });
+      mostrarProcessamento('Salvando alteração na escala eventual...');
+      try{
+        bancoEscalasEventuais=await executarAppsScript('salvarEscalaEventual',atualizada,Number(bancoEscalasEventuais.versao)||1,tokenSessao);
+        renderizarEscalasEventuais();renderizarQuadrinhosEventuais();visualizarMissaoEventual(missaoId);
+      }catch(erro){alert(erro.message||erro)}finally{ocultarProcessamento()}
+    }
+
+    function obterUsuarioSessaoEventual() {
+      // Não depende de uma variável global específica do SESCI.
+      // Procura apenas variáveis que existam de fato no runtime.
+      const candidatos = [];
+      if (typeof usuarioLogado !== 'undefined' && usuarioLogado) candidatos.push(usuarioLogado);
+      if (typeof dadosUsuario !== 'undefined' && dadosUsuario) candidatos.push(dadosUsuario);
+      if (typeof usuarioSessao !== 'undefined' && usuarioSessao) candidatos.push(usuarioSessao);
+      if (typeof sessaoAtual !== 'undefined' && sessaoAtual) candidatos.push(sessaoAtual);
+
+      const u = candidatos[0] || {};
+      return {
+        nome: String(u.nome || u.nomeCompleto || u.usuario || u.email || '').trim(),
+        usuario: String(u.usuario || u.login || u.email || '').trim()
+      };
+    }
+
+    function validarPublicacaoEventual(missao) {
+      const erros = [];
+      if (!(missao?.estrutura || []).length) erros.push('A missão não possui estrutura definida.');
+      const datas = datasDaMissaoEventual(missao?.dataInicio, missao?.dataFim);
+      if (!datas.length) erros.push('O período da missão é inválido.');
+      datas.forEach(data => {
+        (missao.estrutura || []).forEach(item => {
+          for (let vaga = 1; vaga <= Number(item.vagas || 0); vaga++) {
+            const chave = `${item.funcao} #${vaga}`;
+            if (!missao.escala?.[data]?.[chave]?.militarId) {
+              erros.push(`${formatarDataEventual(data)} — ${chave} está sem militar.`);
+            }
+          }
+        });
+      });
+      return erros;
+    }
+
+    async function publicarMissaoEventual(id) {
+      if (!podeEditarSistema()) return;
+      await carregarEscalasEventuaisInterface();
+      const missao = (bancoEscalasEventuais?.missoes || []).find(m => m.id === id);
+      if (!missao) return alert('Missão não encontrada.');
+      const erros = validarPublicacaoEventual(missao);
+      if (erros.length) {
+        return alert(`A escala eventual não pode ser publicada nem gerar o PDF.\n\n${erros.slice(0,10).join('\n')}${erros.length>10?`\n... e mais ${erros.length-10} pendência(s).`:''}`);
+      }
+      if (!confirm(`Publicar a escala eventual "${missao.nome}"?`)) return;
+      const atualizada = JSON.parse(JSON.stringify(missao));
+      atualizada.status = 'publicada';
+      atualizada.publicadaEm = new Date().toISOString();
+      const usuarioPublicacao = obterUsuarioSessaoEventual();
+      atualizada.publicadaPor = (usuarioPublicacao.nome || usuarioPublicacao.usuario) ? usuarioPublicacao : null;
+      mostrarProcessamento('Publicando escala eventual...');
+      try {
+        bancoEscalasEventuais = await executarAppsScript('salvarEscalaEventual',atualizada,Number(bancoEscalasEventuais.versao)||1,tokenSessao);
+        renderizarEscalasEventuais(); renderizarQuadrinhosEventuais(); visualizarMissaoEventual(id);
+        exportarPDFMissaoEventual(id);
+      } catch(erro) { alert(erro.message||erro); }
+      finally { ocultarProcessamento(); }
+    }
+
+    async function despublicarMissaoEventual(id) {
+      if (!podeEditarSistema()) return;
+      await carregarEscalasEventuaisInterface();
+      const missao=(bancoEscalasEventuais?.missoes||[]).find(m=>m.id===id);
+      if(!missao||missao.status!=='publicada')return;
+      if(!confirm(`Retirar a publicação da escala eventual "${missao.nome}"?`))return;
+      const atualizada=JSON.parse(JSON.stringify(missao));
+      atualizada.status='gerada';
+      atualizada.publicadaEm='';
+      atualizada.publicadaPor=null;
+      mostrarProcessamento('Retirando publicação...');
+      try{
+        bancoEscalasEventuais=await executarAppsScript('salvarEscalaEventual',atualizada,Number(bancoEscalasEventuais.versao)||1,tokenSessao);
+        renderizarEscalasEventuais();visualizarMissaoEventual(id);
+      }catch(erro){alert(erro.message||erro)}finally{ocultarProcessamento()}
+    }
+
+    function formatarDataHoraEventual(iso) {
+      if(!iso)return '';
+      const d=new Date(iso);
+      return Number.isNaN(d.getTime())?iso:d.toLocaleString('pt-BR');
+    }
+
+    function exportarPDFMissaoEventual(id) {
+      const m=(bancoEscalasEventuais?.missoes||[]).find(x=>x.id===id);
+      if(!m)return alert('Missão não encontrada.');
+      if(!Object.keys(m.escala||{}).length)return alert('Gere a escala antes de exportar.');
+      const datas=datasDaMissaoEventual(m.dataInicio,m.dataFim);
+      const colunas=[];
+      (m.estrutura||[]).forEach(e=>{for(let v=1;v<=Number(e.vagas||0);v++)colunas.push({chave:`${e.funcao} #${v}`,funcao:e.funcao});});
+      const equipeFixa=(m.permanencia||'fixa')==='fixa';
+      const primeiroDia=datas[0];
+      const linhas=equipeFixa
+        ? colunas.map(c=>{const v=m.escala?.[primeiroDia]?.[c.chave];const mil=obterMilitarEventual(v?.militarId);return `<tr><td>${formatarDataEventual(m.dataInicio)}${m.dataFim!==m.dataInicio?' a '+formatarDataEventual(m.dataFim):''}</td><td>${escaparHTML(c.funcao)}</td><td>${escaparHTML(mil?.nome||'—')}</td><td>${escaparHTML(v?.observacao||'')}</td></tr>`}).join('')
+        : datas.map(data=>`<tr><td>${formatarDataEventual(data)}</td>${colunas.map(c=>{const v=m.escala?.[data]?.[c.chave];const mil=obterMilitarEventual(v?.militarId);return `<td>${escaparHTML(mil?.nome||'—')}${v?.observacao?`<br><small><b>Obs.:</b> ${escaparHTML(v.observacao)}</small>`:''}</td>`}).join('')}</tr>`).join('');
+      const alteracoes=(m.alteracoesManuais||[]).length?`<h3>Alterações manuais</h3>${(m.alteracoesManuais||[]).map(a=>{const ant=obterMilitarEventual(a.militarAnteriorId),novo=obterMilitarEventual(a.militarNovoId);return `<p><b>${formatarDataEventual(a.data)} — ${escaparHTML(a.funcao||'')}:</b> ${escaparHTML(ant?.nome||'—')} → ${escaparHTML(novo?.nome||'—')} — ${escaparHTML(a.justificativa||'')}</p>`}).join('')}`:'';
+      const janela=window.open('','_blank');
+      if(!janela)return alert('O navegador bloqueou a janela de impressão. Permita pop-ups para gerar o PDF.');
+      janela.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${escaparHTML(m.nome)}</title><style>
+        @page{size:A4 landscape;margin:10mm}body{font-family:Arial,sans-serif;color:#111;font-size:11px}h1{font-size:20px;margin:0 0 4px}h2{font-size:13px;font-weight:normal;margin:0 0 12px}h3{font-size:14px;margin-top:18px}table{border-collapse:collapse;width:100%;margin-top:10px}th,td{border:1px solid #555;padding:5px;text-align:center}th{background:#eee}.meta{margin:3px 0}.rodape{margin-top:18px;font-size:9px;color:#555}@media print{button{display:none}}</style></head><body>
+        <h1>ESCALA EVENTUAL — ${escaparHTML(m.nome)}</h1>
+        <h2>${formatarDataEventual(m.dataInicio)}${m.dataFim!==m.dataInicio?' a '+formatarDataEventual(m.dataFim):''}</h2>
+        <div class="meta"><b>Tipo:</b> ${m.tipoDistribuicao==='diferenciada'?'Quadrinho':'Corrida'}</div>
+        ${m.descricao?`<div class="meta"><b>Observações:</b> ${escaparHTML(m.descricao)}</div>`:''}
+        ${m.status==='publicada'?`<div class="meta"><b>Publicada em:</b> ${formatarDataHoraEventual(m.publicadaEm)}</div>`:''}
+        ${equipeFixa
+          ? `<table><thead><tr><th>Período</th><th>Função</th><th>Militar</th><th>Observação</th></tr></thead><tbody>${linhas}</tbody></table>`
+          : `<table><thead><tr><th>Data</th>${colunas.map(c=>`<th>${escaparHTML(c.chave)}</th>`).join('')}</tr></thead><tbody>${linhas}</tbody></table>`}
+        ${alteracoes}<div class="rodape">SESCI — Sistema de Escala de Serviço - CCI · Desenvolvido por Sgt R.Cunha ®</div>
+        <script>window.onload=()=>{setTimeout(()=>window.print(),250)}<\/script></body></html>`);
+      janela.document.close();
+    }
+
+    async function editarObservacaoEscaladoEventual(missaoId,data,chaveCodificada) {
+      if(!podeEditarSistema())return;
+      await carregarEscalasEventuaisInterface();
+      const m=(bancoEscalasEventuais?.missoes||[]).find(x=>x.id===missaoId);if(!m)return alert('Missão não encontrada.');
+      const chave=decodeURIComponent(chaveCodificada);
+      const fixa=(m.permanencia||'fixa')==='fixa';
+      const vaga=m.escala?.[data]?.[chave];if(!vaga)return alert('Escalado não encontrado.');
+      const atual=String(vaga.observacao||'');
+      const texto=prompt('Observação do escalado:',atual);
+      if(texto===null)return;
+      const atualizada=JSON.parse(JSON.stringify(m));
+      const nova=texto.trim();
+      if(fixa){
+        Object.keys(atualizada.escala||{}).forEach(d=>{if(atualizada.escala[d]?.[chave])atualizada.escala[d][chave].observacao=nova;});
+      }else if(atualizada.escala?.[data]?.[chave]){
+        atualizada.escala[data][chave].observacao=nova;
+      }
+      mostrarProcessamento(nova?'Salvando observação...':'Removendo observação...');
+      try{
+        bancoEscalasEventuais=await executarAppsScript('salvarEscalaEventual',atualizada,Number(bancoEscalasEventuais.versao)||1,tokenSessao);
+        renderizarEscalasEventuais();visualizarMissaoEventual(missaoId);
+      }catch(erro){alert(erro.message||erro)}finally{ocultarProcessamento()}
+    }
+
+    function visualizarMissaoEventual(id) {
+      const m=(bancoEscalasEventuais?.missoes||[]).find(x=>x.id===id);
+      const alvo=document.getElementById('detalheEscalaEventual');
+      if(!m||!alvo)return;
+      const datas=datasDaMissaoEventual(m.dataInicio,m.dataFim),colunas=[];
+      (m.estrutura||[]).forEach(e=>{for(let v=1;v<=Number(e.vagas||0);v++)colunas.push({funcao:e.funcao,vaga:v,chave:`${e.funcao} #${v}`});});
+      const fixa=(m.permanencia||'fixa')==='fixa',dataBase=datas[0];
+      let tabela='';
+      if(Object.keys(m.escala||{}).length){
+        if(fixa){
+          const linhas=colunas.map(c=>{
+            const v=m.escala?.[dataBase]?.[c.chave],mil=obterMilitarEventual(v?.militarId);
+            const prox=podeEditarSistema()&&v&&m.status!=='publicada'?`<button type="button" class="mt-1 text-xs bg-blue-600 text-white px-2 py-1 rounded" onclick="abrirDropdownProximosEventual('${m.id}','${dataBase}','${encodeURIComponent(c.chave)}')">Próximos ▾</button><div id="${idDropdownEventual(m.id,dataBase,c.chave)}" class="hidden mt-1 min-w-64 bg-white border rounded shadow-lg relative z-20"></div>`:'';
+            const obs=String(v?.observacao||'');const botaoObs=podeEditarSistema()&&v&&m.status!=='publicada'?`<button type="button" class="mt-1 text-xs bg-slate-600 text-white px-2 py-1 rounded" onclick="editarObservacaoEscaladoEventual('${m.id}','${dataBase}','${encodeURIComponent(c.chave)}')" title="Adicione, edite ou remova uma observação vinculada a este escalado.">${obs?'Editar observação':'Adicionar observação'}</button>`:'';return `<tr><td class="border p-2 font-semibold whitespace-nowrap">${formatarDataEventual(m.dataInicio)}${m.dataFim!==m.dataInicio?' a '+formatarDataEventual(m.dataFim):''}</td><td class="border p-2">${escaparHTML(c.chave)}</td><td class="border p-2 ${!mil?'bg-red-50 text-red-700':''}"><div class="font-semibold">${mil?escaparHTML(mil.nome):'—'}</div>${prox}</td><td class="border p-2 align-top"><div>${obs?escaparHTML(obs):'<span class="text-gray-400">—</span>'}</div>${botaoObs}</td></tr>`;
+          }).join('');
+          tabela=`<div class="overflow-x-auto"><table class="w-full border-collapse text-sm"><thead><tr class="bg-gray-100"><th class="border p-2">Período</th><th class="border p-2">Função</th><th class="border p-2">Militar</th><th class="border p-2">Observação</th></tr></thead><tbody>${linhas}</tbody></table></div>`;
+        }else{
+          const linhas=datas.map(data=>`<tr><td class="border p-2 font-semibold whitespace-nowrap">${formatarDataEventual(data)}</td>${colunas.map(c=>{const v=m.escala?.[data]?.[c.chave],mil=obterMilitarEventual(v?.militarId);const prox=podeEditarSistema()&&v&&m.status!=='publicada'?`<button type="button" class="mt-1 text-xs bg-blue-600 text-white px-2 py-1 rounded" onclick="abrirDropdownProximosEventual('${m.id}','${data}','${encodeURIComponent(c.chave)}')">Próximos ▾</button><div id="${idDropdownEventual(m.id,data,c.chave)}" class="hidden mt-1 min-w-64 bg-white border rounded shadow-lg relative z-20"></div>`:'';const obs=String(v?.observacao||'');const botaoObs=podeEditarSistema()&&v&&m.status!=='publicada'?`<button type="button" class="mt-1 ml-1 text-xs bg-slate-600 text-white px-2 py-1 rounded" onclick="editarObservacaoEscaladoEventual('${m.id}','${data}','${encodeURIComponent(c.chave)}')" title="Adicione, edite ou remova uma observação vinculada a este escalado.">${obs?'Editar obs.':'Observação'}</button>`:'';return `<td class="border p-2 ${!mil?'bg-red-50 text-red-700':''} align-top"><div class="font-semibold">${mil?escaparHTML(mil.nome):'—'}</div>${obs?`<div class="mt-1 text-xs text-gray-600"><b>Obs.:</b> ${escaparHTML(obs)}</div>`:''}${prox}${botaoObs}</td>`}).join('')}</tr>`).join('');
+          tabela=`<div class="overflow-x-auto"><table class="w-full border-collapse text-sm"><thead><tr class="bg-gray-100"><th class="border p-2">Data</th>${colunas.map(c=>`<th class="border p-2">${escaparHTML(c.chave)}</th>`).join('')}</tr></thead><tbody>${linhas}</tbody></table></div>`;
+        }
+      }else tabela='<p class="p-4 bg-amber-50 text-amber-800 rounded">A missão ainda não possui escala gerada.</p>';
+
+      alvo.classList.remove('hidden');
+      alvo.innerHTML=`<div class="flex flex-wrap justify-between items-start gap-2 mb-3"><div><h4 class="font-bold text-lg">${escaparHTML(m.nome)}</h4><p class="text-xs text-gray-500">${formatarDataEventual(m.dataInicio)}${m.dataFim!==m.dataInicio?' a '+formatarDataEventual(m.dataFim):''} · ${m.tipoDistribuicao==='diferenciada'?'Quadrinho':'Corrida'} · ${fixa?'Equipe fixa':'Rotação diária'}</p></div><div class="flex flex-wrap gap-1 justify-end">${podeEditarSistema()&&Object.keys(m.escala||{}).length&&m.status!=='publicada'?`<button class="bg-green-700 text-white px-3 py-1 rounded text-sm" onclick="publicarMissaoEventual('${m.id}')" title="Publique a escala eventual e abra imediatamente a versão para impressão ou salvamento em PDF.">Publicar</button>`:''}${m.status==='publicada'?`<button class="bg-slate-700 text-white px-3 py-1 rounded text-sm" onclick="exportarPDFMissaoEventual('${m.id}')" title="Abra novamente a escala publicada para impressão ou salvamento em PDF.">PDF</button>`:''}${podeEditarSistema()&&m.status==='publicada'?`<button class="bg-amber-600 text-white px-3 py-1 rounded text-sm" onclick="despublicarMissaoEventual('${m.id}')" title="Retire o estado de publicação para permitir novos ajustes nesta escala eventual.">Despublicar</button>`:''}<button class="bg-gray-600 text-white px-3 py-1 rounded text-sm" onclick="document.getElementById('detalheEscalaEventual').classList.add('hidden')">Fechar</button></div></div>${m.status==='publicada'?`<div class="mb-3 p-2 rounded bg-green-50 text-green-800 text-sm"><b>Escala publicada</b>${m.publicadaEm?' em '+formatarDataHoraEventual(m.publicadaEm):''}${m.publicadaPor?.nome?' por '+escaparHTML(m.publicadaPor.nome):''}.</div>`:''}${tabela}`;
+      if(m.geradaEm||m.publicadaEm)alvo.innerHTML+=`<div class="mt-4"><h5 class="font-bold mb-2">Histórico operacional</h5><div class="text-sm border rounded p-2 space-y-1">${m.geradaEm?`<div><b>Geração:</b> ${formatarDataHoraEventual(m.geradaEm)}${m.geradaPor?.nome?' — '+escaparHTML(m.geradaPor.nome):''}</div>`:''}${m.publicadaEm?`<div><b>Publicação:</b> ${formatarDataHoraEventual(m.publicadaEm)}${m.publicadaPor?.nome?' — '+escaparHTML(m.publicadaPor.nome):''}</div>`:''}</div></div>`;
+      if((m.alteracoesManuais||[]).length)alvo.innerHTML+=`<div class="mt-4"><h5 class="font-bold mb-2">Alterações manuais</h5><div class="space-y-1 text-sm">${[...(m.alteracoesManuais||[])].reverse().map(a=>{const ant=obterMilitarEventual(a.militarAnteriorId),novo=obterMilitarEventual(a.militarNovoId);return `<div class="border rounded p-2"><b>${fixa?`${formatarDataEventual(m.dataInicio)} a ${formatarDataEventual(m.dataFim)}`:formatarDataEventual(a.data)} — ${escaparHTML(a.funcao||'')}</b>: ${escaparHTML(ant?.nome||'—')} → ${escaparHTML(novo?.nome||'—')}<br><span class="text-gray-600">Justificativa: ${escaparHTML(a.justificativa||'')}</span></div>`}).join('')}</div></div>`;
+      alvo.scrollIntoView({behavior:'smooth',block:'nearest'});
+    }
+    function renderizarFuncoesEventuais() {
+      const alvo = document.getElementById('listaFuncoesEventuais');
+      if (!alvo || !bancoEscalasEventuais) return;
+      const funcoes = [...(bancoEscalasEventuais.funcoesEventuais || [])].sort((a,b)=>a.nome.localeCompare(b.nome));
+      alvo.innerHTML = funcoes.length ? funcoes.map(f=>`
+        <div class="flex items-center justify-between gap-2 border rounded p-2">
+          <span class="font-semibold">${escaparHTML(f.nome)}</span>
+          <div class="whitespace-nowrap">
+            <button class="bg-blue-600 text-white px-3 py-1 rounded text-sm mr-1" onclick="editarFuncaoEventual('${f.id}')">Editar</button>
+            <button class="bg-red-600 text-white px-3 py-1 rounded text-sm" onclick="excluirFuncaoEventualInterface('${f.id}')">Excluir</button>
+          </div>
+        </div>`).join('') : '<p class="text-sm text-gray-400 p-3">Nenhuma função eventual cadastrada.</p>';
+    }
+
+    function limparFuncaoEventualFormulario() {
+      if (document.getElementById('funcaoEventualId')) document.getElementById('funcaoEventualId').value='';
+      if (document.getElementById('funcaoEventualNome')) document.getElementById('funcaoEventualNome').value='';
+    }
+
+    function editarFuncaoEventual(id) {
+      const f=(bancoEscalasEventuais?.funcoesEventuais||[]).find(x=>x.id===id);
+      if(!f)return;
+      document.getElementById('funcaoEventualId').value=f.id;
+      document.getElementById('funcaoEventualNome').value=f.nome;
+    }
+
+    async function salvarFuncaoEventualInterface(evento) {
+      evento.preventDefault();
+      await carregarEscalasEventuaisInterface();
+      const funcao={id:document.getElementById('funcaoEventualId').value,nome:document.getElementById('funcaoEventualNome').value.trim()};
+      if(!funcao.nome)return;
+      mostrarProcessamento('Salvando função eventual...');
+      try {
+        bancoEscalasEventuais=await executarAppsScript('salvarFuncaoEventual',funcao,Number(bancoEscalasEventuais.versao)||1,tokenSessao);
+        limparFuncaoEventualFormulario();
+        renderizarFuncoesEventuais();
+        sincronizarSelectsFuncoesEventuais();
+        renderizarEscalasEventuais();
+      } catch(erro){alert(erro.message||erro)} finally{ocultarProcessamento()}
+    }
+
+    async function excluirFuncaoEventualInterface(id) {
+      await carregarEscalasEventuaisInterface();
+      const f=(bancoEscalasEventuais.funcoesEventuais||[]).find(x=>x.id===id);
+      if(!f||!confirm(`Excluir a função eventual "${f.nome}"?`))return;
+      mostrarProcessamento('Excluindo função eventual...');
+      try {
+        bancoEscalasEventuais=await executarAppsScript('excluirFuncaoEventual',id,Number(bancoEscalasEventuais.versao)||1,tokenSessao);
+        renderizarFuncoesEventuais();
+        sincronizarSelectsFuncoesEventuais();
+      } catch(erro){alert(erro.message||erro)} finally{ocultarProcessamento()}
+    }
+
+    function renderizarEscalasEventuais() {
+      renderizarTiposMissaoEventual(); atualizarSelectTiposMissaoEventual();
+      const corpo = document.getElementById('tabelaEscalasEventuais');
+      const status = document.getElementById('statusBancoEventual');
+      if (!corpo || !bancoEscalasEventuais) return;
+      const missoes = [...(bancoEscalasEventuais.missoes || [])].sort((a,b)=>String(b.dataInicio||'').localeCompare(String(a.dataInicio||'')));
+      if (status) status.textContent = `${missoes.length} missão(ões) · versão ${bancoEscalasEventuais.versao||1}`;
+      if (!missoes.length) {
+        corpo.innerHTML='<tr><td colspan="6" class="p-6 text-center text-gray-400">Nenhuma escala eventual cadastrada.</td></tr>'; return;
+      }
+      corpo.innerHTML = missoes.map(m => {
+        const estrutura = (m.estrutura||[]).map(x=>`${escaparHTML(x.funcao)}: ${Number(x.vagas)||0} vaga(s) <span class="text-xs text-gray-500">(${(x.participantes||[]).length} habilitados)</span>`).join('<br>') || '—';
+        const tipo = m.tipoDistribuicao==='diferenciada' ? `Diferenciada<br><span class="text-xs text-gray-500">${escaparHTML(m.categoria||'geral')}</span>` : 'Corrida';
+        return `<tr class="border-b">
+          <td class="p-2"><div class="font-semibold">${escaparHTML(m.nome||'')}</div><div class="text-xs text-gray-500">${escaparHTML(m.descricao||'')}</div></td>
+          <td class="p-2 text-center whitespace-nowrap">${formatarDataEventual(m.dataInicio)}${m.dataFim&&m.dataFim!==m.dataInicio?' a '+formatarDataEventual(m.dataFim):''}</td>
+          <td class="p-2 text-center">${tipo}</td><td class="p-2 text-center">${estrutura}</td>
+          <td class="p-2 text-center">${m.status==='publicada'?'<span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded font-semibold">Publicada</span>':escaparHTML(m.status||'planejamento')}</td>
+          <td class="p-2 text-right whitespace-nowrap">
+            <button class="bg-slate-600 text-white px-3 py-1 rounded mr-1" onclick="visualizarMissaoEventual('${m.id}')" title="Abra os detalhes e os militares escalados nesta ocorrência.">Ver</button>
+            ${Object.keys(m.escala||{}).length?`<button class="bg-slate-700 text-white px-3 py-1 rounded mr-1" onclick="exportarPDFMissaoEventual('${m.id}')">PDF</button>`:''}
+            ${podeEditarSistema()&&m.status!=='publicada'?`<button class="bg-green-600 text-white px-3 py-1 rounded mr-1" onclick="gerarEscalaEventualInterface('${m.id}')" title="Gere ou regenere a escala desta ocorrência usando as regras do Tipo de Missão.">Gerar</button><button class="bg-blue-600 text-white px-3 py-1 rounded mr-1" onclick="editarMissaoEventual('${m.id}')" title="Carregue esta ocorrência no formulário para alterar período, descrição ou vagas.">Editar</button><button class="bg-red-600 text-white px-3 py-1 rounded" onclick="excluirMissaoEventualInterface('${m.id}')" title="Exclua esta ocorrência eventual e sua escala gerada.">Excluir</button>`:''}
+            ${podeEditarSistema()&&m.status==='publicada'?`<button class="bg-amber-600 text-white px-3 py-1 rounded" onclick="despublicarMissaoEventual('${m.id}')" title="Retire o estado de publicação para permitir novos ajustes nesta escala eventual.">Despublicar</button>`:''}
+          </td></tr>`;
+      }).join('');
+    }
+
+    let contextoAjusteLastroEventual = null;
+
+    function renderizarQuadrinhosEventuais() {
+      const alvo=document.getElementById('quadrinhosEventuaisConteudo');
+      if(!alvo)return;
+      if(!bancoEscalasEventuais){alvo.innerHTML='<p class="text-gray-400">Abra o módulo para carregar os dados.</p>';return;}
+      const listaTipos=(bancoEscalasEventuais.tiposMissao||[]);
+      const tipos=new Map(listaTipos.map(t=>[t.id,t]));
+      const filtro=document.getElementById('filtroTipoMissaoQuadrinhosEventuais');
+      if(filtro){
+        const valorAtual=filtro.value;
+        filtro.innerHTML='<option value="">Todos os Tipos de Missão</option>'+listaTipos
+          .slice()
+          .sort((a,b)=>String(a.nome||'').localeCompare(String(b.nome||''),'pt-BR'))
+          .map(t=>`<option value="${escaparHTML(t.id)}">${escaparHTML(t.nome||'Tipo de Missão')}</option>`).join('');
+        filtro.value=listaTipos.some(t=>t.id===valorAtual)?valorAtual:'';
+      }
+      const tipoSelecionado=filtro?.value||'';
+      const filtroFuncao=document.getElementById('filtroFuncaoQuadrinhosEventuais');
+      let funcaoSelecionada='';
+      if(filtroFuncao){
+        const valorFuncaoAtual=filtroFuncao.value;
+        const tipoAtual=listaTipos.find(t=>t.id===tipoSelecionado);
+        const funcoesDisponiveis=tipoAtual
+          ? [...new Set((tipoAtual.funcoes||[]).map(item=>String(item.funcao||'').trim()).filter(Boolean))]
+              .sort((a,b)=>a.localeCompare(b,'pt-BR'))
+          : [];
+        filtroFuncao.innerHTML='<option value="">Todas as funções</option>'+funcoesDisponiveis
+          .map(funcao=>`<option value="${escaparHTML(funcao)}">${escaparHTML(funcao)}</option>`).join('');
+        filtroFuncao.disabled=!tipoSelecionado;
+        filtroFuncao.value=funcoesDisponiveis.includes(valorFuncaoAtual)?valorFuncaoAtual:'';
+        funcaoSelecionada=tipoSelecionado?(filtroFuncao.value||''):'';
+      }
+      const linhas={};
+
+      // Cria também linhas com Q=0 para todos os militares habilitados no Tipo de Missão.
+      (bancoEscalasEventuais.tiposMissao||[]).forEach(tipo=>{
+        (tipo.funcoes||[]).forEach(item=>{
+          (item.participantes||[]).forEach(militarId=>{
+            const chave=`${tipo.id}|${item.funcao}|${militarId}`;
+            linhas[chave]||={tipoId:tipo.id,tipoNome:tipo.nome,distribuicao:tipo.tipoDistribuicao||'corrida',funcao:item.funcao,militarId,corrida:0,diferenciadas:{}};
+          });
+        });
+      });
+
+      (bancoEscalasEventuais.missoes||[]).forEach(m=>{
+        const tipoId=m.tipoMissaoId||'legado', tipo=tipos.get(tipoId), tipoNome=tipo?.nome||m.nome||'Legado';
+        const categoria=m.tipoDistribuicao==='diferenciada'?(m.categoria||'geral'):'Corrida';
+        const vistosFixos=new Set();
+        Object.values(m.escala||{}).forEach(vagas=>Object.values(vagas||{}).forEach(v=>{
+          if(!v?.militarId||!v?.funcao)return;
+          const chave=`${tipoId}|${v.funcao}|${v.militarId}`;
+          if((m.permanencia||'fixa')==='fixa'){if(vistosFixos.has(chave))return;vistosFixos.add(chave);}
+          linhas[chave]||={tipoId,tipoNome,distribuicao:tipo?.tipoDistribuicao||m.tipoDistribuicao||'corrida',funcao:v.funcao,militarId:v.militarId,corrida:0,diferenciadas:{}};
+          if(m.tipoDistribuicao==='diferenciada')linhas[chave].diferenciadas[categoria]=(linhas[chave].diferenciadas[categoria]||0)+1;
+          else linhas[chave].corrida++;
+        }));
+      });
+
+      const dados=Object.values(linhas)
+        .filter(x=>(!tipoSelecionado||x.tipoId===tipoSelecionado)&&(!funcaoSelecionada||x.funcao===funcaoSelecionada))
+        .sort((a,b)=>a.tipoNome.localeCompare(b.tipoNome)||a.funcao.localeCompare(b.funcao)||(obterMilitarEventual(a.militarId)?.ordem??9999)-(obterMilitarEventual(b.militarId)?.ordem??9999));
+      if(!dados.length){alvo.innerHTML='<p class="p-5 text-center text-gray-400">Cadastre um Tipo de Missão com militares habilitados para acompanhar quadrinhos e lastros.</p>';return;}
+      const porTipo={};dados.forEach(x=>(porTipo[x.tipoId]||=[]).push(x));
+      alvo.innerHTML=Object.entries(porTipo).map(([tipoId,itens])=>{
+        const tipo=tipos.get(tipoId), distribuicao=tipo?.tipoDistribuicao||itens[0].distribuicao||'corrida';
+        return `<div class="mb-6"><div class="mb-2 flex flex-wrap items-center justify-between gap-2"><h4 class="font-bold text-base">${escaparHTML(itens[0].tipoNome)}</h4><span class="text-xs text-gray-500">Distribuição: ${distribuicao==='diferenciada'?'Quadrinho':'Corrida'}</span></div><table class="w-full border-collapse text-sm"><thead><tr class="bg-gray-100"><th class="border p-2 text-left">Função</th><th class="border p-2 text-left">Militar</th><th class="border p-2 text-center">Q</th><th class="border p-2 text-center">L</th><th class="border p-2 text-center font-bold">Total</th><th class="border p-2 text-right">Ações</th></tr></thead><tbody>${itens.map(x=>{const mil=obterMilitarEventual(x.militarId),q=x.corrida+Object.values(x.diferenciadas).reduce((a,b)=>a+b,0),l=obterLastroEventual(tipoId,x.funcao,x.militarId),total=q+l;return `<tr><td class="border p-2">${escaparHTML(x.funcao)}</td><td class="border p-2">${escaparHTML(mil?.nome||'Militar não encontrado')}</td><td class="border p-2 text-center">${q}</td><td class="border p-2 text-center text-gray-600">${l}</td><td class="border p-2 text-center font-bold">${total}</td><td class="border p-2 text-right">${podeEditarSistema()&&tipoId!=='legado'?`<button class="bg-blue-600 text-white px-3 py-1 rounded" onclick="abrirAjusteLastroEventual('${encodeURIComponent(tipoId)}','${encodeURIComponent(x.funcao)}','${encodeURIComponent(x.militarId)}')" title="Ajuste somente o lastro eventual deste militar nesta função e Tipo de Missão.">Ajustar</button>`:''}</td></tr>`}).join('')}</tbody></table></div>`;
+      }).join('');
+    }
+
+    function abrirAjusteLastroEventual(tipoIdCodificado, funcaoCodificada, militarIdCodificado) {
+      if(!podeEditarSistema())return;
+      const tipoId=decodeURIComponent(tipoIdCodificado),funcao=decodeURIComponent(funcaoCodificada),militarId=decodeURIComponent(militarIdCodificado);
+      const tipo=(bancoEscalasEventuais?.tiposMissao||[]).find(t=>t.id===tipoId),militar=obterMilitarEventual(militarId);
+      if(!tipo||!militar)return alert('Não foi possível localizar o Tipo de Missão ou o militar.');
+      contextoAjusteLastroEventual={tipoMissaoId:tipoId,funcao,militarId};
+      document.getElementById('descricaoAjusteLastroEventual').textContent=`${tipo.nome} · ${funcao} · ${militar.nome}`;
+      document.getElementById('valorAjusteLastroEventual').value=obterLastroEventual(tipoId,funcao,militarId);
+      document.getElementById('justificativaAjusteLastroEventual').value='';
+      const modal=document.getElementById('modalAjusteLastroEventual');modal.classList.remove('hidden');modal.classList.add('flex');
+    }
+
+    function fecharAjusteLastroEventual() {
+      contextoAjusteLastroEventual=null;
+      const modal=document.getElementById('modalAjusteLastroEventual');if(!modal)return;modal.classList.add('hidden');modal.classList.remove('flex');
+    }
+
+    async function salvarAjusteLastroEventual(evento) {
+      evento.preventDefault();
+      if(!podeEditarSistema()||!contextoAjusteLastroEventual)return;
+      const valor=Number(document.getElementById('valorAjusteLastroEventual').value),justificativa=document.getElementById('justificativaAjusteLastroEventual').value.trim();
+      if(!Number.isInteger(valor)||valor<0)return alert('Informe um lastro inteiro e não negativo.');
+      if(!justificativa)return alert('Informe a justificativa do ajuste.');
+      mostrarProcessamento('Salvando ajuste de lastro eventual...');
+      try{
+        bancoEscalasEventuais=await executarAppsScript('ajustarLastroEventual',{...contextoAjusteLastroEventual,valor,justificativa},Number(bancoEscalasEventuais.versao)||1,tokenSessao);
+        fecharAjusteLastroEventual();renderizarQuadrinhosEventuais();
+      }catch(erro){console.error('Erro ao ajustar lastro eventual:',erro);alert(`Não foi possível salvar o ajuste. ${erro?.message||erro}`);}
+      finally{ocultarProcessamento();}
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (document.getElementById('tipoMissaoEventualFuncoes') && !document.querySelector('.tipo-missao-funcao')) adicionarLinhaTipoMissaoEventual();
+    });
+
     // =========================================================
 // INTERFACE DE AUTENTICAÇÃO
 // =========================================================
@@ -5995,6 +7219,81 @@ if (
       return ultimosTipos;
     }
 
+    function funcaoEmElaboracaoManual(funcao) {
+      return estado.escala?.modosGeracao?.[funcao] === 'manual';
+    }
+
+    function abrirModalEscalaManual() {
+      const mesAno = document.getElementById('mesAnoEscala').value;
+      if (!mesAno) return alert('Selecione o mês e ano!');
+      const select = document.getElementById('funcaoEscalaManual');
+      select.innerHTML = '<option value="">Selecione a função</option>' + estado.funcoes
+        .filter(funcao => (estado.vagas[funcao] || 0) > 0)
+        .map(funcao => `<option value="${escaparHTML(funcao)}">${escaparHTML(funcao)}</option>`).join('');
+      const modal = document.getElementById('modalEscalaManual');
+      modal.classList.remove('hidden'); modal.classList.add('flex');
+    }
+
+    function fecharModalEscalaManual() {
+      const modal = document.getElementById('modalEscalaManual');
+      modal.classList.add('hidden'); modal.classList.remove('flex');
+    }
+
+    async function confirmarCriacaoEscalaManual(evento) {
+      evento.preventDefault();
+      const mesAno = document.getElementById('mesAnoEscala').value;
+      const funcao = document.getElementById('funcaoEscalaManual').value;
+      if (!mesAno || !funcao) return alert('Selecione a função.');
+      const existente = estado.escalas[mesAno] ? structuredClone(estado.escalas[mesAno]) : null;
+      if (existente?.modosGeracao?.[funcao] === 'manual') {
+        if (!confirm(`A função "${funcao}" já está em elaboração manual. Deseja limpar somente esta função e recomeçar?`)) return;
+      } else if (existente?.dados) {
+        const possuiDadosFuncao = Object.values(existente.dados).some(vagas => Object.entries(vagas || {}).some(([chave,id]) => chave.replace(/ #\d+$/, '') === funcao && id));
+        if (possuiDadosFuncao && !confirm(`A função "${funcao}" já possui militares escalados. Iniciar a elaboração manual limpará somente as vagas desta função. As demais funções serão preservadas.\n\nDeseja continuar?`)) return;
+      }
+      fecharModalEscalaManual();
+      mostrarProcessamento('Preparando escala manual, aguarde...');
+      try {
+        await new Promise(resolve => setTimeout(resolve, 40));
+        const [ano, mes] = mesAno.split('-').map(Number);
+        const diasNoMes = new Date(ano, mes, 0).getDate();
+        const tipos = obterTiposEscalaSelecionados();
+        let escala = existente || {
+          mesAno, tipos: {}, regrasEscalaSnapshot: {}, tiposUsadosPorDia: {}, ordemTrocaManual: {},
+          lastrosIndisponibilidade: {}, alteracoesManuais: {}, estrutura: { funcoes:[...estado.funcoes], vagas:{...estado.vagas} },
+          diasVermelhos: [], coresDias: {}, dados: {}, substituicoes: {}, adiantamentosAutomaticos: {}, justificativas: {}, compensacoesRotacao: {}
+        };
+        escala.modosGeracao ||= {};
+        escala.modosGeracao[funcao] = 'manual';
+        escala.tipos ||= {}; escala.tipos[funcao] = tipos[funcao] || garantirRegrasEscalaFuncao(funcao).distribuicao || 'corrida';
+        escala.regrasEscalaSnapshot ||= {};
+        escala.regrasEscalaSnapshot[funcao] = obterResumoRegrasFuncao(funcao, escala.tipos[funcao]);
+        escala.estrutura ||= { funcoes:[...estado.funcoes], vagas:{...estado.vagas} };
+        escala.estrutura.funcoes = Array.from(new Set([...(escala.estrutura.funcoes || []), funcao]));
+        escala.estrutura.vagas ||= {}; escala.estrutura.vagas[funcao] = estado.vagas[funcao] || 0;
+        for (let dia=1; dia<=diasNoMes; dia++) {
+          escala.dados[dia] ||= {}; escala.tiposUsadosPorDia[dia] ||= {};
+          escala.tiposUsadosPorDia[dia][funcao] = escala.tipos[funcao];
+          const qtd = estado.vagas[funcao] || 0;
+          for (let n=1; n<=qtd; n++) {
+            const chave = `${funcao} #${n}`;
+            escala.dados[dia][chave] = '';
+            if (escala.justificativas?.[dia]) delete escala.justificativas[dia][chave];
+            if (escala.alteracoesManuais?.[dia]) delete escala.alteracoesManuais[dia][chave];
+            if (escala.substituicoes?.[dia]) delete escala.substituicoes[dia][chave];
+            if (escala.adiantamentosAutomaticos?.[dia]) delete escala.adiantamentosAutomaticos[dia][chave];
+          }
+        }
+        estado.escala = escala; estado.escalas[mesAno] = escala;
+        marcarEscalaComoAguardandoRepublicacao(escala, existente?.publicadaEm || '');
+        const salvou = await salvarEstado({acao:'iniciar_escala_manual', mesAno, funcao});
+        if (!salvou) return;
+        renderizarTabelaEscala(); atualizarCoresMesesEscala(); atualizarAvisoEscalasNaoPublicadas();
+        abrirSubpaginaCCI('gerador','visualizacao');
+        alert(`Elaboração manual iniciada para "${funcao}".\n\nPreencha as vagas pela tabela. As regras continuam sendo verificadas em cada escolha.`);
+      } finally { ocultarProcessamento(); }
+    }
+
     function abrirModalGeracaoEscala() {
       const mesAno = document.getElementById('mesAnoEscala').value;
       if (!mesAno) return alert('Selecione o mês e ano!');
@@ -6066,9 +7365,15 @@ if (!mesAno) return;
   ? 'o mês inteiro'
   : `os dias ${diaInicio} a ${diaFim}`;
 
+const funcoesManuaisExistentes = Object.entries(estado.escalas[mesAno]?.modosGeracao || {})
+  .filter(([nomeFuncao, modo]) => modo === 'manual' && (estado.vagas[nomeFuncao] || 0) > 0)
+  .map(([nomeFuncao]) => nomeFuncao);
+
+const preservarFuncoesManuais = !funcao && funcoesManuaisExistentes.length > 0;
+
 const descricaoFuncao = funcao
   ? `a função "${funcao}"`
-  : 'todas as funções';
+  : (preservarFuncoesManuais ? 'todas as funções restantes' : 'todas as funções');
 
 let mensagemConfirmacao =
   `Recriar ${descricaoFuncao} em ${descricaoPeriodo}?`;
@@ -6076,6 +7381,12 @@ let mensagemConfirmacao =
 if (funcao) {
   mensagemConfirmacao +=
     '\n\nAs demais funções e os dias fora desse período serão preservados.';
+} else if (preservarFuncoesManuais) {
+  mensagemConfirmacao +=
+    `\n\nAs funções em elaboração manual serão preservadas integralmente:\n- ${funcoesManuaisExistentes.join('\n- ')}`;
+  if (!mesInteiro) {
+    mensagemConfirmacao += '\n\nOs dias fora desse período também serão preservados.';
+  }
 } else if (!mesInteiro) {
   mensagemConfirmacao +=
     '\n\nOs dias fora desse período serão preservados.';
@@ -6087,7 +7398,12 @@ if (funcao) {
 if (existeEscala && !confirm(mensagemConfirmacao)) return;
 
       fecharModalGeracaoEscala();
-      await gerarEscalaAutomatica({ funcao, diaInicio, diaFim });
+      await gerarEscalaAutomatica({
+        funcao,
+        diaInicio,
+        diaFim,
+        preservarFuncoesManuais
+      });
       abrirSubpaginaCCI('gerador', 'visualizacao');
     }
 
@@ -6111,6 +7427,14 @@ try {
       const funcaoGeracao = configuracao?.funcao || null;
       const diaInicioGeracao = configuracao?.diaInicio || 1;
       const diaFimGeracao = configuracao?.diaFim || diasNoMes;
+      const preservarFuncoesManuais = !funcaoGeracao && !!configuracao?.preservarFuncoesManuais;
+      const funcoesManuaisProtegidas = preservarFuncoesManuais
+        ? new Set(
+            Object.entries(escalaExistenteAntesGeracao?.modosGeracao || {})
+              .filter(([funcao, modo]) => modo === 'manual' && (estado.vagas[funcao] || 0) > 0)
+              .map(([funcao]) => funcao)
+          )
+        : new Set();
 
       let novaEscala = {};
       let substituicoes = {};
@@ -6630,9 +7954,23 @@ try {
           // fora da disputa DESTA vaga. Sem isso, o critério de menor acumulado
           // poderia selecionar novamente o mesmo militar que acabou de ser pulado.
           const idsPuladosPorAdiantamentoNestaVaga = new Set(militaresPuladosPorAdiantamento);
-          let candidatos = obterMilitaresParaEscala(col.funcao)
-            .filter(m => podeSerEscalado(m))
+
+          // CORREÇÃO TESTE 2 — primeiro preserva a lista de candidatos realmente
+          // elegíveis pelas regras operacionais. A exclusão de quem foi pulado por
+          // adiantamento é uma preferência de rotação, não um impedimento absoluto.
+          const candidatosElegiveisAntesCompensacao = obterMilitaresParaEscala(col.funcao)
+            .filter(m => podeSerEscalado(m));
+
+          let candidatos = candidatosElegiveisAntesCompensacao
             .filter(m => !idsPuladosPorAdiantamentoNestaVaga.has(m.id));
+
+          // Se a preferência de compensação eliminaria TODOS os candidatos, volta
+          // para os elegíveis originais. Isso restaura a cobertura da vaga sem
+          // liberar militar indisponível nem quebrar as regras de elegibilidade.
+          if (candidatos.length === 0 && candidatosElegiveisAntesCompensacao.length > 0) {
+            candidatos = [...candidatosElegiveisAntesCompensacao];
+          }
+
           let excecaoVermelhaConsecutiva = false;
           let excecaoCorConsecutiva = false;
           const regraCorAtual = garantirRegrasCorServico(corServico);
@@ -7042,8 +8380,7 @@ try {
       // mesmo se o mês ainda não possuir escala. Nesse caso criamos uma base
       // mensal vazia e aplicamos somente a função escolhida, deixando as demais
       // funções sem militares até que sejam geradas posteriormente.
-      const deveMesclarResultado = !!funcaoGeracao
-        || (!!escalaExistenteAntesGeracao && geracaoParcial);
+      const deveMesclarResultado = !!escalaExistenteAntesGeracao && (funcaoGeracao || diaInicioGeracao > 1 || diaFimGeracao < diasNoMes || funcoesManuaisProtegidas.size > 0);
 
       if (deveMesclarResultado) {
         const escalaBase = escalaExistenteAntesGeracao
@@ -7182,13 +8519,18 @@ delete escalaBase.alteracoesManuais[dia][chave];
 if (deveMesclarResultado) {
   const funcoesGeradas = funcaoGeracao
     ? [funcaoGeracao]
-    : estado.funcoes.filter(funcao => (estado.vagas[funcao] || 0) > 0);
+    : estado.funcoes.filter(funcao =>
+        (estado.vagas[funcao] || 0) > 0 &&
+        !funcoesManuaisProtegidas.has(funcao)
+      );
 
   estado.escala.tipos = {
     ...(escalaExistenteAntesGeracao?.tipos || {})
   };
+  estado.escala.modosGeracao = { ...(escalaExistenteAntesGeracao?.modosGeracao || estado.escala.modosGeracao || {}) };
   funcoesGeradas.forEach(funcao => {
     estado.escala.tipos[funcao] = tiposEscala[funcao] || 'corrida';
+    estado.escala.modosGeracao[funcao] = 'automatica';
   });
 
   estado.escala.regrasEscalaSnapshot = {
@@ -7210,6 +8552,54 @@ if (deveMesclarResultado) {
   estado.escala.estrutura.vagas ||= {};
   funcoesGeradas.forEach(funcao => {
     estado.escala.estrutura.vagas[funcao] = estado.vagas[funcao] || 0;
+  });
+}
+
+// PROTEÇÃO DE FUNÇÕES MANUAIS — quando a geração em lote for usada,
+ // restaura integralmente as vagas e metadados por célula das funções manuais.
+if (funcoesManuaisProtegidas.size > 0 && escalaExistenteAntesGeracao?.dados) {
+  for (let dia = 1; dia <= diasNoMes; dia++) {
+    estado.escala.dados[dia] ||= {};
+    const dadosAnterioresDia = escalaExistenteAntesGeracao.dados?.[dia] || {};
+
+    Object.keys(dadosAnterioresDia).forEach(chave => {
+      const funcaoDaChave = chave.replace(/ #\d+$/, '');
+      if (!funcoesManuaisProtegidas.has(funcaoDaChave)) return;
+
+      estado.escala.dados[dia][chave] = dadosAnterioresDia[chave];
+
+      ['justificativas', 'alteracoesManuais', 'substituicoes', 'adiantamentosAutomaticos'].forEach(campo => {
+        estado.escala[campo] ||= {};
+        estado.escala[campo][dia] ||= {};
+        const anterior = escalaExistenteAntesGeracao[campo]?.[dia]?.[chave];
+        if (anterior === undefined) delete estado.escala[campo][dia][chave];
+        else estado.escala[campo][dia][chave] = structuredClone(anterior);
+      });
+    });
+
+    // Também remove qualquer vaga manual criada apenas pela geração temporária.
+    Object.keys(estado.escala.dados[dia]).forEach(chave => {
+      const funcaoDaChave = chave.replace(/ #\d+$/, '');
+      if (!funcoesManuaisProtegidas.has(funcaoDaChave)) return;
+      if (!(chave in dadosAnterioresDia)) {
+        delete estado.escala.dados[dia][chave];
+        ['justificativas', 'alteracoesManuais', 'substituicoes', 'adiantamentosAutomaticos'].forEach(campo => {
+          if (estado.escala[campo]?.[dia]) delete estado.escala[campo][dia][chave];
+        });
+      }
+    });
+  }
+
+  estado.escala.modosGeracao ||= {};
+  funcoesManuaisProtegidas.forEach(funcao => {
+    estado.escala.modosGeracao[funcao] = 'manual';
+    if (escalaExistenteAntesGeracao.tipos?.[funcao] !== undefined) {
+      estado.escala.tipos[funcao] = escalaExistenteAntesGeracao.tipos[funcao];
+    }
+    if (escalaExistenteAntesGeracao.regrasEscalaSnapshot?.[funcao] !== undefined) {
+      estado.escala.regrasEscalaSnapshot[funcao] =
+        structuredClone(escalaExistenteAntesGeracao.regrasEscalaSnapshot[funcao]);
+    }
   });
 }
 
@@ -8017,44 +9407,28 @@ if (salvou) {
       }
     }
 
+
     function atualizarFiltroFuncaoEscalaMobile(estruturaEscala, colunasVagas) {
       const seletor = document.getElementById('filtroFuncaoEscalaMobile');
       if (!seletor) return;
-
       const valorAnterior = seletor.value;
-      const funcoesDisponiveis = [...new Set(
-        (colunasVagas || []).map(coluna => coluna.funcao).filter(Boolean)
-      )];
-
-      seletor.innerHTML =
-        '<option value="">Todas as funções</option>' +
-        funcoesDisponiveis
-          .map(funcao => `<option value="${escaparHTML(encodeURIComponent(funcao))}">${escaparHTML(funcao)}</option>`)
-          .join('');
-
-      const valorAnteriorValido = valorAnterior &&
-        funcoesDisponiveis.some(funcao => encodeURIComponent(funcao) === valorAnterior);
-
-      if (valorAnteriorValido) {
-        seletor.value = valorAnterior;
-      } else if (window.matchMedia('(max-width: 767px)').matches && funcoesDisponiveis.length) {
-        seletor.value = encodeURIComponent(funcoesDisponiveis[0]);
-      } else {
-        seletor.value = '';
-      }
+      const funcoesDisponiveis = [...new Set((colunasVagas || []).map(coluna => coluna.funcao).filter(Boolean))];
+      seletor.innerHTML = '<option value="">Todas as funções</option>' + funcoesDisponiveis
+        .map(funcao => `<option value="${escaparHTML(encodeURIComponent(funcao))}">${escaparHTML(funcao)}</option>`).join('');
+      const valorAnteriorValido = valorAnterior && funcoesDisponiveis.some(funcao => encodeURIComponent(funcao) === valorAnterior);
+      if (valorAnteriorValido) seletor.value = valorAnterior;
+      else if (window.matchMedia('(max-width: 767px)').matches && funcoesDisponiveis.length) seletor.value = encodeURIComponent(funcoesDisponiveis[0]);
+      else seletor.value = '';
     }
 
     function aplicarFiltroFuncaoEscalaMobile() {
       const seletor = document.getElementById('filtroFuncaoEscalaMobile');
       const tabela = document.getElementById('tabelaEscalaPrincipal');
       if (!seletor || !tabela) return;
-
       const modoMobile = window.matchMedia('(max-width: 767px)').matches;
       const funcaoSelecionada = modoMobile ? seletor.value : '';
-
       tabela.querySelectorAll('[data-funcao-escala]').forEach(celula => {
-        const exibir = !funcaoSelecionada ||
-          celula.dataset.funcaoEscala === funcaoSelecionada;
+        const exibir = !funcaoSelecionada || celula.dataset.funcaoEscala === funcaoSelecionada;
         celula.classList.toggle('cci-coluna-funcao-oculta', !exibir);
       });
     }
@@ -8314,8 +9688,14 @@ const militaresOrdenadosTroca = militaresNaOrdemBase
     // imediatamente anterior ou posterior não deve ser oferecido como opção.
     // A busca usa timestamps reais e percorre todas as escalas, portanto também
     // funciona corretamente nas viradas de mês/ano.
-    if (militarTemServicoNoTempoTroca(militar.id, tempoAnteriorTroca)) return false;
-    if (militarTemServicoNoTempoTroca(militar.id, tempoSeguinteTroca)) return false;
+    const elaboracaoManualFuncao = funcaoEmElaboracaoManual(col.funcao);
+    // Na elaboração manual todos os candidatos da função precisam poder ser avaliados
+    // pelo motor. Assim situações de descanso/24h aparecem como alerta em vez de
+    // desaparecerem silenciosamente do seletor. Na edição comum mantém o filtro histórico.
+    if (!elaboracaoManualFuncao) {
+      if (militarTemServicoNoTempoTroca(militar.id, tempoAnteriorTroca)) return false;
+      if (militarTemServicoNoTempoTroca(militar.id, tempoSeguinteTroca)) return false;
+    }
 
     const tipoTrocaEfetivo = estado.escala.tiposUsadosPorDia?.[dia]?.[col.funcao]
       || obterTiposEscalaDaEscala(estado.escala)[col.funcao]
@@ -9202,6 +10582,13 @@ const opcoes = militaresOrdenadosTroca
     function atualizarJustificativasCompensacaoAposRecalculo(escala, diaAlterado, chaveColunaAlterada) {
       if (!escala?.justificativas || !Array.isArray(escala.rastreioCompensacoesRotacao)) return;
 
+      // CORREÇÃO TESTE 2 — esta rotina é externa a gerarEscalaAutomatica().
+      // Portanto não pode depender do obterNomeMilitar local daquela função.
+      const obterNomeMilitar = militarId => {
+        const militar = estado.militares.find(item => item.id === militarId);
+        return militar ? `${militar.nome} (${militar.saram})` : 'Sem militar';
+      };
+
       const funcaoAlterada = obterFuncaoDaChave(chaveColunaAlterada);
       const rastreioOrigem = escala.rastreioCompensacoesRotacao.find(item =>
         Number(String(item.data || '').slice(-2)) === Number(diaAlterado)
@@ -9324,7 +10711,11 @@ const opcoes = militaresOrdenadosTroca
           }
         }
 
-        const dadosJustificativaManual = await solicitarJustificativaAlteracaoManual();
+        const funcaoEdicao = obterFuncaoDaChave(chaveColuna);
+        const preenchimentoInicialManual = funcaoEmElaboracaoManual(funcaoEdicao) && !militarIdAnterior;
+        const dadosJustificativaManual = preenchimentoInicialManual
+          ? { tipo: 'elaboracao_manual', motivo: 'Preenchimento inicial da escala manual.', responsavelNome: usuarioLogado?.nome || '', responsavelSaram: usuarioLogado?.saram || '' }
+          : await solicitarJustificativaAlteracaoManual();
         if (!dadosJustificativaManual) {
           renderizarTabelaEscala();
           return;
@@ -9364,7 +10755,8 @@ const opcoes = militaresOrdenadosTroca
         const rotulosTipoAlteracao = {
           troca: 'Militar trocou o serviço',
           puxado: 'Militar foi puxado',
-          outros: 'Outros'
+          outros: 'Outros',
+          elaboracao_manual: 'Elaboração manual inicial'
         };
         const registroManual = [
           'ALTERAÇÃO MANUAL:',
@@ -10167,38 +11559,16 @@ async function exportarPDF() {
           compress: true
         });
         pdf.addImage(canvas.toDataURL('image/jpeg', 0.98), 'JPEG', 0, 0, larguraPt, alturaPt);
-
         const nomeArquivo = `Escala_CCI_${document.getElementById('mesAnoEscala').value}.pdf`;
-        const executandoNoCapacitor = !!(
-          window.Capacitor &&
-          typeof window.Capacitor.isNativePlatform === 'function' &&
-          window.Capacitor.isNativePlatform()
-        );
-
+        const executandoNoCapacitor = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform());
         if (executandoNoCapacitor) {
           const Filesystem = window.Capacitor?.Plugins?.Filesystem;
           const Share = window.Capacitor?.Plugins?.Share;
-
-          if (!Filesystem || !Share) {
-            throw new Error('Plugins nativos Filesystem/Share não disponíveis. Execute npm install e npx cap sync android.');
-          }
-
+          if (!Filesystem || !Share) throw new Error('Plugins nativos Filesystem/Share não disponíveis. Execute npm install e npx cap sync android.');
           const dataUri = pdf.output('datauristring');
           const base64 = dataUri.substring(dataUri.indexOf(',') + 1);
-
-          const arquivo = await Filesystem.writeFile({
-            path: `sesci/${nomeArquivo}`,
-            data: base64,
-            directory: 'CACHE',
-            recursive: true
-          });
-
-          await Share.share({
-            title: 'Escala de Serviço - CCI',
-            text: `Escala ${document.getElementById('mesAnoEscala').value}`,
-            url: arquivo.uri,
-            dialogTitle: 'Salvar ou compartilhar PDF'
-          });
+          const arquivo = await Filesystem.writeFile({ path: `sesci/${nomeArquivo}`, data: base64, directory: 'CACHE', recursive: true });
+          await Share.share({ title: 'Escala de Serviço - CCI', text: `Escala ${document.getElementById('mesAnoEscala').value}`, url: arquivo.uri, dialogTitle: 'Salvar ou compartilhar PDF' });
         } else {
           pdf.save(nomeArquivo);
         }
