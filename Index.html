@@ -666,6 +666,22 @@ body.cci-menu-recolhido #bannerConflitoServidor{
   </div>
 </section>
 
+<!-- MODAL: HISTÓRICO DOS QUADRINHOS — ESCALAS EVENTUAIS -->
+<div class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50 p-4" id="modalHistoricoQuadrinhosEventual">
+  <div class="w-full max-w-3xl max-h-[88vh] overflow-hidden rounded bg-white shadow-xl flex flex-col">
+    <div class="border-b p-4 flex items-start justify-between gap-3">
+      <div>
+        <h3 class="font-bold text-lg">Missões contabilizadas no quadrinho</h3>
+        <p class="mt-1 text-xs text-gray-500" id="descricaoHistoricoQuadrinhosEventual"></p>
+      </div>
+      <button class="shrink-0 bg-gray-500 text-white px-3 py-2 rounded font-semibold" onclick="fecharHistoricoQuadrinhosEventual()" type="button" aria-label="Fechar histórico">Fechar</button>
+    </div>
+    <div class="p-4 overflow-y-auto">
+      <div id="conteudoHistoricoQuadrinhosEventual"></div>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: AJUSTE MANUAL DE LASTRO — ESCALAS EVENTUAIS -->
 <div class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50 p-4" id="modalAjusteLastroEventual">
   <form class="w-full max-w-lg rounded bg-white shadow-xl" onsubmit="salvarAjusteLastroEventual(event)">
@@ -4106,8 +4122,63 @@ async function inicializar() {
       const porTipo={};dados.forEach(x=>(porTipo[x.tipoId]||=[]).push(x));
       alvo.innerHTML=Object.entries(porTipo).map(([tipoId,itens])=>{
         const tipo=tipos.get(tipoId), distribuicao=tipo?.tipoDistribuicao||itens[0].distribuicao||'corrida';
-        return `<div class="mb-6"><div class="mb-2 flex flex-wrap items-center justify-between gap-2"><h4 class="font-bold text-base">${escaparHTML(itens[0].tipoNome)}</h4><span class="text-xs text-gray-500">Distribuição: ${distribuicao==='diferenciada'?'Quadrinho':'Corrida'}</span></div><table class="w-full border-collapse text-sm"><thead><tr class="bg-gray-100"><th class="border p-2 text-left">Função</th><th class="border p-2 text-left">Militar</th><th class="border p-2 text-center">Q</th><th class="border p-2 text-center">L</th><th class="border p-2 text-center font-bold">Total</th><th class="border p-2 text-right">Ações</th></tr></thead><tbody>${itens.map(x=>{const mil=obterMilitarEventual(x.militarId),q=x.corrida+Object.values(x.diferenciadas).reduce((a,b)=>a+b,0),l=obterLastroEventual(tipoId,x.funcao,x.militarId),total=q+l;return `<tr><td class="border p-2">${escaparHTML(x.funcao)}</td><td class="border p-2">${escaparHTML(mil?.nome||'Militar não encontrado')}</td><td class="border p-2 text-center">${q}</td><td class="border p-2 text-center text-gray-600">${l}</td><td class="border p-2 text-center font-bold">${total}</td><td class="border p-2 text-right">${podeEditarSistema()&&tipoId!=='legado'?`<button class="bg-blue-600 text-white px-3 py-1 rounded" onclick="abrirAjusteLastroEventual('${encodeURIComponent(tipoId)}','${encodeURIComponent(x.funcao)}','${encodeURIComponent(x.militarId)}')" title="Ajuste somente o lastro eventual deste militar nesta função e Tipo de Missão.">Ajustar</button>`:''}</td></tr>`}).join('')}</tbody></table></div>`;
+        return `<div class="mb-6"><div class="mb-2 flex flex-wrap items-center justify-between gap-2"><h4 class="font-bold text-base">${escaparHTML(itens[0].tipoNome)}</h4><span class="text-xs text-gray-500">Distribuição: ${distribuicao==='diferenciada'?'Quadrinho':'Corrida'}</span></div><table class="w-full border-collapse text-sm"><thead><tr class="bg-gray-100"><th class="border p-2 text-left">Função</th><th class="border p-2 text-left">Militar</th><th class="border p-2 text-center">Q</th><th class="border p-2 text-center">L</th><th class="border p-2 text-center font-bold">Total</th><th class="border p-2 text-right">Ações</th></tr></thead><tbody>${itens.map(x=>{const mil=obterMilitarEventual(x.militarId),q=x.corrida+Object.values(x.diferenciadas).reduce((a,b)=>a+b,0),l=obterLastroEventual(tipoId,x.funcao,x.militarId),total=q+l;return `<tr><td class="border p-2">${escaparHTML(x.funcao)}</td><td class="border p-2">${escaparHTML(mil?.nome||'Militar não encontrado')}</td><td class="border p-2 text-center">${q}</td><td class="border p-2 text-center text-gray-600">${l}</td><td class="border p-2 text-center font-bold">${total}</td><td class="border p-2 text-right whitespace-nowrap"><button class="bg-slate-600 text-white px-3 py-1 rounded mr-1" onclick="abrirHistoricoQuadrinhosEventual('${encodeURIComponent(tipoId)}','${encodeURIComponent(x.funcao)}','${encodeURIComponent(x.militarId)}')" title="Veja quais missões deste Tipo de Missão estão contabilizadas no quadrinho deste militar.">Missões</button>${podeEditarSistema()&&tipoId!=='legado'?`<button class="bg-blue-600 text-white px-3 py-1 rounded" onclick="abrirAjusteLastroEventual('${encodeURIComponent(tipoId)}','${encodeURIComponent(x.funcao)}','${encodeURIComponent(x.militarId)}')" title="Ajuste somente o lastro eventual deste militar nesta função e Tipo de Missão.">Ajustar</button>`:''}</td></tr>`}).join('')}</tbody></table></div>`;
       }).join('');
+    }
+
+    function obterMissoesContabilizadasQuadrinhoEventual(tipoId, funcao, militarId) {
+      const registros=[];
+      (bancoEscalasEventuais?.missoes||[]).forEach(missao=>{
+        const missaoTipoId=missao.tipoMissaoId||'legado';
+        if(missaoTipoId!==tipoId)return;
+        const datas=[];
+        Object.entries(missao.escala||{}).forEach(([data,vagas])=>{
+          const participou=Object.values(vagas||{}).some(v=>v?.militarId===militarId&&v?.funcao===funcao);
+          if(participou)datas.push(data);
+        });
+        if(!datas.length)return;
+        datas.sort();
+        const fixa=(missao.permanencia||'fixa')==='fixa';
+        registros.push({
+          id:missao.id,
+          nome:missao.nome||'Missão eventual',
+          dataInicio:missao.dataInicio||datas[0]||'',
+          dataFim:missao.dataFim||datas[datas.length-1]||'',
+          datas,
+          permanencia:fixa?'fixa':'diaria',
+          quadrinhos:fixa?1:datas.length,
+          status:missao.status||'planejamento'
+        });
+      });
+      return registros.sort((a,b)=>String(a.dataInicio).localeCompare(String(b.dataInicio))||String(a.nome).localeCompare(String(b.nome),'pt-BR'));
+    }
+
+    function formatarDataEventualBR(dataStr) {
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(String(dataStr||'')))return String(dataStr||'—');
+      const [a,m,d]=dataStr.split('-');return `${d}/${m}/${a}`;
+    }
+
+    function abrirHistoricoQuadrinhosEventual(tipoIdCodificado, funcaoCodificada, militarIdCodificado) {
+      const tipoId=decodeURIComponent(tipoIdCodificado),funcao=decodeURIComponent(funcaoCodificada),militarId=decodeURIComponent(militarIdCodificado);
+      const tipo=(bancoEscalasEventuais?.tiposMissao||[]).find(t=>t.id===tipoId);
+      const militar=obterMilitarEventual(militarId);
+      const registros=obterMissoesContabilizadasQuadrinhoEventual(tipoId,funcao,militarId);
+      const total=registros.reduce((s,r)=>s+r.quadrinhos,0);
+      const descricao=document.getElementById('descricaoHistoricoQuadrinhosEventual');
+      const conteudo=document.getElementById('conteudoHistoricoQuadrinhosEventual');
+      if(descricao)descricao.textContent=`${tipo?.nome||'Tipo de Missão'} · ${funcao} · ${militar?.nome||'Militar'} · Q contabilizado: ${total}`;
+      if(conteudo){
+        if(!registros.length){
+          conteudo.innerHTML='<p class="p-5 text-center text-gray-400">Nenhuma missão está contabilizada no quadrinho deste militar.</p>';
+        }else{
+          conteudo.innerHTML=`<div class="mb-3 rounded border bg-gray-50 p-3 text-xs text-gray-600"><strong>${registros.length}</strong> ocorrência(s) encontrada(s) · <strong>${total}</strong> quadrinho(s) contabilizado(s). Em equipe fixa, cada ocorrência vale 1 quadrinho; em rotação diária, cada dia escalado vale 1 quadrinho.</div><div class="overflow-x-auto"><table class="w-full border-collapse text-sm"><thead><tr class="bg-gray-100"><th class="border p-2 text-left">Missão</th><th class="border p-2 text-center">Período</th><th class="border p-2 text-left">Participação contabilizada</th><th class="border p-2 text-center">Q</th></tr></thead><tbody>${registros.map(r=>{const periodo=r.dataInicio===r.dataFim?formatarDataEventualBR(r.dataInicio):`${formatarDataEventualBR(r.dataInicio)} a ${formatarDataEventualBR(r.dataFim)}`;const participacao=r.permanencia==='fixa'?`Equipe fixa — ocorrência completa (${r.datas.length} dia(s) escalado(s))`:`Rotação diária — ${r.datas.map(formatarDataEventualBR).join(', ')}`;return `<tr><td class="border p-2"><div class="font-semibold">${escaparHTML(r.nome)}</div><div class="text-[11px] text-gray-500">${escaparHTML(r.status)}</div></td><td class="border p-2 text-center whitespace-nowrap">${escaparHTML(periodo)}</td><td class="border p-2">${escaparHTML(participacao)}</td><td class="border p-2 text-center font-bold">${r.quadrinhos}</td></tr>`}).join('')}</tbody><tfoot><tr class="bg-gray-50"><td class="border p-2 text-right font-bold" colspan="3">Total contabilizado</td><td class="border p-2 text-center font-bold">${total}</td></tr></tfoot></table></div>`;
+        }
+      }
+      const modal=document.getElementById('modalHistoricoQuadrinhosEventual');if(!modal)return;modal.classList.remove('hidden');modal.classList.add('flex');
+    }
+
+    function fecharHistoricoQuadrinhosEventual() {
+      const modal=document.getElementById('modalHistoricoQuadrinhosEventual');if(!modal)return;modal.classList.add('hidden');modal.classList.remove('flex');
     }
 
     function abrirAjusteLastroEventual(tipoIdCodificado, funcaoCodificada, militarIdCodificado) {
