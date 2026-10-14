@@ -12,8 +12,16 @@
     th, td { white-space: nowrap; }
     .celula-militar { min-width: 150px; white-space: normal; }
     .militar-nome { display: block; font-weight: 600; }
+    .militar-nome.escala-vermelha { color: #dc2626 !important; }
     .militar-saram { display: block; margin-top: 2px; font-size: 0.9em; font-weight: 400; color: #4b5563; }
+    /* A visualização permanece rolável; somente a cópia do PDF é expandida. */
+    .pdf-exportacao table { min-width: max-content; width: max-content; }
+    .pdf-exportacao th, .pdf-exportacao td { white-space: nowrap; }
+    .pdf-exportacao .celula-militar { white-space: normal; }
+
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800">
   <main class="mx-auto max-w-[1600px] p-3 md:p-6">
@@ -32,6 +40,7 @@
               <option value="">Carregando...</option>
             </select>
           </label>
+          <button id="btnImprimir" type="button" onclick="exportarPDF()" class="inline-flex items-center justify-center rounded bg-gray-800 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-700">Gerar PDF</button>
           <button id="btnAtualizar" type="button" onclick="atualizarPaginaEscalas()" class="inline-flex min-w-[112px] items-center justify-center gap-2 rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:cursor-wait disabled:opacity-70">
             <svg id="spinnerAtualizar" class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -52,6 +61,7 @@
           <tbody id="corpo"></tbody>
         </table>
       </div>
+
     </section>
 
     <footer class="py-5 text-center text-xs text-gray-500">Consulta da escala publicada pelo CCI</footer>
@@ -122,7 +132,7 @@ function renderizarEscala(publicacao) {
       const cor = publicacao.cores?.[dia]?.[col.chave]?.cor || '';
       const estilo = cor ? ` style="background-color:${escaparHTML(cor)}"` : '';
       const identificacao = nome
-        ? `<span class="militar-nome">${escaparHTML(nome)}</span>${saram ? `<span class="militar-saram">SARAM: ${escaparHTML(saram)}</span>` : ''}`
+        ? `<span class="militar-nome${vermelho ? ' escala-vermelha' : ''}">${escaparHTML(nome)}</span>${saram ? `<span class="militar-saram">SARAM: ${escaparHTML(saram)}</span>` : ''}`
         : '';
       html += `<td class="celula-militar border p-2 text-center"${estilo}>${identificacao}</td>`;
     });
@@ -130,6 +140,57 @@ function renderizarEscala(publicacao) {
   }
   document.getElementById('corpo').innerHTML = html;
   renderizarLegenda(publicacao);
+}
+
+// Mesmo método do index.html: uma página PDF dimensionada pela escala inteira.
+async function exportarPDF() {
+  if (document.getElementById('areaTabela').classList.contains('hidden')) {
+    alert('Aguarde o carregamento da escala.');
+    return;
+  }
+  const botao = document.getElementById('btnImprimir');
+  const rotulo = botao.textContent;
+  botao.disabled = true;
+  botao.textContent = 'Gerando PDF...';
+  const areaMedicao = document.createElement('div');
+  areaMedicao.style.cssText = 'position:fixed;left:0;top:0;z-index:-1;pointer-events:none;overflow:visible;background:#fff;padding:0;';
+  try {
+    if (!window.html2canvas || !window.jspdf?.jsPDF) throw new Error('Bibliotecas de PDF indisponíveis.');
+    const copia = document.createElement('div');
+    copia.className = 'pdf-exportacao';
+    copia.style.cssText = 'display:inline-block;width:max-content;background:white;padding:0;margin:0;font-family:Arial,sans-serif;color:#1f2937;';
+    const titulo = document.createElement('div');
+    titulo.style.cssText = 'padding:8px 4px;font-size:20px;font-weight:bold;color:#b91c1c;';
+    titulo.textContent = 'Escala de Serviço - CCI — ' + document.getElementById('mesPublicacao').textContent;
+    copia.appendChild(titulo);
+    const tabela = document.querySelector('#areaTabela table').cloneNode(true);
+    tabela.style.cssText = 'width:max-content;min-width:max-content;border-collapse:collapse;';
+    copia.appendChild(tabela);
+    areaMedicao.appendChild(copia);
+    document.body.appendChild(areaMedicao);
+    const larguraPagina = Math.ceil(Math.max(copia.scrollWidth, tabela.scrollWidth));
+    const alturaPagina = Math.ceil(copia.scrollHeight);
+    const canvas = await html2canvas(copia, {
+      scale: 2, useCORS: true, scrollX: 0, scrollY: 0,
+      width: larguraPagina, height: alturaPagina,
+      windowWidth: larguraPagina, windowHeight: alturaPagina
+    });
+    const larguraPt = larguraPagina * 0.75;
+    const alturaPt = alturaPagina * 0.75;
+    const pdf = new window.jspdf.jsPDF({
+      unit: 'pt', format: [larguraPt, alturaPt],
+      orientation: larguraPt >= alturaPt ? 'landscape' : 'portrait', compress: true
+    });
+    pdf.addImage(canvas.toDataURL('image/jpeg', 0.98), 'JPEG', 0, 0, larguraPt, alturaPt);
+    pdf.save('Escala_CCI_' + (document.getElementById('seletorEscala').value || 'publicada') + '.pdf');
+  } catch (erro) {
+    console.error('Erro ao gerar PDF:', erro);
+    alert('Não foi possível gerar o PDF. Verifique sua conexão e tente novamente.');
+  } finally {
+    areaMedicao.remove();
+    botao.disabled = false;
+    botao.textContent = rotulo;
+  }
 }
 
 async function chamarApiPublica(funcao, params = {}) {

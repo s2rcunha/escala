@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sesci-pwa-v1';
+const CACHE_NAME = 'sesci-pwa-v2-menu-submenus';
 const APP_SHELL = [
   './',
   './index.html',

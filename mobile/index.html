@@ -781,6 +781,25 @@ body.cci-menu-recolhido #bannerConflitoServidor{
 }
 </style>
 
+<style>
+/* Ajustes de ergonomia do menu para telas de smartphones e APK */
+@media (max-width: 767px) {
+  .cci-sidebar, body.cci-menu-recolhido .cci-sidebar { width:min(90vw,330px) !important; }
+  .cci-toggle { min-height:64px !important; padding:16px 20px !important; font-size:17px !important; }
+  .cci-toggle .cci-nav-icon {font-size:29px !important;}
+  .cci-nav-title {font-size:17px !important; padding:22px 20px 12px !important;}
+  .cci-nav-btn {min-height:60px !important; padding:14px 20px !important; font-size:17px !important; gap:17px !important; line-height:1.35 !important;}
+  .cci-nav-icon {font-size:25px !important; flex-basis:34px !important; width:34px !important;}
+  .cci-nav-label {white-space:normal !important;}
+  .cci-mobile {width:48px !important;height:48px !important;font-size:27px !important; margin-top:12px !important;}
+  /* Submenus de primeiro e segundo nivel: legibilidade e toque */
+  .cci-submenu-btn, .cci-submenu-nivel2 .cci-submenu-btn {font-size:17px !important;min-height:54px !important;line-height:1.4 !important;gap:12px !important;padding-top:12px !important;padding-bottom:12px !important;white-space:normal !important;}
+  .cci-submenu-btn {padding-left:54px !important;padding-right:15px !important;}
+  .cci-submenu-nivel2 .cci-submenu-btn {padding-left:28px !important;padding-right:12px !important;}
+  .cci-submenu-dot {font-size:22px !important;flex-shrink:0 !important;}
+  .cci-submenu-arrow {font-size:22px !important;}
+}
+</style>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800">
 <!-- =====================================================
@@ -899,7 +918,20 @@ body.cci-menu-recolhido #bannerConflitoServidor{
 <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold" onclick="exportarPDF()">📄 Exportar PDF</button>
 <button class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-sm font-semibold" onclick="exportarXLS()">Exportar XLS</button>
 <button class="somente-edicao bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded text-sm font-semibold" id="botaoPublicarEscala" onclick="publicarEscalaAtual()">📢 Publicar escala</button>
-<button class="somente-edicao bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm font-semibold" onclick="limparEscala()">Limpar</button>
+<button class="somente-edicao bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm font-semibold" onclick="limparEscala()">Limpar mês inteiro</button>
+<button class="somente-edicao bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded text-sm font-semibold" onclick="abrirModalLimpezaFuncao()">Limpar função</button>
+</div>
+<div id="modalLimpezaFuncao" class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-60 p-4" role="dialog" aria-modal="true" aria-labelledby="tituloModalLimpezaFuncao" onclick="if(event.target===this)fecharModalLimpezaFuncao()">
+  <div class="bg-white text-gray-900 rounded-xl shadow-xl w-full max-w-md p-6">
+    <h3 id="tituloModalLimpezaFuncao" class="text-xl font-bold mb-3">Limpar função da escala</h3>
+    <p class="text-sm mb-4">Selecione a função que deseja limpar no mês atual. As demais funções serão preservadas.</p>
+    <label for="funcaoLimpezaEscala" class="block font-semibold mb-2">Função</label>
+    <select id="funcaoLimpezaEscala" class="w-full border rounded-lg px-3 py-3 bg-white text-gray-900 text-base mb-5"><option value="">Selecione a função</option></select>
+    <div class="flex justify-end gap-3 flex-wrap">
+      <button type="button" class="bg-gray-200 text-gray-900 rounded-lg px-5 py-3 font-semibold" onclick="fecharModalLimpezaFuncao()">Cancelar</button>
+      <button type="button" class="bg-red-700 text-white rounded-lg px-5 py-3 font-semibold" onclick="limparFuncaoEscala()">Confirmar limpeza</button>
+    </div>
+  </div>
 </div>
 <div class="text-center mb-4">
 <h2 class="text-xl font-bold uppercase" id="tituloEscala">Escala de Serviço - Célula Contraincêndio</h2>
@@ -9532,6 +9564,7 @@ if (salvou) {
       };
 
       const mesAno = document.getElementById('mesAnoEscala').value;
+      atualizarFuncoesLimpezaEscala();
       const cabecalho = document.getElementById('cabecalhoTabelaEscala');
       const corpo = document.getElementById('corpoTabelaEscala');
       if (mesAno && estado.escalas[mesAno]) {
@@ -11295,6 +11328,77 @@ const opcoes = militaresOrdenadosTroca
       filtro.innerHTML = '<option value="">Todas as funções</option>'
         + estado.funcoes.map(funcao => `<option value="${escaparHTML(funcao)}">${escaparHTML(funcao)}</option>`).join('');
       filtro.value = estado.funcoes.includes(valorAtual) ? valorAtual : '';
+    }
+
+
+    function atualizarFuncoesLimpezaEscala() {
+      const seletor = document.getElementById('funcaoLimpezaEscala');
+      if (!seletor) return;
+      const anterior = seletor.value;
+      const mes = document.getElementById('mesAnoEscala')?.value;
+      const escala = estado.escalas?.[mes];
+      const funcoes = new Set();
+      Object.values(escala?.dados || {}).forEach(vagas => Object.keys(vagas || {}).forEach(chave => funcoes.add(obterFuncaoDaChave(chave))));
+      seletor.replaceChildren(new Option('Selecione a função', ''));
+      [...funcoes].sort((a,b) => a.localeCompare(b,'pt-BR')).forEach(f => seletor.add(new Option(f,f)));
+      if (funcoes.has(anterior)) seletor.value = anterior;
+    }
+
+    function abrirModalLimpezaFuncao() {
+      const mes = document.getElementById('mesAnoEscala')?.value;
+      if (!estado.escalas?.[mes]?.dados) return alert('Não existe escala gerada para este mês.');
+      atualizarFuncoesLimpezaEscala();
+      const seletor = document.getElementById('funcaoLimpezaEscala');
+      seletor.value = '';
+      const modal = document.getElementById('modalLimpezaFuncao');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      seletor.focus();
+    }
+
+    function fecharModalLimpezaFuncao() {
+      const modal = document.getElementById('modalLimpezaFuncao');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    async function limparFuncaoEscala() {
+      const mes = document.getElementById('mesAnoEscala')?.value;
+      const funcao = document.getElementById('funcaoLimpezaEscala')?.value;
+      const escala = estado.escalas?.[mes];
+      if (!escala?.dados) return alert('Não existe escala gerada para este mês.');
+      if (!funcao) return alert('Selecione uma função na lista.');
+      const chaves = Object.values(escala.dados).flatMap(v => Object.keys(v || {}).filter(k => obterFuncaoDaChave(k) === funcao));
+      if (!chaves.length) return alert('Não há registros dessa função para limpar.');
+      if (!confirm(`Limpar somente ${funcao} em ${formatarMesAno(mes)}?\n\nAs demais funções permanecerão intactas. A escala deverá ser publicada novamente se já estiver publicada.`)) return;
+      mostrarProcessamento('Limpando função selecionada...');
+      const copia = structuredClone(escala);
+      try {
+        for (const vagas of Object.values(escala.dados)) for (const chave of Object.keys(vagas || {})) {
+          if (obterFuncaoDaChave(chave) === funcao) vagas[chave] = null;
+        }
+        // Remove os lastros desta função, sem alterar os de outras funções.
+        for (const [dia, itens] of Object.entries(escala.lastrosIndisponibilidade || {})) {
+          if (Array.isArray(itens)) escala.lastrosIndisponibilidade[dia] = itens.filter(item => item.funcao !== funcao);
+        }
+        // A publicação antiga não deve continuar exibindo a função apagada.
+        await executarAppsScript('excluirEscalaPublicada', mes, tokenSessao);
+        delete escala.publicadaEm;
+        delete escala.publicada;
+        const ok = await salvarEstado({acao:'limpar_funcao_escala',mesAno:mes,funcao});
+        if (!ok) throw new Error('Não foi possível salvar a alteração.');
+        renderizarTabelaEscala();
+        renderizarResumoServicos();
+        atualizarCoresMesesEscala();
+        atualizarAvisoEscalasNaoPublicadas();
+        fecharModalLimpezaFuncao();
+        alert(`Função ${funcao} limpa com sucesso. As demais funções foram preservadas.`);
+      } catch (erro) {
+        estado.escalas[mes] = copia;
+        estado.escala = copia;
+        console.error(erro);
+        alert('Falha ao limpar a função: ' + (erro?.message || erro));
+      } finally { ocultarProcessamento(); }
     }
 
     async function limparEscala() {

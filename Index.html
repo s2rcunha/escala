@@ -489,6 +489,7 @@ body.cci-menu-recolhido #bannerConflitoServidor{
 <button class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-sm font-semibold" onclick="exportarXLS()">Exportar XLS</button>
 <button class="somente-edicao bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded text-sm font-semibold" id="botaoPublicarEscala" onclick="publicarEscalaAtual()">📢 Publicar escala</button>
 <button class="somente-edicao bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm font-semibold" onclick="limparEscala()">Limpar</button>
+<button class="somente-edicao bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded text-sm font-semibold" onclick="excluirEscalaFuncao()">Excluir escala de uma função</button>
 </div>
 <div class="text-center mb-4">
 <h2 class="text-xl font-bold uppercase" id="tituloEscala">Escala de Serviço - Célula Contraincêndio</h2>
@@ -556,6 +557,16 @@ body.cci-menu-recolhido #bannerConflitoServidor{
 </div>
 </section>
 
+<!-- Modal de limpeza individual: exibido somente após clicar no botão -->
+<div id="modalLimparFuncao" class="hidden fixed inset-0 z-[15000] items-center justify-center bg-black bg-opacity-60 p-4" role="dialog" aria-modal="true" aria-labelledby="tituloModalLimparFuncao">
+  <div class="w-full max-w-md rounded-lg bg-white p-5 shadow-xl">
+    <div class="flex items-center justify-between gap-3 mb-3"><h3 id="tituloModalLimparFuncao" class="text-lg font-bold text-gray-800">Limpar escala de uma função</h3><button id="fecharLimparFuncao" type="button" class="text-2xl text-gray-600" aria-label="Fechar">×</button></div>
+    <p class="mb-3 text-sm text-gray-600">Mês selecionado: <strong id="periodoLimparFuncao"></strong>. As demais funções serão preservadas.</p>
+    <label for="seletorLimparFuncao" class="block mb-2 text-sm font-semibold">Selecione a função</label>
+    <select id="seletorLimparFuncao" class="w-full border rounded p-3 text-base mb-5"></select>
+    <div class="flex justify-end gap-3"><button id="cancelarLimparFuncao" type="button" class="rounded bg-gray-200 px-4 py-3 font-semibold">Cancelar</button><button id="confirmarLimparFuncao" type="button" class="rounded bg-red-700 px-4 py-3 text-white font-semibold disabled:opacity-50" disabled>Continuar</button></div>
+  </div>
+</div>
 <!-- MÓDULO: ESCALAS EVENTUAIS -->
 <section class="aba-conteudo hidden space-y-4" id="aba-eventuais">
   <div class="somente-edicao bg-white p-4 rounded shadow-sm cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="tipos">
@@ -10856,6 +10867,151 @@ const opcoes = militaresOrdenadosTroca
       filtro.innerHTML = '<option value="">Todas as funções</option>'
         + estado.funcoes.map(funcao => `<option value="${escaparHTML(funcao)}">${escaparHTML(funcao)}</option>`).join('');
       filtro.value = estado.funcoes.includes(valorAtual) ? valorAtual : '';
+    }
+
+    function selecionarFuncaoParaLimpeza(funcoes, mesAno) {
+      return new Promise(resolve => {
+        const modal = document.getElementById('modalLimparFuncao');
+        const seletor = document.getElementById('seletorLimparFuncao');
+        const periodo = document.getElementById('periodoLimparFuncao');
+        if (!modal || !seletor) { resolve(null); return; }
+        periodo.textContent = formatarMesAno(mesAno);
+        seletor.replaceChildren(new Option('Selecione uma função...', ''));
+        funcoes.forEach(funcao => seletor.add(new Option(funcao, funcao)));
+        const confirmar = document.getElementById('confirmarLimparFuncao');
+        const cancelar = document.getElementById('cancelarLimparFuncao');
+        const fechar = document.getElementById('fecharLimparFuncao');
+        confirmar.disabled = true;
+        modal.classList.remove('hidden'); modal.classList.add('flex');
+        const finalizar = valor => {
+          modal.classList.add('hidden'); modal.classList.remove('flex');
+          confirmar.removeEventListener('click', aoConfirmar);
+          cancelar.removeEventListener('click', aoCancelar);
+          fechar.removeEventListener('click', aoCancelar);
+          seletor.removeEventListener('change', aoMudar);
+          modal.removeEventListener('click', aoFundo);
+          document.removeEventListener('keydown', aoTeclado);
+          resolve(valor);
+        };
+        const aoConfirmar = () => { if (funcoes.includes(seletor.value)) finalizar(seletor.value); };
+        const aoCancelar = () => finalizar(null);
+        const aoMudar = () => { confirmar.disabled = !funcoes.includes(seletor.value); };
+        const aoFundo = e => { if (e.target === modal) aoCancelar(); };
+        const aoTeclado = e => { if (e.key === 'Escape') aoCancelar(); };
+        confirmar.addEventListener('click', aoConfirmar);
+        cancelar.addEventListener('click', aoCancelar);
+        fechar.addEventListener('click', aoCancelar);
+        seletor.addEventListener('change', aoMudar);
+        modal.addEventListener('click', aoFundo);
+        document.addEventListener('keydown', aoTeclado);
+        seletor.focus();
+      });
+    }
+
+    async function excluirEscalaFuncao() {
+      const mesAno = document.getElementById('mesAnoEscala')?.value || '';
+      const escala = estado.escalas?.[mesAno];
+      if (!mesAno || !escala?.dados || !Object.keys(escala.dados).length) {
+        alert('Não há escala gerada para o mês selecionado.');
+        return;
+      }
+
+      const funcoesComDados = (escala.estrutura?.funcoes || estado.funcoes || []).filter(funcao =>
+        Object.values(escala.dados || {}).some(vagas =>
+          Object.entries(vagas || {}).some(([chave, id]) =>
+            chave.replace(/ #\d+$/, '') === funcao && Boolean(id)
+          )
+        )
+      );
+      if (!funcoesComDados.length) {
+        alert('Não há funções com militares escalados neste mês.');
+        return;
+      }
+
+      const funcao = await selecionarFuncaoParaLimpeza(funcoesComDados, mesAno);
+      if (!funcao) return;
+      const chavesFuncao = new Set();
+      Object.values(escala.dados || {}).forEach(vagas => {
+        Object.keys(vagas || {}).forEach(chave => {
+          if (chave.replace(/ #\d+$/, '') === funcao) chavesFuncao.add(chave);
+        });
+      });
+      const quantidade = Object.values(escala.dados || {}).reduce((total, vagas) =>
+        total + Object.entries(vagas || {}).filter(([chave, id]) =>
+          chave.replace(/ #\d+$/, '') === funcao && Boolean(id)
+        ).length, 0
+      );
+      const temFuturas = obterMesesFuturosGerados(mesAno).length > 0;
+      const foiPublicada = Boolean(escala.publicadaEm);
+      const confirmacao =
+        `Deseja excluir somente a função "${funcao}" da escala de ${formatarMesAno(mesAno)}?\n\n` +
+        `Serão removidas ${quantidade} atribuição(ões) desta função, junto com suas justificativas e registros de alteração.\n\n` +
+        'As demais funções e seus militares serão preservados.\n' +
+        (foiPublicada
+          ? 'A publicação atual do mês será retirada do visualizador público; depois será necessário publicar novamente a escala atualizada.\n'
+          : '') +
+        (temFuturas
+          ? 'ATENÇÃO: existem escalas de meses posteriores já geradas. Elas serão preservadas e não serão recalculadas automaticamente.\n'
+          : '') +
+        '\nEsta operação não zera o histórico geral dos militares. Confirmar exclusão?';
+      if (!confirm(confirmacao)) return;
+
+      mostrarProcessamento(`Excluindo a função ${funcao}, aguarde...`);
+      try {
+        await new Promise(resolve => setTimeout(resolve, 40));
+        if (foiPublicada) {
+          await executarAppsScript('excluirEscalaPublicada', mesAno, tokenSessao);
+        }
+
+        // Limpa apenas as vagas pertencentes à função escolhida em cada dia.
+        Object.entries(escala.dados || {}).forEach(([dia, vagas]) => {
+          Object.keys(vagas || {}).forEach(chave => {
+            if (chave.replace(/ #\d+$/, '') === funcao) vagas[chave] = '';
+          });
+          ['justificativas', 'alteracoesManuais', 'substituicoes', 'adiantamentosAutomaticos',
+            'tiposUsadosPorDia', 'ordemTrocaManual', 'lastrosIndisponibilidade'].forEach(campo => {
+            const registroDia = escala[campo]?.[dia];
+            if (!registroDia || typeof registroDia !== 'object') return;
+            Object.keys(registroDia).forEach(chave => {
+              if (chavesFuncao.has(chave) || chave === funcao) delete registroDia[chave];
+            });
+          });
+        });
+
+        // Retira os metadados exclusivos da função, preservando a estrutura geral do mês.
+        ['tipos', 'modosGeracao', 'regrasEscalaSnapshot'].forEach(campo => {
+          if (escala[campo] && typeof escala[campo] === 'object') delete escala[campo][funcao];
+        });
+        if (escala.compensacoesRotacao && typeof escala.compensacoesRotacao === 'object') {
+          Object.keys(escala.compensacoesRotacao).forEach(chave => {
+            if (chave === funcao || chave.startsWith(`${funcao}|`) || chave.startsWith(`${funcao}::`)) {
+              delete escala.compensacoesRotacao[chave];
+            }
+          });
+        }
+
+        // Uma escala alterada após publicação deve voltar ao estado de aguardando publicação.
+        if (foiPublicada) marcarEscalaComoAguardandoRepublicacao(escala, escala.publicadaEm || '');
+        estado.escalas[mesAno] = escala;
+        estado.escala = escala;
+        const salvou = await salvarEstado({
+          acao: 'excluir_escala_funcao', mesAno, funcao,
+          atribuicoesRemovidas: quantidade,
+          escalasFuturasPreservadas: obterMesesFuturosGerados(mesAno)
+        });
+        if (!salvou) return;
+
+        renderizarTabelaEscala();
+        renderizarResumoServicos();
+        atualizarCoresMesesEscala();
+        atualizarAvisoEscalasNaoPublicadas();
+        alert(`A função "${funcao}" foi excluída da escala de ${formatarMesAno(mesAno)}.\n\nAs demais funções foram preservadas.${foiPublicada ? '\n\nPublique novamente o mês para atualizar o visualizador público.' : ''}`);
+      } catch (erro) {
+        console.error('Erro ao excluir escala de função:', erro);
+        alert('Não foi possível concluir a exclusão da função. Verifique a conexão e o console para mais detalhes.');
+      } finally {
+        ocultarProcessamento();
+      }
     }
 
     async function limparEscala() {
