@@ -40,6 +40,12 @@
               <option value="">Carregando...</option>
             </select>
           </label>
+          <label class="text-xs font-semibold text-gray-600">
+            Exibir função
+            <select id="seletorFuncao" class="mt-1 min-w-[190px] rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800" onchange="filtrarFuncaoEscala()" disabled>
+              <option value="">Todas as funções</option>
+            </select>
+          </label>
           <button id="btnImprimir" type="button" onclick="exportarPDF()" class="inline-flex items-center justify-center rounded bg-gray-800 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-700">Gerar PDF</button>
           <button id="btnAtualizar" type="button" onclick="atualizarPaginaEscalas()" class="inline-flex min-w-[112px] items-center justify-center gap-2 rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:cursor-wait disabled:opacity-70">
             <svg id="spinnerAtualizar" class="hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -103,12 +109,35 @@ function renderizarLegenda(publicacao) {
   ).join('');
 }
 
+let publicacaoAtual = null;
+
+function atualizarSeletorFuncoes(publicacao) {
+  const seletor = document.getElementById('seletorFuncao');
+  const funcoes = (publicacao?.estrutura?.funcoes || []).filter((funcao, indice, lista) =>
+    lista.indexOf(funcao) === indice && Number(publicacao.estrutura?.vagas?.[funcao] || 0) > 0
+  );
+  seletor.innerHTML = '<option value="">Todas as funções</option>' +
+    funcoes.map((funcao, indice) => `<option value="${indice + 1}">${escaparHTML(funcao)}</option>`).join('');
+  seletor.disabled = !funcoes.length;
+  seletor.value = '';
+}
+
+function filtrarFuncaoEscala() {
+  if (publicacaoAtual) renderizarEscala(publicacaoAtual);
+}
+
 function renderizarEscala(publicacao) {
   const [ano, mes] = publicacao.mesAno.split('-').map(Number);
   const diasNoMes = new Date(ano, mes, 0).getDate();
   const estrutura = publicacao.estrutura || { funcoes: [], vagas: {} };
   const colunas = [];
+  const indiceSelecionado = Number(document.getElementById('seletorFuncao').value || 0);
+  const funcoesDisponiveis = (estrutura.funcoes || []).filter((funcao, indice, lista) =>
+    lista.indexOf(funcao) === indice && Number(estrutura.vagas?.[funcao] || 0) > 0
+  );
+  const funcaoSelecionada = indiceSelecionado > 0 ? funcoesDisponiveis[indiceSelecionado - 1] : null;
   (estrutura.funcoes || []).forEach(funcao => {
+    if (funcaoSelecionada && funcao !== funcaoSelecionada) return;
     const qtd = Number(estrutura.vagas?.[funcao] || 0);
     for (let i = 0; i < qtd; i++) colunas.push({ funcao, chave: `${funcao} #${i + 1}` });
   });
@@ -213,11 +242,16 @@ function obterMesAtual() {
 async function carregarListaEscalasPublicadas(mesPreferido = '') {
   const seletor = document.getElementById('seletorEscala');
   const resultado = await chamarApiPublica('listarEscalasPublicadas');
-  const escalas = Array.isArray(resultado?.escalas) ? resultado.escalas : [];
+  // Organiza os meses em ordem cronológica (do mais antigo ao mais recente).
+  const escalas = (Array.isArray(resultado?.escalas) ? resultado.escalas : [])
+    .filter(item => /^\d{4}-\d{2}$/.test(String(item?.mesAno || '')))
+    .sort((a, b) => a.mesAno.localeCompare(b.mesAno));
 
   if (!escalas.length) {
     seletor.innerHTML = '<option value="">Nenhuma escala publicada</option>';
     seletor.disabled = true;
+    publicacaoAtual = null;
+    atualizarSeletorFuncoes(null);
     document.getElementById('areaTabela')?.classList.add('hidden');
     const corpo = document.getElementById('corpo');
     if (corpo) corpo.innerHTML = '';
@@ -234,11 +268,12 @@ async function carregarListaEscalasPublicadas(mesPreferido = '') {
   const mesesDisponiveis = new Set(escalas.map(item => item.mesAno));
   const mesAtual = obterMesAtual();
 
-  // Prioridade: mês solicitado > mês corrente > publicação mais recente.
+  // Na abertura, prioriza o mês atual. Ao atualizar, preserva a escolha do usuário.
+  // Se o mês atual não estiver publicado, mostra o mês publicado mais recente.
   const escolhido =
     (mesPreferido && mesesDisponiveis.has(mesPreferido) && mesPreferido) ||
     (mesesDisponiveis.has(mesAtual) && mesAtual) ||
-    escalas[0].mesAno;
+    escalas[escalas.length - 1].mesAno;
 
   seletor.value = escolhido;
   return escolhido;
@@ -259,6 +294,8 @@ async function carregarEscalaPublicada(mesAno = '') {
 
     if (!publicacao?.publicada) {
       mensagem.textContent = 'Nenhuma escala foi publicada até o momento.';
+      publicacaoAtual = null;
+      atualizarSeletorFuncoes(null);
       document.getElementById('mesPublicacao').textContent = 'Escala ainda não publicada';
       document.getElementById('ultimaAtualizacao').textContent = '';
       return;
@@ -273,6 +310,8 @@ async function carregarEscalaPublicada(mesAno = '') {
     document.getElementById('ultimaAtualizacao').textContent =
       'Última publicação deste mês: ' + new Date(publicacao.publicadoEm).toLocaleString('pt-BR');
 
+    publicacaoAtual = publicacao;
+    atualizarSeletorFuncoes(publicacao);
     renderizarEscala(publicacao);
     mensagem.classList.add('hidden');
     area.classList.remove('hidden');
