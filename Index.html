@@ -7257,6 +7257,10 @@ try {
       // Mapeia posições/colunas por função
       let colunasVagas = [];
       estruturaGerada.funcoes.forEach(f => {
+        // Gerar apenas a função solicitada: não processar nem solicitar
+        // exceções de outras funções, que serão preservadas na mesclagem.
+        if (funcaoGeracao && f !== funcaoGeracao) return;
+        if (funcoesManuaisProtegidas.has(f)) return;
         const qtd = estruturaGerada.vagas[f] || 0;
         for (let i = 0; i < qtd; i++) {
           colunasVagas.push({ funcao: f, indice: i + 1, chave: `${f} #${i + 1}` });
