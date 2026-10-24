@@ -325,6 +325,38 @@ body.cci-menu-recolhido .cci-nav-arrow{display:none}
 #areaEscalaPDF .cci-escala-scrollbar-sticky{position:sticky;bottom:0;z-index:20;width:100%;height:18px;overflow-x:auto;overflow-y:hidden;background:#f3f4f6;border:1px solid #d1d5db;border-top:0}
 #areaEscalaPDF .cci-escala-scrollbar-sticky>div{height:1px;min-width:100%}
 @media(max-width:767px){#areaEscalaPDF #tabelaEscalaPrincipal th:nth-child(1),#areaEscalaPDF #tabelaEscalaPrincipal td:nth-child(1){min-width:54px;width:54px;max-width:54px}#areaEscalaPDF #tabelaEscalaPrincipal th:nth-child(2),#areaEscalaPDF #tabelaEscalaPrincipal td:nth-child(2){left:54px;min-width:68px;width:68px;max-width:68px}}
+
+/* ANDROID 2026-10-01 — ergonomia mobile complementar.
+   Não altera regras de escala; somente apresentação e alvos de toque. */
+@media (max-width:767px) {
+  .aba-conteudo { gap:8px !important; }
+  .aba-conteudo > div.bg-white, .aba-conteudo > div[class*="bg-white"] {
+    padding:9px !important; max-width:100%; overflow-wrap:anywhere;
+  }
+  .aba-conteudo input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+  .aba-conteudo select, .aba-conteudo textarea {
+    width:100%; max-width:100%; min-height:44px !important; font-size:16px !important;
+  }
+  .aba-conteudo textarea { min-height:88px !important; }
+  .aba-conteudo button { min-height:42px; touch-action:manipulation; }
+  .aba-conteudo .overflow-x-auto { -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain; }
+  #aba-eventuais table, #aba-militares table, #aba-vagas table,
+  #aba-indisponibilidades table, #aba-backups table, #aba-usuarios table {
+    min-width:max-content;
+  }
+  #aba-eventuais th, #aba-eventuais td { padding:6px !important; }
+  #aba-eventuais .grid, #aba-militares .grid, #aba-vagas .grid,
+  #aba-indisponibilidades .grid, #aba-backups .grid, #aba-usuarios .grid {
+    gap:8px !important;
+  }
+  .fixed.inset-0 { padding:8px !important; }
+  .fixed.inset-0 > form, .fixed.inset-0 > div[class*="bg-white"] {
+    width:min(100%, 96vw) !important; max-height:92vh; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  }
+  #avisoEscalasNaoPublicadas { max-height:42vh; overflow-y:auto; }
+  .cci-page-sub { line-height:1.3; }
+}
+
 </style>
 <style>
 /* ETAPA 21 — descrições contextuais do menu lateral */
@@ -376,431 +408,7 @@ body.cci-menu-recolhido #bannerConflitoServidor{
   }
 }
 
-</style><style>
-/* ==========================================================
-   OTIMIZAÇÃO MOBILE — SESCI
-   Foco: visualização da escala, justificativas e dropdowns.
-   Apenas responsividade/ergonomia; regras do motor preservadas.
-   ========================================================== */
-@media (max-width: 767px) {
-  html, body {
-    max-width: 100%;
-    overflow-x: hidden;
-    -webkit-text-size-adjust: 100%;
-  }
-
-  /* Área útil */
-  .cci-main,
-  body.cci-menu-recolhido .cci-main {
-    padding: 56px 4px 12px !important;
-  }
-
-  .cci-page-heading {
-    margin: 0 3px 6px !important;
-  }
-
-  #aba-gerador {
-    gap: 6px !important;
-  }
-
-  /* Painel Visualizar Escala ocupa praticamente toda a largura */
-  #areaEscalaPDF {
-    width: 100% !important;
-    max-width: 100% !important;
-    padding: 5px !important;
-    overflow: visible !important;
-    border-left: 0 !important;
-    border-right: 0 !important;
-  }
-
-  #areaEscalaPDF > .cci-nao-exportar-pdf:first-child {
-    margin-bottom: 6px !important;
-    padding: 6px !important;
-  }
-
-  #areaEscalaPDF > .cci-nao-exportar-pdf:first-child > div {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) minmax(88px, .72fr);
-    gap: 6px !important;
-  }
-
-  #mesEscalaVisualizacao,
-  #anoEscalaVisualizacao {
-    width: 100% !important;
-    min-width: 0 !important;
-    min-height: 44px !important;
-    padding: 8px 10px !important;
-    font-size: 16px !important;
-  }
-
-  #statusPublicacaoEscala {
-    padding: 4px 6px !important;
-    line-height: 1.35;
-  }
-
-  /* Ações da visualização: duas colunas e alvos de toque maiores */
-  #statusPublicacaoEscala + .flex {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 6px !important;
-    margin: 4px 0 8px !important;
-  }
-
-  #statusPublicacaoEscala + .flex > button {
-    width: 100%;
-    min-height: 44px !important;
-    padding: 8px 6px !important;
-    white-space: normal;
-    line-height: 1.15;
-  }
-
-  #areaEscalaPDF > .text-center {
-    margin-bottom: 6px !important;
-    padding: 0 4px;
-  }
-
-  #areaEscalaPDF #tituloEscala {
-    font-size: 12px !important;
-    line-height: 1.25;
-  }
-
-  #areaEscalaPDF #subtituloEscala,
-  #areaEscalaPDF .legenda-substituicao,
-  #legendaCoresEscala {
-    font-size: 10px !important;
-    line-height: 1.25;
-  }
-
-  /* Rolagem horizontal natural no toque */
-  #scrollTabelaEscala {
-    width: 100%;
-    overflow-x: auto !important;
-    overflow-y: visible !important;
-    overscroll-behavior-x: contain;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-x pan-y;
-    scrollbar-width: thin;
-  }
-
-  #areaEscalaPDF #tabelaEscalaPrincipal {
-    width: max-content !important;
-    min-width: 100% !important;
-  }
-
-  #areaEscalaPDF #tabelaEscalaPrincipal th,
-  #areaEscalaPDF #tabelaEscalaPrincipal td {
-    font-size: 10px !important;
-    padding: 4px !important;
-  }
-
-  /* Dia e dia da semana continuam visíveis, mas ocupam menos tela */
-  #areaEscalaPDF #tabelaEscalaPrincipal th:nth-child(1),
-  #areaEscalaPDF #tabelaEscalaPrincipal td:nth-child(1) {
-    left: 0 !important;
-    min-width: 42px !important;
-    width: 42px !important;
-    max-width: 42px !important;
-    padding-left: 2px !important;
-    padding-right: 2px !important;
-  }
-
-  #areaEscalaPDF #tabelaEscalaPrincipal th:nth-child(2),
-  #areaEscalaPDF #tabelaEscalaPrincipal td:nth-child(2) {
-    left: 42px !important;
-    min-width: 54px !important;
-    width: 54px !important;
-    max-width: 54px !important;
-    padding-left: 2px !important;
-    padding-right: 2px !important;
-  }
-
-  #areaEscalaPDF .celula-escala {
-    min-width: 158px !important;
-    max-width: 180px;
-    white-space: normal !important;
-  }
-
-  #areaEscalaPDF .celula-escala > .flex {
-    align-items: stretch !important;
-    gap: 4px !important;
-  }
-
-  /* Nome do militar vira um alvo de toque confortável para justificativa */
-  #areaEscalaPDF .botao-justificativa {
-    min-width: 108px !important;
-    min-height: 44px !important;
-    padding: 6px !important;
-    font-size: 11px !important;
-    line-height: 1.2 !important;
-    overflow-wrap: anywhere;
-    border: 1px solid rgba(0,0,0,.08);
-    background: rgba(255,255,255,.42);
-  }
-
-  /* Dropdown de troca/consulta: maior no toque, mantendo o nome no botão */
-  #areaEscalaPDF .celula-escala select {
-    width: 44px !important;
-    min-width: 44px !important;
-    height: 44px !important;
-    min-height: 44px !important;
-    padding: 4px !important;
-    font-size: 16px !important;
-    touch-action: manipulation;
-  }
-
-  /* Barra inferior de rolagem mais fácil de manipular */
-  #areaEscalaPDF .cci-escala-scrollbar-sticky {
-    height: 22px !important;
-    bottom: 0;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* Dropdown de classificação do dia vira painel inferior no celular */
-  .dropdown-cor-dia {
-    left: 8px !important;
-    right: 8px !important;
-    top: auto !important;
-    bottom: 10px !important;
-    width: auto !important;
-    min-width: 0 !important;
-    padding: 10px !important;
-    border-radius: 10px !important;
-    box-shadow: 0 10px 35px rgba(0,0,0,.30) !important;
-  }
-
-  .dropdown-cor-dia select {
-    min-height: 48px !important;
-    padding: 10px 12px !important;
-    font-size: 16px !important;
-  }
-
-  /* Justificativa em formato quase tela cheia, sem conteúdo cortado */
-  #modalJustificativa {
-    padding: 6px !important;
-    align-items: stretch !important;
-  }
-
-  #modalJustificativa > div {
-    width: 100% !important;
-    max-width: none !important;
-    max-height: calc(100dvh - 12px) !important;
-    border-radius: 8px !important;
-  }
-
-  #modalJustificativa > div > div:first-child {
-    padding: 10px 12px !important;
-    gap: 8px;
-  }
-
-  #tituloModalJustificativa {
-    min-width: 0;
-    font-size: 14px !important;
-    line-height: 1.25;
-    overflow-wrap: anywhere;
-  }
-
-  #modalJustificativa > div > div:first-child button {
-    flex: 0 0 44px;
-    width: 44px;
-    height: 44px;
-    padding: 0 !important;
-  }
-
-  #modalJustificativa > div > .overflow-y-auto {
-    padding: 12px !important;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  #textoModalJustificativa {
-    font-size: 13px !important;
-    line-height: 1.45 !important;
-  }
-
-  #modalJustificativa textarea,
-  #modalJustificativa input[type="text"] {
-    min-height: 44px !important;
-    font-size: 16px !important;
-  }
-
-  #modalJustificativa textarea {
-    min-height: 96px !important;
-  }
-
-  #opcoesCorObservacao {
-    gap: 8px !important;
-  }
-
-  #opcoesCorObservacao .botao-cor-observacao {
-    width: 44px !important;
-    height: 44px !important;
-  }
-
-  #modalJustificativa > div > div:last-child {
-    position: sticky;
-    bottom: 0;
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    padding: 8px 10px !important;
-    background: #fff;
-  }
-
-  #modalJustificativa > div > div:last-child button {
-    width: 100%;
-    min-height: 44px !important;
-    margin: 0 !important;
-  }
-
-  /* Demais modais ligados à edição da escala */
-  #modalAlteracaoManual {
-    padding: 6px !important;
-    align-items: stretch !important;
-  }
-
-  #modalAlteracaoManual > form {
-    width: 100% !important;
-    max-width: none !important;
-    max-height: calc(100dvh - 12px) !important;
-  }
-
-  #modalAlteracaoManual select,
-  #modalAlteracaoManual textarea,
-  #modalAlteracaoManual input {
-    font-size: 16px !important;
-    min-height: 44px !important;
-  }
-
-  /* Evita tooltip de desktop cobrindo conteúdo em telas touch */
-  #cciMenuTooltip {
-    display: none !important;
-  }
-}
-
-/* Celulares muito estreitos */
-@media (max-width: 380px) {
-  #areaEscalaPDF #tabelaEscalaPrincipal th:nth-child(1),
-  #areaEscalaPDF #tabelaEscalaPrincipal td:nth-child(1) {
-    min-width: 38px !important;
-    width: 38px !important;
-    max-width: 38px !important;
-  }
-
-  #areaEscalaPDF #tabelaEscalaPrincipal th:nth-child(2),
-  #areaEscalaPDF #tabelaEscalaPrincipal td:nth-child(2) {
-    left: 38px !important;
-    min-width: 50px !important;
-    width: 50px !important;
-    max-width: 50px !important;
-  }
-
-  #areaEscalaPDF .celula-escala {
-    min-width: 150px !important;
-  }
-}
-</style>
-<style>
-/* MOBILE — filtro de função na visualização da escala */
-.cci-filtro-funcao-mobile { display:none; }
-
-.cci-coluna-funcao-oculta {
-  display:none !important;
-}
-
-@media (max-width:767px) {
-  #areaEscalaPDF > .cci-nao-exportar-pdf:first-child > div {
-    grid-template-columns: minmax(0, 1fr) minmax(88px, .72fr) !important;
-  }
-
-  .cci-filtro-funcao-mobile {
-    display:block;
-    grid-column:1 / -1;
-    min-width:0;
-  }
-
-  .cci-filtro-funcao-mobile > span {
-    display:block;
-    margin:2px 0 4px;
-    font-size:11px;
-    font-weight:700;
-    color:#535d66;
-  }
-
-  #filtroFuncaoEscalaMobile {
-    display:block;
-    width:100% !important;
-    min-width:0 !important;
-    min-height:46px !important;
-    padding:9px 10px !important;
-    font-size:16px !important;
-    font-weight:600;
-    background:#fff !important;
-  }
-
-  /* Com uma função selecionada, a tabela passa a ocupar apenas a largura
-     necessária para Dia + Sem. + quantidade real de vagas dessa função. */
-  #areaEscalaPDF #tabelaEscalaPrincipal {
-    min-width:max-content !important;
-  }
-
-  #areaEscalaPDF .celula-escala {
-    min-width:164px !important;
-  }
-}
-</style>
-
-<style>
-/* ANDROID 2026-10-01 — ergonomia mobile complementar.
-   Não altera regras de escala; somente apresentação e alvos de toque. */
-@media (max-width:767px) {
-  .aba-conteudo { gap:8px !important; }
-  .aba-conteudo > div.bg-white, .aba-conteudo > div[class*="bg-white"] {
-    padding:9px !important; max-width:100%; overflow-wrap:anywhere;
-  }
-  .aba-conteudo input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
-  .aba-conteudo select, .aba-conteudo textarea {
-    width:100%; max-width:100%; min-height:44px !important; font-size:16px !important;
-  }
-  .aba-conteudo textarea { min-height:88px !important; }
-  .aba-conteudo button { min-height:42px; touch-action:manipulation; }
-  .aba-conteudo .overflow-x-auto { -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain; }
-  #aba-eventuais table, #aba-militares table, #aba-vagas table,
-  #aba-indisponibilidades table, #aba-backups table, #aba-usuarios table {
-    min-width:max-content;
-  }
-  #aba-eventuais th, #aba-eventuais td { padding:6px !important; }
-  #aba-eventuais .grid, #aba-militares .grid, #aba-vagas .grid,
-  #aba-indisponibilidades .grid, #aba-backups .grid, #aba-usuarios .grid {
-    gap:8px !important;
-  }
-  .fixed.inset-0 { padding:8px !important; }
-  .fixed.inset-0 > form, .fixed.inset-0 > div[class*="bg-white"] {
-    width:min(100%, 96vw) !important; max-height:92vh; overflow-y:auto; -webkit-overflow-scrolling:touch;
-  }
-  #avisoEscalasNaoPublicadas { max-height:42vh; overflow-y:auto; }
-  .cci-page-sub { line-height:1.3; }
-}
-</style>
-
-<style>
-/* Ajustes de ergonomia do menu para telas de smartphones e APK */
-@media (max-width: 767px) {
-  .cci-sidebar, body.cci-menu-recolhido .cci-sidebar { width:min(90vw,330px) !important; }
-  .cci-toggle { min-height:64px !important; padding:16px 20px !important; font-size:17px !important; }
-  .cci-toggle .cci-nav-icon {font-size:29px !important;}
-  .cci-nav-title {font-size:17px !important; padding:22px 20px 12px !important;}
-  .cci-nav-btn {min-height:60px !important; padding:14px 20px !important; font-size:17px !important; gap:17px !important; line-height:1.35 !important;}
-  .cci-nav-icon {font-size:25px !important; flex-basis:34px !important; width:34px !important;}
-  .cci-nav-label {white-space:normal !important;}
-  .cci-mobile {width:48px !important;height:48px !important;font-size:27px !important; margin-top:12px !important;}
-  /* Submenus de primeiro e segundo nivel: legibilidade e toque */
-  .cci-submenu-btn, .cci-submenu-nivel2 .cci-submenu-btn {font-size:17px !important;min-height:54px !important;line-height:1.4 !important;gap:12px !important;padding-top:12px !important;padding-bottom:12px !important;white-space:normal !important;}
-  .cci-submenu-btn {padding-left:54px !important;padding-right:15px !important;}
-  .cci-submenu-nivel2 .cci-submenu-btn {padding-left:28px !important;padding-right:12px !important;}
-  .cci-submenu-dot {font-size:22px !important;flex-shrink:0 !important;}
-  .cci-submenu-arrow {font-size:22px !important;}
-}
-</style>
-</head>
+</style></head>
 <body class="bg-gray-100 font-sans text-gray-800">
 <!-- =====================================================
        TELA DE LOGIN
@@ -861,7 +469,7 @@ body.cci-menu-recolhido #bannerConflitoServidor{
   <div class="aviso-pendencias-lista" id="listaAvisoEscalasNaoPublicadas"></div>
 </div>
 <header class="cci-topbar"><div class="cci-brand"><button aria-label="Abrir menu" class="cci-mobile" onclick="alternarMenuLateral()" type="button">☰</button><div class="cci-brand-mark">SESCI</div><div><div class="cci-brand-title">Sistema de Escala de Serviço - CCI</div><div class="cci-brand-sub">Gestão e geração automática de escalas de serviço</div></div></div><div class="cci-user"><div class="flex shrink-0 items-center gap-3 whitespace-nowrap" id="areaUsuarioLogado"><div class="text-right leading-tight"><div class="text-sm font-bold" id="nomeUsuarioLogado"></div><div class="text-xs" id="perfilUsuarioLogado"></div></div><button class="rounded px-3 py-2 text-sm font-semibold text-white" onclick="sairDoSistema()" type="button">Sair</button></div></div></header>
-<aside class="cci-sidebar" id="menuLateralCCI"><button class="cci-toggle" data-cci-descricao="Expanda ou recolha o menu lateral para aumentar a área de trabalho." onclick="alternarMenuLateral()" title="Expanda ou recolha o menu lateral para aumentar a área de trabalho." type="button"><span class="cci-nav-icon">☰</span><span class="cci-toggle-label">Recolher menu</span></button><div class="cci-nav-title">ESCALA</div><nav class="cci-nav"><div class="cci-nav-group" data-grupo="gerador"><button class="cci-nav-btn cci-nav-parent ativo" data-aba="gerador" data-cci-descricao="Gere, consulte e acompanhe a escala mensal de serviço." onclick="alternarSubmenuCCI('gerador')" title="Gere, consulte e acompanhe a escala mensal de serviço." type="button"><span class="cci-nav-icon">▦</span><span class="cci-nav-label">Escala Mensal</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu aberto" data-submenu="gerador"><button class="cci-submenu-btn ativo" data-aba="gerador" data-cci-descricao="Selecione o período e gere automaticamente uma nova escala mensal." data-subpagina="criar" onclick="abrirSubpaginaCCI('gerador','criar')" title="Selecione o período e gere automaticamente uma nova escala mensal." type="button"><span class="cci-submenu-dot">•</span><span>Criar Escala</span></button><button class="cci-submenu-btn" data-aba="gerador" data-cci-descricao="Consulte, edite, publique e exporte a escala mensal gerada." data-subpagina="visualizacao" onclick="abrirSubpaginaCCI('gerador','visualizacao')" title="Consulte, edite, publique e exporte a escala mensal gerada." type="button"><span class="cci-submenu-dot">•</span><span>Visualizar Escala</span></button><button class="cci-submenu-btn" data-aba="gerador" data-cci-descricao="Consulte os quadrinhos, lastros e totais acumulados dos militares." data-subpagina="quadrinhos" onclick="abrirSubpaginaCCI('gerador','quadrinhos')" title="Consulte os quadrinhos, lastros e totais acumulados dos militares." type="button"><span class="cci-submenu-dot">•</span><span>Quadrinhos e Totais</span></button><a class="cci-submenu-btn" href="https://s2rcunha.github.io/escala/visualizar.html" target="_blank" rel="noopener noreferrer" data-cci-descricao="Abra a consulta pública das escalas publicadas em uma nova aba." title="Consultar escala publicada" style="text-decoration:none"><span class="cci-submenu-dot">•</span><span>Escala Publicada ↗</span></a></div></div><div class="cci-nav-group" data-grupo="eventuais"><button class="cci-nav-btn cci-nav-parent" data-aba="eventuais" data-cci-descricao="Crie e gerencie escalas de missões e serviços eventuais em banco independente." onclick="alternarSubmenuCCI('eventuais')" title="Crie e gerencie escalas de missões e serviços eventuais em banco independente." type="button"><span class="cci-nav-icon">◆</span><span class="cci-nav-label">Escalas Eventuais</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="eventuais"><button class="somente-edicao cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Cadastre os modelos permanentes das missões eventuais, suas funções, distribuição, permanência e militares habilitados." title="Cadastre os modelos permanentes das missões eventuais, suas funções, distribuição, permanência e militares habilitados." data-subpagina="funcoes" onclick="abrirSubpaginaCCI('eventuais','tipos')" type="button"><span class="cci-submenu-dot">•</span><span>Tipos de Missão</span></button><button class="somente-edicao cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Crie uma ocorrência a partir de um Tipo de Missão, definindo período e quantidade de vagas necessárias." title="Crie uma ocorrência a partir de um Tipo de Missão, definindo período e quantidade de vagas necessárias." data-subpagina="criar" onclick="abrirSubpaginaCCI('eventuais','criar')" type="button"><span class="cci-submenu-dot">•</span><span>Criar Escala Eventual</span></button><button class="cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Consulte as ocorrências eventuais, gere a escala, faça ajustes, publique e exporte." title="Consulte as ocorrências eventuais, gere a escala, faça ajustes, publique e exporte." data-subpagina="lista" onclick="abrirSubpaginaCCI('eventuais','lista')" type="button"><span class="cci-submenu-dot">•</span><span>Visualizar Escalas</span></button><button class="cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Consulte os quadrinhos acumulados exclusivamente pelas escalas eventuais, separados por Tipo de Missão." title="Consulte os quadrinhos acumulados exclusivamente pelas escalas eventuais, separados por Tipo de Missão." data-subpagina="quadrinhos" onclick="abrirSubpaginaCCI('eventuais','quadrinhos')" type="button"><span class="cci-submenu-dot">•</span><span>Quadrinhos e Totais</span></button></div></div><div class="somente-edicao cci-nav-group" data-grupo="militares"><button class="cci-nav-btn cci-nav-parent" data-aba="militares" data-cci-descricao="Cadastre e gerencie os militares que compõem as escalas." onclick="alternarSubmenuCCI('militares')" title="Cadastre e gerencie os militares que compõem as escalas." type="button"><span class="cci-nav-icon">♟</span><span class="cci-nav-label">Militares</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="militares"><button class="cci-submenu-btn" data-aba="militares" data-cci-descricao="Inclua um novo militar, sua função e posição de antiguidade." data-subpagina="cadastrar" onclick="abrirSubpaginaCCI('militares','cadastrar')" title="Inclua um novo militar, sua função e posição de antiguidade." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar Militar</span></button><button class="cci-submenu-btn" data-aba="militares" data-cci-descricao="Consulte, edite e organize os militares já cadastrados." data-subpagina="efetivo" onclick="abrirSubpaginaCCI('militares','efetivo')" title="Consulte, edite e organize os militares já cadastrados." type="button"><span class="cci-submenu-dot">•</span><span>Militares Cadastrados</span></button></div></div><div class="somente-edicao cci-nav-group" data-grupo="vagas"><button class="cci-nav-btn cci-nav-parent" data-aba="vagas" data-cci-descricao="Configure as funções, vagas e regras usadas na montagem das escalas." onclick="alternarSubmenuCCI('vagas')" title="Configure as funções, vagas e regras usadas na montagem das escalas." type="button"><span class="cci-nav-icon">☷</span><span class="cci-nav-label">Estrutura da Equipe</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="vagas"><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Cadastre e mantenha as funções existentes na equipe de serviço." data-subpagina="funcoes" onclick="abrirSubpaginaCCI('vagas','funcoes')" title="Cadastre e mantenha as funções existentes na equipe de serviço." type="button"><span class="cci-submenu-dot">•</span><span>Funções da Equipe</span></button><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina quantas vagas de cada função são necessárias em cada serviço." data-subpagina="dimensionamento" onclick="abrirSubpaginaCCI('vagas','dimensionamento')" title="Defina quantas vagas de cada função são necessárias em cada serviço." type="button"><span class="cci-submenu-dot">•</span><span>Dimensionamento do Serviço</span></button><button class="cci-submenu-btn cci-submenu-parent" data-aba="vagas" data-cci-descricao="Configure a distribuição, descanso, lastro, justiça e classificação dos dias." data-submenu-pai="regras" onclick="alternarSubmenuRegrasCCI()" title="Configure a distribuição, descanso, lastro, justiça e classificação dos dias." type="button"><span class="cci-submenu-dot">•</span><span>Regras das Escalas</span><span class="cci-submenu-arrow">›</span></button><div class="cci-submenu-nivel2" data-submenu-nivel2="regras"><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina as regras de geração da escala para cada função do serviço." data-subpagina="regras" onclick="abrirSubpaginaCCI('vagas','regras')" title="Defina as regras de geração da escala para cada função do serviço." type="button"><span class="cci-submenu-dot">·</span><span>Configurações das Regras</span></button><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina as cores dos dias da semana e cadastre exceções por data." data-subpagina="classificacao" onclick="abrirSubpaginaCCI('vagas','classificacao')" title="Defina as cores dos dias da semana e cadastre exceções por data." type="button"><span class="cci-submenu-dot">·</span><span>Classificação dos Dias</span></button></div></div></div><div class="somente-edicao cci-nav-group" data-grupo="indisponibilidades"><button class="cci-nav-btn cci-nav-parent" data-aba="indisponibilidades" data-cci-descricao="Registre períodos e restrições em que militares não podem concorrer à escala." onclick="alternarSubmenuCCI('indisponibilidades')" title="Registre períodos e restrições em que militares não podem concorrer à escala." type="button"><span class="cci-nav-icon">⊘</span><span class="cci-nav-label">Indisponibilidades</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="indisponibilidades"><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Cadastre férias, cursos, missões, licenças e outras indisponibilidades por período." data-subpagina="periodo" onclick="abrirSubpaginaCCI('indisponibilidades','periodo')" title="Cadastre férias, cursos, missões, licenças e outras indisponibilidades por período." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar por Período</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Defina indisponibilidades recorrentes em determinados dias da semana." data-subpagina="semanal" onclick="abrirSubpaginaCCI('indisponibilidades','semanal')" title="Defina indisponibilidades recorrentes em determinados dias da semana." type="button"><span class="cci-submenu-dot">•</span><span>Indisponibilidade Semanal</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Importe várias indisponibilidades de uma só vez por arquivo CSV." data-subpagina="importar" onclick="abrirSubpaginaCCI('indisponibilidades','importar')" title="Importe várias indisponibilidades de uma só vez por arquivo CSV." type="button"><span class="cci-submenu-dot">•</span><span>Importar CSV</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Consulte e gerencie todas as indisponibilidades já cadastradas." data-subpagina="registros" onclick="abrirSubpaginaCCI('indisponibilidades','registros')" title="Consulte e gerencie todas as indisponibilidades já cadastradas." type="button"><span class="cci-submenu-dot">•</span><span>Registros Cadastrados</span></button></div></div><div class="somente-administrador cci-nav-group" data-grupo="backups"><button class="cci-nav-btn cci-nav-parent" data-aba="backups" data-cci-descricao="Proteja os dados do sistema por meio de exportação, importação e backups." onclick="alternarSubmenuCCI('backups')" title="Proteja os dados do sistema por meio de exportação, importação e backups." type="button"><span class="cci-nav-icon">↻</span><span class="cci-nav-label">Backups</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="backups"><button class="cci-submenu-btn" data-aba="backups" data-cci-descricao="Exporte, importe e gerencie as ferramentas de cópia de segurança." data-subpagina="gerenciar" onclick="abrirSubpaginaCCI('backups','gerenciar')" title="Exporte, importe e gerencie as ferramentas de cópia de segurança." type="button"><span class="cci-submenu-dot">•</span><span>Gerenciar Backups</span></button><button class="cci-submenu-btn" data-aba="backups" data-cci-descricao="Consulte, restaure e gerencie os backups armazenados." data-subpagina="lista" onclick="abrirSubpaginaCCI('backups','lista')" title="Consulte, restaure e gerencie os backups armazenados." type="button"><span class="cci-submenu-dot">•</span><span>Lista de Backups</span></button></div></div><div class="somente-administrador cci-nav-group" data-grupo="usuarios"><button class="cci-nav-btn cci-nav-parent" data-aba="usuarios" data-cci-descricao="Administre usuários, permissões de acesso e histórico de alterações." onclick="alternarSubmenuCCI('usuarios')" title="Administre usuários, permissões de acesso e histórico de alterações." type="button"><span class="cci-nav-icon">▣</span><span class="cci-nav-label">Usuários / Auditoria</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="usuarios"><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Crie um novo usuário e defina seu perfil de acesso ao sistema." data-subpagina="cadastrar" onclick="abrirSubpaginaCCI('usuarios','cadastrar')" title="Crie um novo usuário e defina seu perfil de acesso ao sistema." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar Usuário</span></button><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Consulte e gerencie os usuários cadastrados e suas permissões." data-subpagina="lista" onclick="abrirSubpaginaCCI('usuarios','lista')" title="Consulte e gerencie os usuários cadastrados e suas permissões." type="button"><span class="cci-submenu-dot">•</span><span>Usuários Cadastrados</span></button><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Consulte o histórico das alterações administrativas realizadas no sistema." data-subpagina="auditoria" onclick="abrirSubpaginaCCI('usuarios','auditoria')" title="Consulte o histórico das alterações administrativas realizadas no sistema." type="button"><span class="cci-submenu-dot">•</span><span>Auditoria do Sistema</span></button></div></div></nav><div class="cci-sidebar-credito">Desenvolvido por Sgt R.Cunha ®</div></aside><div aria-hidden="true" id="cciMenuTooltip" role="tooltip"></div>
+<aside class="cci-sidebar" id="menuLateralCCI"><button class="cci-toggle" data-cci-descricao="Expanda ou recolha o menu lateral para aumentar a área de trabalho." onclick="alternarMenuLateral()" title="Expanda ou recolha o menu lateral para aumentar a área de trabalho." type="button"><span class="cci-nav-icon">☰</span><span class="cci-toggle-label">Recolher menu</span></button><div class="cci-nav-title">ESCALA</div><nav class="cci-nav"><div class="cci-nav-group" data-grupo="gerador"><button class="cci-nav-btn cci-nav-parent ativo" data-aba="gerador" data-cci-descricao="Gere, consulte e acompanhe a escala mensal de serviço." onclick="alternarSubmenuCCI('gerador')" title="Gere, consulte e acompanhe a escala mensal de serviço." type="button"><span class="cci-nav-icon">▦</span><span class="cci-nav-label">Escala Mensal</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu aberto" data-submenu="gerador"><button class="cci-submenu-btn ativo" data-aba="gerador" data-cci-descricao="Selecione o período e gere automaticamente uma nova escala mensal." data-subpagina="criar" onclick="abrirSubpaginaCCI('gerador','criar')" title="Selecione o período e gere automaticamente uma nova escala mensal." type="button"><span class="cci-submenu-dot">•</span><span>Criar Escala</span></button><button class="cci-submenu-btn" data-aba="gerador" data-cci-descricao="Consulte, edite, publique e exporte a escala mensal gerada." data-subpagina="visualizacao" onclick="abrirSubpaginaCCI('gerador','visualizacao')" title="Consulte, edite, publique e exporte a escala mensal gerada." type="button"><span class="cci-submenu-dot">•</span><span>Visualizar Escala</span></button><button class="cci-submenu-btn" data-aba="gerador" data-cci-descricao="Consulte os quadrinhos, lastros e totais acumulados dos militares." data-subpagina="quadrinhos" onclick="abrirSubpaginaCCI('gerador','quadrinhos')" title="Consulte os quadrinhos, lastros e totais acumulados dos militares." type="button"><span class="cci-submenu-dot">•</span><span>Quadrinhos e Totais</span></button><a class="cci-submenu-btn" href="https://s2rcunha.github.io/escala/visualizar.html" target="_blank" rel="noopener noreferrer" data-cci-descricao="Consulte as escalas publicadas." title="Consultar escala publicada" style="text-decoration:none"><span class="cci-submenu-dot">•</span><span>Escala Publicada ↗</span></a></div></div><div class="cci-nav-group" data-grupo="eventuais"><button class="cci-nav-btn cci-nav-parent" data-aba="eventuais" data-cci-descricao="Crie e gerencie escalas de missões e serviços eventuais em banco independente." onclick="alternarSubmenuCCI('eventuais')" title="Crie e gerencie escalas de missões e serviços eventuais em banco independente." type="button"><span class="cci-nav-icon">◆</span><span class="cci-nav-label">Escalas Eventuais</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="eventuais"><button class="somente-edicao cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Cadastre os modelos permanentes das missões eventuais, suas funções, distribuição, permanência e militares habilitados." title="Cadastre os modelos permanentes das missões eventuais, suas funções, distribuição, permanência e militares habilitados." data-subpagina="funcoes" onclick="abrirSubpaginaCCI('eventuais','tipos')" type="button"><span class="cci-submenu-dot">•</span><span>Tipos de Missão</span></button><button class="somente-edicao cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Crie uma ocorrência a partir de um Tipo de Missão, definindo período e quantidade de vagas necessárias." title="Crie uma ocorrência a partir de um Tipo de Missão, definindo período e quantidade de vagas necessárias." data-subpagina="criar" onclick="abrirSubpaginaCCI('eventuais','criar')" type="button"><span class="cci-submenu-dot">•</span><span>Criar Escala Eventual</span></button><button class="cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Consulte as ocorrências eventuais, gere a escala, faça ajustes, publique e exporte." title="Consulte as ocorrências eventuais, gere a escala, faça ajustes, publique e exporte." data-subpagina="lista" onclick="abrirSubpaginaCCI('eventuais','lista')" type="button"><span class="cci-submenu-dot">•</span><span>Visualizar Escalas</span></button><button class="cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Consulte os quadrinhos acumulados exclusivamente pelas escalas eventuais, separados por Tipo de Missão." title="Consulte os quadrinhos acumulados exclusivamente pelas escalas eventuais, separados por Tipo de Missão." data-subpagina="quadrinhos" onclick="abrirSubpaginaCCI('eventuais','quadrinhos')" type="button"><span class="cci-submenu-dot">•</span><span>Quadrinhos e Totais</span></button></div></div><div class="somente-edicao cci-nav-group" data-grupo="militares"><button class="cci-nav-btn cci-nav-parent" data-aba="militares" data-cci-descricao="Cadastre e gerencie os militares que compõem as escalas." onclick="alternarSubmenuCCI('militares')" title="Cadastre e gerencie os militares que compõem as escalas." type="button"><span class="cci-nav-icon">♟</span><span class="cci-nav-label">Militares</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="militares"><button class="cci-submenu-btn" data-aba="militares" data-cci-descricao="Inclua um novo militar, sua função e posição de antiguidade." data-subpagina="cadastrar" onclick="abrirSubpaginaCCI('militares','cadastrar')" title="Inclua um novo militar, sua função e posição de antiguidade." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar Militar</span></button><button class="cci-submenu-btn" data-aba="militares" data-cci-descricao="Consulte, edite e organize os militares já cadastrados." data-subpagina="efetivo" onclick="abrirSubpaginaCCI('militares','efetivo')" title="Consulte, edite e organize os militares já cadastrados." type="button"><span class="cci-submenu-dot">•</span><span>Militares Cadastrados</span></button></div></div><div class="somente-edicao cci-nav-group" data-grupo="vagas"><button class="cci-nav-btn cci-nav-parent" data-aba="vagas" data-cci-descricao="Configure as funções, vagas e regras usadas na montagem das escalas." onclick="alternarSubmenuCCI('vagas')" title="Configure as funções, vagas e regras usadas na montagem das escalas." type="button"><span class="cci-nav-icon">☷</span><span class="cci-nav-label">Estrutura da Equipe</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="vagas"><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Cadastre e mantenha as funções existentes na equipe de serviço." data-subpagina="funcoes" onclick="abrirSubpaginaCCI('vagas','funcoes')" title="Cadastre e mantenha as funções existentes na equipe de serviço." type="button"><span class="cci-submenu-dot">•</span><span>Funções da Equipe</span></button><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina quantas vagas de cada função são necessárias em cada serviço." data-subpagina="dimensionamento" onclick="abrirSubpaginaCCI('vagas','dimensionamento')" title="Defina quantas vagas de cada função são necessárias em cada serviço." type="button"><span class="cci-submenu-dot">•</span><span>Dimensionamento do Serviço</span></button><button class="cci-submenu-btn cci-submenu-parent" data-aba="vagas" data-cci-descricao="Configure a distribuição, descanso, lastro, justiça e classificação dos dias." data-submenu-pai="regras" onclick="alternarSubmenuRegrasCCI()" title="Configure a distribuição, descanso, lastro, justiça e classificação dos dias." type="button"><span class="cci-submenu-dot">•</span><span>Regras das Escalas</span><span class="cci-submenu-arrow">›</span></button><div class="cci-submenu-nivel2" data-submenu-nivel2="regras"><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina as regras de geração da escala para cada função do serviço." data-subpagina="regras" onclick="abrirSubpaginaCCI('vagas','regras')" title="Defina as regras de geração da escala para cada função do serviço." type="button"><span class="cci-submenu-dot">·</span><span>Configurações das Regras</span></button><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina as cores dos dias da semana e cadastre exceções por data." data-subpagina="classificacao" onclick="abrirSubpaginaCCI('vagas','classificacao')" title="Defina as cores dos dias da semana e cadastre exceções por data." type="button"><span class="cci-submenu-dot">·</span><span>Classificação dos Dias</span></button></div></div></div><div class="somente-edicao cci-nav-group" data-grupo="indisponibilidades"><button class="cci-nav-btn cci-nav-parent" data-aba="indisponibilidades" data-cci-descricao="Registre períodos e restrições em que militares não podem concorrer à escala." onclick="alternarSubmenuCCI('indisponibilidades')" title="Registre períodos e restrições em que militares não podem concorrer à escala." type="button"><span class="cci-nav-icon">⊘</span><span class="cci-nav-label">Indisponibilidades</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="indisponibilidades"><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Cadastre férias, cursos, missões, licenças e outras indisponibilidades por período." data-subpagina="periodo" onclick="abrirSubpaginaCCI('indisponibilidades','periodo')" title="Cadastre férias, cursos, missões, licenças e outras indisponibilidades por período." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar por Período</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Defina indisponibilidades recorrentes em determinados dias da semana." data-subpagina="semanal" onclick="abrirSubpaginaCCI('indisponibilidades','semanal')" title="Defina indisponibilidades recorrentes em determinados dias da semana." type="button"><span class="cci-submenu-dot">•</span><span>Indisponibilidade Semanal</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Importe várias indisponibilidades de uma só vez por arquivo CSV." data-subpagina="importar" onclick="abrirSubpaginaCCI('indisponibilidades','importar')" title="Importe várias indisponibilidades de uma só vez por arquivo CSV." type="button"><span class="cci-submenu-dot">•</span><span>Importar CSV</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Consulte e gerencie todas as indisponibilidades já cadastradas." data-subpagina="registros" onclick="abrirSubpaginaCCI('indisponibilidades','registros')" title="Consulte e gerencie todas as indisponibilidades já cadastradas." type="button"><span class="cci-submenu-dot">•</span><span>Registros Cadastrados</span></button></div></div><div class="somente-administrador cci-nav-group" data-grupo="backups"><button class="cci-nav-btn cci-nav-parent" data-aba="backups" data-cci-descricao="Proteja os dados do sistema por meio de exportação, importação e backups." onclick="alternarSubmenuCCI('backups')" title="Proteja os dados do sistema por meio de exportação, importação e backups." type="button"><span class="cci-nav-icon">↻</span><span class="cci-nav-label">Backups</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="backups"><button class="cci-submenu-btn" data-aba="backups" data-cci-descricao="Exporte, importe e gerencie as ferramentas de cópia de segurança." data-subpagina="gerenciar" onclick="abrirSubpaginaCCI('backups','gerenciar')" title="Exporte, importe e gerencie as ferramentas de cópia de segurança." type="button"><span class="cci-submenu-dot">•</span><span>Gerenciar Backups</span></button><button class="cci-submenu-btn" data-aba="backups" data-cci-descricao="Consulte, restaure e gerencie os backups armazenados." data-subpagina="lista" onclick="abrirSubpaginaCCI('backups','lista')" title="Consulte, restaure e gerencie os backups armazenados." type="button"><span class="cci-submenu-dot">•</span><span>Lista de Backups</span></button></div></div><div class="somente-administrador cci-nav-group" data-grupo="usuarios"><button class="cci-nav-btn cci-nav-parent" data-aba="usuarios" data-cci-descricao="Administre usuários, permissões de acesso e histórico de alterações." onclick="alternarSubmenuCCI('usuarios')" title="Administre usuários, permissões de acesso e histórico de alterações." type="button"><span class="cci-nav-icon">▣</span><span class="cci-nav-label">Usuários / Auditoria</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="usuarios"><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Crie um novo usuário e defina seu perfil de acesso ao sistema." data-subpagina="cadastrar" onclick="abrirSubpaginaCCI('usuarios','cadastrar')" title="Crie um novo usuário e defina seu perfil de acesso ao sistema." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar Usuário</span></button><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Consulte e gerencie os usuários cadastrados e suas permissões." data-subpagina="lista" onclick="abrirSubpaginaCCI('usuarios','lista')" title="Consulte e gerencie os usuários cadastrados e suas permissões." type="button"><span class="cci-submenu-dot">•</span><span>Usuários Cadastrados</span></button><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Consulte o histórico das alterações administrativas realizadas no sistema." data-subpagina="auditoria" onclick="abrirSubpaginaCCI('usuarios','auditoria')" title="Consulte o histórico das alterações administrativas realizadas no sistema." type="button"><span class="cci-submenu-dot">•</span><span>Auditoria do Sistema</span></button></div></div></nav><div class="cci-sidebar-credito">Desenvolvido por Sgt R.Cunha ®</div></aside><div aria-hidden="true" id="cciMenuTooltip" role="tooltip"></div>
 <main class="cci-main"><div class="cci-page-heading"><div><h2 class="cci-page-title" id="tituloPaginaCCI">Escala Mensal</h2><p class="cci-page-sub" id="subtituloPaginaCCI">Geração, consulta e manutenção da escala mensal.</p></div></div>
 <!-- ABA 1: GERADOR E VISUALIZAÇÃO DA ESCALA -->
 <section class="aba-conteudo space-y-4" id="aba-gerador">
@@ -900,12 +508,6 @@ body.cci-menu-recolhido #bannerConflitoServidor{
 <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
 </select>
 <select aria-label="Ano da escala para visualização" class="border p-2 rounded text-sm" id="anoEscalaVisualizacao" onchange="atualizarPeriodoPelaVisualizacao()"></select>
-<label class="cci-filtro-funcao-mobile">
-  <span>Função</span>
-  <select aria-label="Função exibida na escala" class="border p-2 rounded text-sm" id="filtroFuncaoEscalaMobile" onchange="aplicarFiltroFuncaoEscalaMobile()">
-    <option value="">Todas as funções</option>
-  </select>
-</label>
 </div>
 <div class="w-full text-[11px] text-gray-500 mt-1">
 <span class="font-semibold text-red-600">Vermelho:</span> sem escala ·
@@ -917,23 +519,9 @@ body.cci-menu-recolhido #bannerConflitoServidor{
 <div class="flex gap-2 cci-nao-exportar-pdf">
 <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold" onclick="exportarPDF()">📄 Exportar PDF</button>
 <button class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-sm font-semibold" onclick="exportarXLS()">Exportar XLS</button>
-<label id="opcaoIncluirIndisponiveisManual" class="somente-edicao text-xs flex items-center gap-1" style="display:none"><input type="checkbox" id="incluirIndisponiveisManual" onchange="incluirIndisponiveisManual = this.checked; renderizarTabelaEscala()"> Incluir militares indisponíveis (somente elaboração manual)</label>
-<span id="avisoRascunhoManual" class="text-xs font-bold text-amber-700"></span>
 <button class="somente-edicao bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded text-sm font-semibold" id="botaoPublicarEscala" onclick="publicarEscalaAtual()">📢 Publicar escala</button>
-<button class="somente-edicao bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm font-semibold" onclick="limparEscala()">Limpar mês inteiro</button>
-<button class="somente-edicao bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded text-sm font-semibold" onclick="abrirModalLimpezaFuncao()">Limpar função</button>
-</div>
-<div id="modalLimpezaFuncao" class="hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-60 p-4" role="dialog" aria-modal="true" aria-labelledby="tituloModalLimpezaFuncao" onclick="if(event.target===this)fecharModalLimpezaFuncao()">
-  <div class="bg-white text-gray-900 rounded-xl shadow-xl w-full max-w-md p-6">
-    <h3 id="tituloModalLimpezaFuncao" class="text-xl font-bold mb-3">Limpar função da escala</h3>
-    <p class="text-sm mb-4">Selecione a função que deseja limpar no mês atual. As demais funções serão preservadas.</p>
-    <label for="funcaoLimpezaEscala" class="block font-semibold mb-2">Função</label>
-    <select id="funcaoLimpezaEscala" class="w-full border rounded-lg px-3 py-3 bg-white text-gray-900 text-base mb-5"><option value="">Selecione a função</option></select>
-    <div class="flex justify-end gap-3 flex-wrap">
-      <button type="button" class="bg-gray-200 text-gray-900 rounded-lg px-5 py-3 font-semibold" onclick="fecharModalLimpezaFuncao()">Cancelar</button>
-      <button type="button" class="bg-red-700 text-white rounded-lg px-5 py-3 font-semibold" onclick="limparFuncaoEscala()">Confirmar limpeza</button>
-    </div>
-  </div>
+<button class="somente-edicao bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm font-semibold" onclick="limparEscala()">Limpar</button>
+<button class="somente-edicao bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded text-sm font-semibold" onclick="excluirEscalaFuncao()">Excluir escala de uma função</button>
 </div>
 <div class="text-center mb-4">
 <h2 class="text-xl font-bold uppercase" id="tituloEscala">Escala de Serviço - Célula Contraincêndio</h2>
@@ -1908,7 +1496,7 @@ escala: {},
 
   // Avisa após falha de comunicação e também enquanto houver
   // alteração aguardando na fila ou sendo enviada ao servidor.
-  if (!rascunhoManualPendente && !falhaSalvamentoServidor && salvamentosPendentes === 0) {
+  if (!falhaSalvamentoServidor && salvamentosPendentes === 0) {
     return;
   }
 
@@ -2053,8 +1641,6 @@ estado.escala = {};
       versaoServidor = Number(dados.versao);
       conflitoServidor = false;
       falhaSalvamentoServidor = false;
-      rascunhoManualPendente = false;
-      atualizarAvisoRascunhoManual();
       normalizarEstadoAtual();
       console.log('Estado carregado do servidor. Versão:', versaoServidor);
     } catch (erro) {
@@ -2066,30 +1652,7 @@ estado.escala = {};
     }
   }
 
-    // Rascunho de criação manual: não transmite cada nome ao servidor.
-    let rascunhoManualPendente = false;
-    let incluirIndisponiveisManual = false;
-    function atualizarAvisoRascunhoManual() {
-      const el = document.getElementById('avisoRascunhoManual');
-      if (el) el.textContent = rascunhoManualPendente
-        ? '⚠ Escala manual em elaboração e ainda não salva. Publique antes de sair: fechar, atualizar ou navegar para outra página poderá descartar as alterações. O navegador solicitará confirmação.'
-        : '';
-      // A opção só fica visível depois de iniciar uma elaboração manual.
-      const opcao = document.getElementById('opcaoIncluirIndisponiveisManual');
-      if (opcao) opcao.style.display = rascunhoManualPendente ? 'flex' : 'none';
-      if (!rascunhoManualPendente) {
-        incluirIndisponiveisManual = false;
-        const checkbox = document.getElementById('incluirIndisponiveisManual');
-        if (checkbox) checkbox.checked = false;
-      }
-    }
-
     function salvarEstado(contextoOperacao = null) {
-
-  if (rascunhoManualPendente) {
-    alert("Existe uma escala manual em elaboração. Publique-a antes de salvar outras alterações.");
-    return Promise.resolve(false);
-  }
 
   // Se já houve um conflito de versão, esta página não pode
   // continuar enviando alterações com dados desatualizados.
@@ -3581,7 +3144,6 @@ async function inicializar() {
       excluirUsuario: ['usuarioId', 'token'],
       listarAuditoria: ['token', 'limite'],
       publicarEscala: ['publicacao', 'token'],
-      publicarRascunhoManual: ['publicacao', 'novoEstado', 'versaoCliente', 'token'],
       excluirEscalaPublicada: ['mesAno', 'token'],
       carregarEscalaPublicada: [],
       inicializarBanco_: [],
@@ -7413,12 +6975,14 @@ if (
             if (escala.alteracoesManuais?.[dia]) delete escala.alteracoesManuais[dia][chave];
             if (escala.substituicoes?.[dia]) delete escala.substituicoes[dia][chave];
             if (escala.adiantamentosAutomaticos?.[dia]) delete escala.adiantamentosAutomaticos[dia][chave];
+            if (escala.dadosAutomaticos?.[dia]) delete escala.dadosAutomaticos[dia][chave];
+            if (escala.estadoRotacaoAutomatico?.[dia]) delete escala.estadoRotacaoAutomatico[dia][chave];
           }
         }
         estado.escala = escala; estado.escalas[mesAno] = escala;
         marcarEscalaComoAguardandoRepublicacao(escala, existente?.publicadaEm || '');
-        rascunhoManualPendente = true;
-        atualizarAvisoRascunhoManual();
+        const salvou = await salvarEstado({acao:'iniciar_escala_manual', mesAno, funcao});
+        if (!salvou) return;
         renderizarTabelaEscala(); atualizarCoresMesesEscala(); atualizarAvisoEscalasNaoPublicadas();
         abrirSubpaginaCCI('gerador','visualizacao');
         alert(`Elaboração manual iniciada para "${funcao}".\n\nPreencha as vagas pela tabela. As regras continuam sendo verificadas em cada escolha.`);
@@ -7568,6 +7132,8 @@ try {
         : new Set();
 
       let novaEscala = {};
+      // Estado das compensações (adiantados/bloqueios/pendente) logo após cada decisão do motor.
+      const estadoRotacaoMotor = {};
       let substituicoes = {};
       // V14 — fatos explícitos de adiantamento criados pelo próprio gerador.
       // O recálculo não precisa inferir retrospectivamente uma decisão automática.
@@ -7670,6 +7236,19 @@ try {
           .forEach(escala => obterContagemSeparadaEscala(escala, contagemFuncao, funcao));
       });
 
+      // CORREÇÃO — lastros manuais (Quadrinhos e Totais) também precisam entrar
+      // no contador usado na decisão de justiça (contagemSeparadaGeracao).
+      // Antes eles só alimentavam contagemAnoGeracao e eram ignorados na escolha.
+      estado.militares.forEach(militar => {
+        Object.entries(militar.ajustesLastrosManuais || {}).forEach(([funcao, valores]) => {
+          const alvo = contagemSeparadaGeracao[militar.id]?.[funcao];
+          if (!alvo) return;
+          Object.entries(valores || {}).forEach(([corId, quantidade]) => {
+            garantirCorNaContagem(alvo, corId).lastros += Math.max(0, normalizarNumeroContagem(quantidade));
+          });
+        });
+      });
+
       estruturaGerada.funcoes.forEach(funcao => {
         const ultimoMilitar = ultimosMilitaresPorFuncao[funcao];
         const tipoFuncao = tiposEscala[funcao] || 'corrida';
@@ -7710,6 +7289,10 @@ try {
       // Mapeia posições/colunas por função
       let colunasVagas = [];
       estruturaGerada.funcoes.forEach(f => {
+        // Gerar apenas a função solicitada: não processar nem solicitar
+        // exceções de outras funções, que serão preservadas na mesclagem.
+        if (funcaoGeracao && f !== funcaoGeracao) return;
+        if (funcoesManuaisProtegidas.has(f)) return;
         const qtd = estruturaGerada.vagas[f] || 0;
         for (let i = 0; i < qtd; i++) {
           colunasVagas.push({ funcao: f, indice: i + 1, chave: `${f} #${i + 1}` });
@@ -8192,7 +7775,22 @@ try {
             && pendenciasRotacao[chaveRotacao]) {
             const pendenteId = pendenciasRotacao[chaveRotacao];
             const militarPendente = candidatos.find(m => m.id === pendenteId);
-            if (militarPendente) candidatos = [militarPendente];
+            if (militarPendente) {
+              // VARIAÇÃO — a pendência só tem prioridade absoluta se o militar pendente
+              // NÃO estiver acima da média de quadrinhos+lastros (da cor do serviço)
+              // do grupo disponível. Acima da média, a escolha segue o equilíbrio.
+              let forcarPendente = true;
+              const regrasPendencia = obterRegrasEfetivasFuncao(col.funcao, tipoFuncao);
+              if (regrasPendencia.justica?.separarPretoVermelho !== false) {
+                const grupoPendencia = obterMilitaresParaEscala(col.funcao).filter(m => !militarEstaIndisponivel(m.id));
+                const valorPendencia = m => obterValorJusticaSeparada(
+                  contagemSeparadaGeracao[m.id]?.[col.funcao] || criarContagemQuadrinhoLastro(),
+                  regrasPendencia, corServico);
+                const mediaPendencia = grupoPendencia.reduce((soma, m) => soma + valorPendencia(m), 0) / Math.max(1, grupoPendencia.length);
+                if (valorPendencia(militarPendente) > mediaPendencia) forcarPendente = false;
+              }
+              if (forcarPendente) candidatos = [militarPendente];
+            }
           }
 
           if (tipoFuncao === 'semanaFimSemana'
@@ -8486,6 +8084,16 @@ try {
           } else {
             novaEscala[dia][col.chave] = ''; // Vaga não preenchida por falta de efetivo
           }
+
+          if (tipoFuncao === 'semanaFimSemana') {
+            estadoRotacaoMotor[dia] ||= {};
+            estadoRotacaoMotor[dia][col.chave] = {
+              chaveRotacao,
+              adiantados: [...(militaresAdiantadosRotacao[chaveRotacao] || [])],
+              bloqueios: { ...(bloqueiosRotacao[chaveRotacao] || {}) },
+              pendente: pendenciasRotacao[chaveRotacao] || null
+            };
+          }
         });
 
         Object.keys(contadorEventosRotacao).forEach(chave => {
@@ -8511,7 +8119,14 @@ try {
       // mesmo se o mês ainda não possuir escala. Nesse caso criamos uma base
       // mensal vazia e aplicamos somente a função escolhida, deixando as demais
       // funções sem militares até que sejam geradas posteriormente.
-      const deveMesclarResultado = !!escalaExistenteAntesGeracao && (funcaoGeracao || diaInicioGeracao > 1 || diaFimGeracao < diasNoMes || funcoesManuaisProtegidas.size > 0);
+      // REFERÊNCIA AUTOMÁTICA — cópia exata do que o MOTOR escolheu em cada vaga.
+      // O recálculo após troca manual usa isso como "escolha esperada" em vez de
+      // tentar reconstruir a escolha com uma ordenação simplificada.
+      const dadosGeradosPeloMotor = structuredClone(novaEscala);
+      let dadosAutomaticosFinal = dadosGeradosPeloMotor;
+      const estadoRotacaoGeradoPeloMotor = structuredClone(estadoRotacaoMotor);
+      let estadoRotacaoAutomaticoFinal = estadoRotacaoGeradoPeloMotor;
+      const deveMesclarResultado = !!funcaoGeracao || (!!escalaExistenteAntesGeracao && (diaInicioGeracao > 1 || diaFimGeracao < diasNoMes || funcoesManuaisProtegidas.size > 0));
 
       if (deveMesclarResultado) {
         const escalaBase = escalaExistenteAntesGeracao
@@ -8564,6 +8179,13 @@ escalaBase.alteracoesManuais[dia] ||= {};
 
           chavesGeradas.forEach(chave => {
             escalaBase.dados[dia][chave] = novaEscala[dia]?.[chave] || '';
+            escalaBase.dadosAutomaticos ||= {};
+            escalaBase.dadosAutomaticos[dia] ||= {};
+            escalaBase.dadosAutomaticos[dia][chave] = dadosGeradosPeloMotor[dia]?.[chave] || '';
+            escalaBase.estadoRotacaoAutomatico ||= {};
+            escalaBase.estadoRotacaoAutomatico[dia] ||= {};
+            if (estadoRotacaoGeradoPeloMotor[dia]?.[chave]) escalaBase.estadoRotacaoAutomatico[dia][chave] = estadoRotacaoGeradoPeloMotor[dia][chave];
+            else delete escalaBase.estadoRotacaoAutomatico[dia][chave];
 
             if (substituicoes[dia]?.[chave]) escalaBase.substituicoes[dia][chave] = true;
             else delete escalaBase.substituicoes[dia][chave];
@@ -8615,6 +8237,8 @@ delete escalaBase.alteracoesManuais[dia][chave];
         escalaBase.coresDias = { ...(escalaBase.coresDias || {}), ...coresDias };
 
         novaEscala = escalaBase.dados;
+        dadosAutomaticosFinal = escalaBase.dadosAutomaticos || {};
+        estadoRotacaoAutomaticoFinal = escalaBase.estadoRotacaoAutomatico || {};
         substituicoes = escalaBase.substituicoes;
         adiantamentosAutomaticos = escalaBase.adiantamentosAutomaticos;
         justificativas = escalaBase.justificativas;
@@ -8641,6 +8265,8 @@ delete escalaBase.alteracoesManuais[dia][chave];
   diasVermelhos,
   coresDias,
   dados: novaEscala,
+  dadosAutomaticos: dadosAutomaticosFinal,
+  estadoRotacaoAutomatico: estadoRotacaoAutomaticoFinal,
   substituicoes,
   adiantamentosAutomaticos,
   justificativas,
@@ -8887,6 +8513,9 @@ if (salvou) {
       const militaresAdiantadosRotacaoReferencia = {};
       const bloqueiosRotacaoReferencia = {};
       const pendenciasRotacaoReferencia = {};
+      // Rotações em que já houve célula diferente do que o motor escolheu: a partir dali o
+      // estado de compensação deixa de poder ser copiado do motor e passa a ser simulado.
+      const rotacaoContaminadaRecalculo = new Set();
       const contadorEventosRotacao = {};
       const ultimoEventoPorMilitar = {};
       const ultimaDataServicoPorMilitar = {};
@@ -8926,6 +8555,22 @@ if (salvou) {
         historicas.forEach(e => {
           obterContagemSeparadaEscala(e, contagemRealFuncao, funcao);
           obterContagemSeparadaEscala(e, contagemReferenciaFuncao, funcao);
+        });
+      });
+
+      // CORREÇÃO — o recálculo precisa partir do MESMO ponto de partida do gerador:
+      // lastros manuais (Quadrinhos e Totais) entram nas duas linhas de contagem
+      // (real e referência). Sem isso, a escolha "esperada" diverge da gerada e
+      // cria adiantamentos/pendências falsos após uma troca manual.
+      estado.militares.forEach(militar => {
+        Object.entries(militar.ajustesLastrosManuais || {}).forEach(([funcao, valores]) => {
+          [contagemSeparadaRecalculo, contagemSeparadaReferencia].forEach(matriz => {
+            const alvo = matriz[militar.id]?.[funcao];
+            if (!alvo) return;
+            Object.entries(valores || {}).forEach(([corId, quantidade]) => {
+              garantirCorNaContagem(alvo, corId).lastros += Math.max(0, normalizarNumeroContagem(quantidade));
+            });
+          });
         });
       });
 
@@ -9228,7 +8873,21 @@ if (salvou) {
             const pendenteId = pendenciasRotacaoReferencia[chaveRotacao];
             if (pendenteId) {
               const pendente = candidatosEsperados.find(m => m.id === pendenteId);
-              if (pendente) candidatosEsperados = [pendente];
+              if (pendente) {
+                // Mesmo critério do gerador: a pendência só tem prioridade absoluta se a
+                // contagem do militar NA COR do dia não passar da média do grupo disponível.
+                let forcarPendenteRecalculo = true;
+                const regrasPendRecalculo = obterRegrasEfetivasFuncao(col.funcao, tipoFuncao);
+                if (regrasPendRecalculo.justica?.separarPretoVermelho !== false) {
+                  const valorPendRecalculo = m => obterValorJusticaSeparada(
+                    contagemSeparadaReferencia[m.id]?.[col.funcao] || criarContagemQuadrinhoLastro(),
+                    regrasPendRecalculo, corServico);
+                  const grupoPendRecalculo = militaresDaRotacao.filter(m => !militarEstaIndisponivelNaData(m.id, dataStr));
+                  const mediaPendRecalculo = grupoPendRecalculo.reduce((soma, m) => soma + valorPendRecalculo(m), 0) / Math.max(1, grupoPendRecalculo.length);
+                  if (valorPendRecalculo(pendente) > mediaPendRecalculo) forcarPendenteRecalculo = false;
+                }
+                if (forcarPendenteRecalculo) candidatosEsperados = [pendente];
+              }
             }
           }
 
@@ -9263,7 +8922,11 @@ if (salvou) {
             }
             return distanciaRecalculo(a) - distanciaRecalculo(b);
           });
-          const escolhidoAutomaticoEsperadoId = candidatosEsperados[0]?.id || '';
+          // A escolha esperada é a do próprio MOTOR, gravada na geração. Só quando a escala
+          // não tem essa referência (geradas antes desta versão ou elaboradas à mão)
+          // usa-se a reconstrução simulada acima.
+          const escolhidoGravadoPeloMotor = escala.dadosAutomaticos?.[dia]?.[col.chave] || '';
+          const escolhidoAutomaticoEsperadoId = escolhidoGravadoPeloMotor || candidatosEsperados[0]?.id || '';
 
           const escolhidoId = escala.dados?.[dia]?.[col.chave] || '';
           escalaParcial[dia][col.chave] = escolhidoId;
@@ -9436,6 +9099,23 @@ if (salvou) {
             ultimaDataServicoPorMilitarReferencia[escolhidoReferenciaId] = dataObj.getTime();
             ultimoServicoFoiVermelhoPorMilitarReferencia[escolhidoReferenciaId] = servicoVermelho;
           }
+
+          // UNIFICAÇÃO COM O GERADOR — enquanto a rotação só contém células iguais às que o
+          // motor escolheu, o estado de compensação é exatamente o gravado pelo motor naquela
+          // célula. Após a primeira divergência (troca manual), segue a simulação normal.
+          if (tipoFuncao === 'semanaFimSemana') {
+            const divergiu = houveAlteracaoManualNestaCelula
+              || (escolhidoGravadoPeloMotor && escolhido.id !== escolhidoGravadoPeloMotor);
+            if (divergiu) rotacaoContaminadaRecalculo.add(chaveRotacao);
+            const estadoMotor = escala.estadoRotacaoAutomatico?.[dia]?.[col.chave];
+            if (estadoMotor && estadoMotor.chaveRotacao === chaveRotacao
+                && !rotacaoContaminadaRecalculo.has(chaveRotacao)) {
+              militaresAdiantadosRotacao[chaveRotacao] = new Set(estadoMotor.adiantados || []);
+              bloqueiosRotacao[chaveRotacao] = { ...(estadoMotor.bloqueios || {}) };
+              if (estadoMotor.pendente) pendenciasRotacao[chaveRotacao] = estadoMotor.pendente;
+              else delete pendenciasRotacao[chaveRotacao];
+            }
+          }
         });
 
         Object.keys(contadorEventosRotacao).forEach(chave => {
@@ -9516,21 +9196,7 @@ if (salvou) {
       if (status) status.textContent = 'Publicando escala...';
       try {
         const publicacao = montarPublicacaoEscala(mesAno, escala);
-        const resultado = rascunhoManualPendente
-          ? await executarAppsScript('publicarRascunhoManual', publicacao, structuredClone(estado), versaoServidor, tokenSessao)
-          : await executarAppsScript('publicarEscala', publicacao, tokenSessao);
-        if (resultado?.conflito) {
-          conflitoServidor = true;
-          mostrarBannerConflitoServidor();
-          salvarSnapshotLocalConflito('conflito_publicacao_manual');
-          throw new Error('Os dados foram alterados por outro usuário. Nada foi salvo ou publicado. Recarregue a página.');
-        }
-        if (!resultado?.sucesso) throw new Error(resultado?.mensagem || 'Falha ao publicar.');
-        if (rascunhoManualPendente) {
-          versaoServidor = Number(resultado.versao);
-          rascunhoManualPendente = false;
-          atualizarAvisoRascunhoManual();
-        }
+        const resultado = await executarAppsScript('publicarEscala', publicacao, tokenSessao);
         const dataHora = resultado?.publicadoEm ? new Date(resultado.publicadoEm) : new Date();
 
         // Mantém no estado do sistema o status visual de publicação do mês.
@@ -9538,7 +9204,7 @@ if (salvou) {
         escala.publicadaEm = dataHora.toISOString();
         delete escala.alteradaAposPublicacaoEm;
         atualizarCoresMesesEscala();
-        if (!resultado?.rascunhoManual) await salvarEstado('marcar_escala_publicada');
+        await salvarEstado('marcar_escala_publicada');
         atualizarAvisoEscalasNaoPublicadas();
 
         if (status) status.textContent = `✓ ${formatarMesAno(mesAno)} publicada em ${dataHora.toLocaleString('pt-BR')}.`;
@@ -9550,32 +9216,6 @@ if (salvou) {
       } finally {
         if (botao) botao.disabled = false;
       }
-    }
-
-
-    function atualizarFiltroFuncaoEscalaMobile(estruturaEscala, colunasVagas) {
-      const seletor = document.getElementById('filtroFuncaoEscalaMobile');
-      if (!seletor) return;
-      const valorAnterior = seletor.value;
-      const funcoesDisponiveis = [...new Set((colunasVagas || []).map(coluna => coluna.funcao).filter(Boolean))];
-      seletor.innerHTML = '<option value="">Todas as funções</option>' + funcoesDisponiveis
-        .map(funcao => `<option value="${escaparHTML(encodeURIComponent(funcao))}">${escaparHTML(funcao)}</option>`).join('');
-      const valorAnteriorValido = valorAnterior && funcoesDisponiveis.some(funcao => encodeURIComponent(funcao) === valorAnterior);
-      if (valorAnteriorValido) seletor.value = valorAnterior;
-      else if (window.matchMedia('(max-width: 767px)').matches && funcoesDisponiveis.length) seletor.value = encodeURIComponent(funcoesDisponiveis[0]);
-      else seletor.value = '';
-    }
-
-    function aplicarFiltroFuncaoEscalaMobile() {
-      const seletor = document.getElementById('filtroFuncaoEscalaMobile');
-      const tabela = document.getElementById('tabelaEscalaPrincipal');
-      if (!seletor || !tabela) return;
-      const modoMobile = window.matchMedia('(max-width: 767px)').matches;
-      const funcaoSelecionada = modoMobile ? seletor.value : '';
-      tabela.querySelectorAll('[data-funcao-escala]').forEach(celula => {
-        const exibir = !funcaoSelecionada || celula.dataset.funcaoEscala === funcaoSelecionada;
-        celula.classList.toggle('cci-coluna-funcao-oculta', !exibir);
-      });
     }
 
     function renderizarTabelaEscala() {
@@ -9606,7 +9246,6 @@ if (salvou) {
       };
 
       const mesAno = document.getElementById('mesAnoEscala').value;
-      atualizarFuncoesLimpezaEscala();
       const cabecalho = document.getElementById('cabecalhoTabelaEscala');
       const corpo = document.getElementById('corpoTabelaEscala');
       if (mesAno && estado.escalas[mesAno]) {
@@ -9695,7 +9334,7 @@ if (salvou) {
 cabecalho.innerHTML = `
   <th class="border border-gray-300 p-2 w-12 text-center bg-gray-800 text-white">Dia</th>
   <th class="border border-gray-300 p-2 w-14 text-center bg-gray-800 text-white">Sem.</th>
-  ${colunasVagas.map(c => `<th data-funcao-escala="${escaparHTML(encodeURIComponent(c.funcao))}" class="border border-gray-300 p-2 text-center bg-gray-700 text-white">${escaparHTML(c.funcao)}</th>`).join('')}
+  ${colunasVagas.map(c => `<th class="border border-gray-300 p-2 text-center bg-gray-700 text-white">${escaparHTML(c.funcao)}</th>`).join('')}
 `;
 
       // Linhas dos Dias
@@ -9828,8 +9467,7 @@ const militaresOrdenadosTroca = militaresNaOrdemBase
     // como a opção selecionada, evitando duplicidade no <select>.
     if (militar.id === militarIdEscalado) return false;
 
-    if (militarIndisponivelNaDataTroca(militar.id)
-      && !(rascunhoManualPendente && incluirIndisponiveisManual && funcaoEmElaboracaoManual(col.funcao))) return false;
+    if (militarIndisponivelNaDataTroca(militar.id)) return false;
 
     // Regra de apresentação do dropdown: quem já está escalado no serviço
     // imediatamente anterior ou posterior não deve ser oferecido como opção.
@@ -9909,7 +9547,7 @@ const militaresOrdenadosTroca = militaresNaOrdemBase
 
 const opcoes = militaresOrdenadosTroca
   .map(m =>
-    `<option value="${escaparHTML(m.id)}">${escaparHTML(m.nome)} (${escaparHTML(m.saram)})${m.ativo === false ? ' - inativo' : ''}${militarIndisponivelNaDataTroca(m.id) ? ' ⚠ INDISPONÍVEL' : ''}</option>`
+    `<option value="${escaparHTML(m.id)}">${escaparHTML(m.nome)} (${escaparHTML(m.saram)})${m.ativo === false ? ' - inativo' : ''}</option>`
   )
   .join('');
           const textoBotaoJustificativa = militarEscalado
@@ -9920,7 +9558,7 @@ const opcoes = militaresOrdenadosTroca
             : '<span class="pdf-militar">-- Sem Militar --</span>';
 
           htmlCorpo += `
-            <td data-funcao-escala="${escaparHTML(encodeURIComponent(col.funcao))}" class="celula-escala border p-1 ${corFundoCelula ? '' : (ehSubstituicao ? 'bg-yellow-200 font-bold' : '')}"${estiloFundoCelula}>
+            <td class="celula-escala border p-1 ${corFundoCelula ? '' : (ehSubstituicao ? 'bg-yellow-200 font-bold' : '')}"${estiloFundoCelula}>
               <div class="flex items-start gap-1">
                 <button type="button" title="Clique para ver a justificativa" data-dia="${dia}" data-coluna-chave="${escaparHTML(encodeURIComponent(col.chave))}" onclick="mostrarJustificativa(Number(this.dataset.dia), this.dataset.colunaChave)" class="botao-justificativa min-w-0 flex-1 text-left text-xs p-1 rounded hover:bg-yellow-100 ${ehSubstituicao ? 'font-bold' : 'font-medium'}">${textoBotaoJustificativa}</button>
                 <select
@@ -9950,8 +9588,6 @@ const opcoes = militaresOrdenadosTroca
       }
 
       corpo.innerHTML = htmlCorpo;
-      atualizarFiltroFuncaoEscalaMobile(estruturaEscala, colunasVagas);
-      aplicarFiltroFuncaoEscalaMobile();
       document.getElementById('tituloEscala').innerText = `ESCALA DE SERVIÇO DA CÉLULA CONTRAINCÊNDIO - ${mes}/${ano}`;
       document.getElementById('subtituloEscala').innerText = `Gerado em ${new Date().toLocaleDateString('pt-BR')}`;
       renderizarLegendaCoresEscala();
@@ -10343,23 +9979,20 @@ const opcoes = militaresOrdenadosTroca
       // partir de estado.indisponibilidades (por período).
       const impeditivoAbsoluto =
         tem('mesma pessoa duas vezes') ||
-        (!rascunhoManualPendente || !incluirIndisponiveisManual) && tem('indisponivel nesta data') ||
-        (!rascunhoManualPendente || !incluirIndisponiveisManual) && tem('indisponível nesta data') ||
-        (!rascunhoManualPendente || !incluirIndisponiveisManual) && tem('dia da semana') ||
+        tem('indisponivel nesta data') ||
+        tem('indisponível nesta data') ||
+        tem('dia da semana') ||
         tem('inicia indisponibilidade') ||
         tem('outra funcao') ||
         tem('outra função');
 
-      const indisponibilidadeAutorizavel = rascunhoManualPendente && incluirIndisponiveisManual &&
-      (tem('indisponivel nesta data') || tem('indisponível nesta data') || tem('dia da semana'));
-    const descansoReduzido = tem('descanso reduzido');
+      const descansoReduzido = tem('descanso reduzido');
 
       return {
         violacoes,
         impeditivoAbsoluto,
         descansoReduzido,
         violacaoFolga,
-        indisponibilidadeAutorizavel,
         nivel: impeditivoAbsoluto ? 'impedido' : (violacaoFolga ? 'folga' : 'normal')
       };
     }
@@ -10823,13 +10456,6 @@ const opcoes = militaresOrdenadosTroca
           return;
         }
 
-        if (classificacaoTroca.indisponibilidadeAutorizavel) {
-          const nome = estado.militares.find(m => m.id === militarId)?.nome || 'O militar';
-          if (!confirm(`ATENÇÃO: ${nome} possui indisponibilidade cadastrada nesta data.\n\n${violacoes.join('\n')}\n\nDeseja escalá-lo excepcionalmente?`)) {
-            renderizarTabelaEscala(); return;
-          }
-        }
-
         // Toda exceção autorizável detectada pelas regras efetivas da geração
         // exige ciência explícita. Se a regra estiver permitida/desativada na
         // configuração da função, ela não aparecerá em 'violacoes' e não
@@ -10944,9 +10570,7 @@ const opcoes = militaresOrdenadosTroca
         removerHistoricosFuturosDependentes(estado.escala.mesAno);
         estado.escalas[estado.escala.mesAno] = estado.escala;
         marcarEscalaComoAguardandoRepublicacao(estado.escala);
-        if (rascunhoManualPendente) {
-          atualizarAvisoRascunhoManual();
-        } else if (!await salvarEstado()) return;
+        if (!await salvarEstado()) return;
         renderizarTabelaEscala();
         atualizarCoresMesesEscala();
         // Aguarda a tabela atualizada chegar à tela antes de liberar a interação.
@@ -11385,75 +11009,120 @@ const opcoes = militaresOrdenadosTroca
       filtro.value = estado.funcoes.includes(valorAtual) ? valorAtual : '';
     }
 
+    async function excluirEscalaFuncao() {
+      const mesAno = document.getElementById('mesAnoEscala')?.value || '';
+      const escala = estado.escalas?.[mesAno];
+      if (!mesAno || !escala?.dados || !Object.keys(escala.dados).length) {
+        alert('Não há escala gerada para o mês selecionado.');
+        return;
+      }
 
-    function atualizarFuncoesLimpezaEscala() {
-      const seletor = document.getElementById('funcaoLimpezaEscala');
-      if (!seletor) return;
-      const anterior = seletor.value;
-      const mes = document.getElementById('mesAnoEscala')?.value;
-      const escala = estado.escalas?.[mes];
-      const funcoes = new Set();
-      Object.values(escala?.dados || {}).forEach(vagas => Object.keys(vagas || {}).forEach(chave => funcoes.add(obterFuncaoDaChave(chave))));
-      seletor.replaceChildren(new Option('Selecione a função', ''));
-      [...funcoes].sort((a,b) => a.localeCompare(b,'pt-BR')).forEach(f => seletor.add(new Option(f,f)));
-      if (funcoes.has(anterior)) seletor.value = anterior;
-    }
+      const funcoesComDados = (escala.estrutura?.funcoes || estado.funcoes || []).filter(funcao =>
+        Object.values(escala.dados || {}).some(vagas =>
+          Object.entries(vagas || {}).some(([chave, id]) =>
+            chave.replace(/ #\d+$/, '') === funcao && Boolean(id)
+          )
+        )
+      );
+      if (!funcoesComDados.length) {
+        alert('Não há funções com militares escalados neste mês.');
+        return;
+      }
 
-    function abrirModalLimpezaFuncao() {
-      const mes = document.getElementById('mesAnoEscala')?.value;
-      if (!estado.escalas?.[mes]?.dados) return alert('Não existe escala gerada para este mês.');
-      atualizarFuncoesLimpezaEscala();
-      const seletor = document.getElementById('funcaoLimpezaEscala');
-      seletor.value = '';
-      const modal = document.getElementById('modalLimpezaFuncao');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-      seletor.focus();
-    }
+      const lista = funcoesComDados.map((funcao, i) => `${i + 1}. ${funcao}`).join('\n');
+      const resposta = prompt(
+        `Qual função deseja excluir da escala de ${formatarMesAno(mesAno)}?\n\n${lista}\n\nDigite o número correspondente:`,
+        '1'
+      );
+      if (resposta === null) return;
+      const indice = Number(String(resposta).trim());
+      if (!Number.isInteger(indice) || indice < 1 || indice > funcoesComDados.length) {
+        alert('Opção inválida. Nenhuma alteração foi feita.');
+        return;
+      }
+      const funcao = funcoesComDados[indice - 1];
+      const chavesFuncao = new Set();
+      Object.values(escala.dados || {}).forEach(vagas => {
+        Object.keys(vagas || {}).forEach(chave => {
+          if (chave.replace(/ #\d+$/, '') === funcao) chavesFuncao.add(chave);
+        });
+      });
+      const quantidade = Object.values(escala.dados || {}).reduce((total, vagas) =>
+        total + Object.entries(vagas || {}).filter(([chave, id]) =>
+          chave.replace(/ #\d+$/, '') === funcao && Boolean(id)
+        ).length, 0
+      );
+      const temFuturas = obterMesesFuturosGerados(mesAno).length > 0;
+      const foiPublicada = Boolean(escala.publicadaEm);
+      const confirmacao =
+        `Deseja excluir somente a função "${funcao}" da escala de ${formatarMesAno(mesAno)}?\n\n` +
+        `Serão removidas ${quantidade} atribuição(ões) desta função, junto com suas justificativas e registros de alteração.\n\n` +
+        'As demais funções e seus militares serão preservados.\n' +
+        (foiPublicada
+          ? 'A publicação atual do mês será retirada do visualizador público; depois será necessário publicar novamente a escala atualizada.\n'
+          : '') +
+        (temFuturas
+          ? 'ATENÇÃO: existem escalas de meses posteriores já geradas. Elas serão preservadas e não serão recalculadas automaticamente.\n'
+          : '') +
+        '\nEsta operação não zera o histórico geral dos militares. Confirmar exclusão?';
+      if (!confirm(confirmacao)) return;
 
-    function fecharModalLimpezaFuncao() {
-      const modal = document.getElementById('modalLimpezaFuncao');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
-
-    async function limparFuncaoEscala() {
-      const mes = document.getElementById('mesAnoEscala')?.value;
-      const funcao = document.getElementById('funcaoLimpezaEscala')?.value;
-      const escala = estado.escalas?.[mes];
-      if (!escala?.dados) return alert('Não existe escala gerada para este mês.');
-      if (!funcao) return alert('Selecione uma função na lista.');
-      const chaves = Object.values(escala.dados).flatMap(v => Object.keys(v || {}).filter(k => obterFuncaoDaChave(k) === funcao));
-      if (!chaves.length) return alert('Não há registros dessa função para limpar.');
-      if (!confirm(`Limpar somente ${funcao} em ${formatarMesAno(mes)}?\n\nAs demais funções permanecerão intactas. A escala deverá ser publicada novamente se já estiver publicada.`)) return;
-      mostrarProcessamento('Limpando função selecionada...');
-      const copia = structuredClone(escala);
+      mostrarProcessamento(`Excluindo a função ${funcao}, aguarde...`);
       try {
-        for (const vagas of Object.values(escala.dados)) for (const chave of Object.keys(vagas || {})) {
-          if (obterFuncaoDaChave(chave) === funcao) vagas[chave] = null;
+        await new Promise(resolve => setTimeout(resolve, 40));
+        if (foiPublicada) {
+          await executarAppsScript('excluirEscalaPublicada', mesAno, tokenSessao);
         }
-        // Remove os lastros desta função, sem alterar os de outras funções.
-        for (const [dia, itens] of Object.entries(escala.lastrosIndisponibilidade || {})) {
-          if (Array.isArray(itens)) escala.lastrosIndisponibilidade[dia] = itens.filter(item => item.funcao !== funcao);
+
+        // Limpa apenas as vagas pertencentes à função escolhida em cada dia.
+        Object.entries(escala.dados || {}).forEach(([dia, vagas]) => {
+          Object.keys(vagas || {}).forEach(chave => {
+            if (chave.replace(/ #\d+$/, '') === funcao) vagas[chave] = '';
+          });
+          ['justificativas', 'alteracoesManuais', 'substituicoes', 'adiantamentosAutomaticos', 'dadosAutomaticos', 'estadoRotacaoAutomatico',
+            'tiposUsadosPorDia', 'ordemTrocaManual', 'lastrosIndisponibilidade'].forEach(campo => {
+            const registroDia = escala[campo]?.[dia];
+            if (!registroDia || typeof registroDia !== 'object') return;
+            Object.keys(registroDia).forEach(chave => {
+              if (chavesFuncao.has(chave) || chave === funcao) delete registroDia[chave];
+            });
+          });
+        });
+
+        // Retira os metadados exclusivos da função, preservando a estrutura geral do mês.
+        ['tipos', 'modosGeracao', 'regrasEscalaSnapshot'].forEach(campo => {
+          if (escala[campo] && typeof escala[campo] === 'object') delete escala[campo][funcao];
+        });
+        if (escala.compensacoesRotacao && typeof escala.compensacoesRotacao === 'object') {
+          Object.keys(escala.compensacoesRotacao).forEach(chave => {
+            if (chave === funcao || chave.startsWith(`${funcao}|`) || chave.startsWith(`${funcao}::`)) {
+              delete escala.compensacoesRotacao[chave];
+            }
+          });
         }
-        // A publicação antiga não deve continuar exibindo a função apagada.
-        await executarAppsScript('excluirEscalaPublicada', mes, tokenSessao);
-        delete escala.publicadaEm;
-        delete escala.publicada;
-        const ok = await salvarEstado({acao:'limpar_funcao_escala',mesAno:mes,funcao});
-        if (!ok) throw new Error('Não foi possível salvar a alteração.');
+
+        // Uma escala alterada após publicação deve voltar ao estado de aguardando publicação.
+        if (foiPublicada) marcarEscalaComoAguardandoRepublicacao(escala, escala.publicadaEm || '');
+        estado.escalas[mesAno] = escala;
+        estado.escala = escala;
+        const salvou = await salvarEstado({
+          acao: 'excluir_escala_funcao', mesAno, funcao,
+          atribuicoesRemovidas: quantidade,
+          escalasFuturasPreservadas: obterMesesFuturosGerados(mesAno)
+        });
+        if (!salvou) return;
+
         renderizarTabelaEscala();
         renderizarResumoServicos();
         atualizarCoresMesesEscala();
         atualizarAvisoEscalasNaoPublicadas();
-        fecharModalLimpezaFuncao();
-        alert(`Função ${funcao} limpa com sucesso. As demais funções foram preservadas.`);
+        alert(`A função "${funcao}" foi excluída da escala de ${formatarMesAno(mesAno)}.\n\nAs demais funções foram preservadas.${foiPublicada ? '\n\nPublique novamente o mês para atualizar o visualizador público.' : ''}`);
       } catch (erro) {
-        estado.escalas[mes] = copia;
-        estado.escala = copia;
-        console.error(erro);
-        alert('Falha ao limpar a função: ' + (erro?.message || erro));
-      } finally { ocultarProcessamento(); }
+        console.error('Erro ao excluir escala de função:', erro);
+        alert('Não foi possível concluir a exclusão da função. Verifique a conexão e o console para mais detalhes.');
+      } finally {
+        ocultarProcessamento();
+      }
     }
 
     async function limparEscala() {
