@@ -11454,13 +11454,17 @@ async function exportarPDF() {
         textoVisivel.className = 'xls-militar';
         textoVisivel.appendChild(document.createTextNode(nome.trim()));
         if (saram) {
-          textoVisivel.appendChild(document.createElement('br'));
+          const quebraLinha = document.createElement('br');
+          quebraLinha.setAttribute('style', 'mso-data-placement:same-cell');
+          textoVisivel.appendChild(quebraLinha);
           const saramEl = document.createElement('span');
           saramEl.className = 'xls-saram';
           saramEl.textContent = saram.trim();
           textoVisivel.appendChild(saramEl);
         }
         celula.replaceChildren(textoVisivel);
+        celula.setAttribute('valign', 'middle');
+        celula.style.verticalAlign = 'middle';
       });
 
       // Nenhum controle interativo deve seguir para o HTML interpretado pelo Excel.
@@ -11477,15 +11481,16 @@ async function exportarPDF() {
             <meta charset="UTF-8">
             <style>
               table { border-collapse: collapse; font-family: Arial, sans-serif; font-size: 11px; }
-              th, td { border: 1px solid #999; padding: 6px; vertical-align: top; mso-number-format:"\\@"; }
+              th, td { border: 1px solid #999; padding: 6px; vertical-align: middle; mso-number-format:"\\@"; }
               th { background: #374151; color: #fff; font-weight: bold; text-align: center; }
               .xls-linha-branca td { background: #ffffff; }
               .xls-linha-cinza td { background: #f3f4f6; }
               .xls-dia-vermelho td:first-child,
               .xls-dia-vermelho td:nth-child(2),
               .text-red-600 { color: #dc2626; font-weight: bold; }
-              .xls-militar { white-space: normal; mso-data-placement:same-cell; line-height: 1.25; }
+              .xls-militar { white-space: normal; line-height: 1.25; text-align: center; }
               .xls-saram { font-size: 10px; color: #555; font-weight: normal; }
+              td:has(.xls-militar) { vertical-align: middle; text-align: center; }
             </style>
           </head>
           <body>${copia.innerHTML}</body>
