@@ -487,6 +487,7 @@ body.cci-menu-recolhido #bannerConflitoServidor{
 <div class="flex gap-2 cci-nao-exportar-pdf">
 <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold" onclick="exportarPDF()">📄 Exportar PDF</button>
 <button class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-sm font-semibold" onclick="exportarXLS()">Exportar XLS</button>
+<button class="bg-teal-700 hover:bg-teal-800 text-white px-4 py-2 rounded text-sm font-semibold" onclick="exportarXLS(true)" title="Nome e SARAM em uma única linha para copiar e colar em outras planilhas">Exportar XLS para copiar</button>
 <button class="somente-edicao bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded text-sm font-semibold" id="botaoPublicarEscala" onclick="publicarEscalaAtual()">📢 Publicar escala</button>
 <button class="somente-edicao bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm font-semibold" onclick="limparEscala()">Limpar</button>
 <button class="somente-edicao bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded text-sm font-semibold" onclick="excluirEscalaFuncao()">Excluir escala de uma função</button>
@@ -496,6 +497,10 @@ body.cci-menu-recolhido #bannerConflitoServidor{
 <p class="text-xs text-gray-500" id="subtituloEscala"></p>
 <p class="legenda-substituicao text-xs font-bold text-yellow-800">Célula amarela: militar escalado automaticamente no lugar de outro por causa das regras</p>
 <div class="mt-2 flex flex-wrap justify-center gap-2 text-xs" id="legendaCoresEscala"></div>
+</div>
+<div class="somente-edicao flex flex-wrap items-center justify-center gap-4 mb-3 rounded border border-blue-100 bg-blue-50 px-3 py-2 text-sm" id="opcoesExibicaoCandidatosEscala">
+<label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="exibirTodosCandidatosEscala" onchange="renderizarTabelaEscala()"/> Exibir todos os militares (inclusive quem dobraria serviço)</label>
+<label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="exibirIndisponiveisCandidatosEscala" onchange="renderizarTabelaEscala()"/> Exibir militares indisponíveis</label>
 </div>
 <div class="cci-escala-scroll" id="scrollTabelaEscala">
 <table class="w-full border-collapse border border-gray-300 text-xs" id="tabelaEscalaPrincipal">
@@ -9429,13 +9434,19 @@ const militarTemInicioIndisponibilidadePeriodoAmanhaTroca = militarId =>
     i.inicio === dataSeguinteTrocaStr
   );
 
+const exibirTodosCandidatosEscala = document.getElementById('exibirTodosCandidatosEscala')?.checked === true;
+const exibirIndisponiveisCandidatosEscala = document.getElementById('exibirIndisponiveisCandidatosEscala')?.checked === true;
+const indisponivelParaDropdown = militarId =>
+  militarIndisponivelNaDataTroca(militarId) ||
+  militarTemInicioIndisponibilidadePeriodoAmanhaTroca(militarId);
+
 const militaresOrdenadosTroca = militaresNaOrdemBase
   .filter(militar => {
     // O militar já escalado nesta célula é mostrado separadamente
     // como a opção selecionada, evitando duplicidade no <select>.
     if (militar.id === militarIdEscalado) return false;
 
-    if (militarIndisponivelNaDataTroca(militar.id)) return false;
+    if (!exibirIndisponiveisCandidatosEscala && indisponivelParaDropdown(militar.id)) return false;
 
     // Regra de apresentação do dropdown: quem já está escalado no serviço
     // imediatamente anterior ou posterior não deve ser oferecido como opção.
@@ -9445,7 +9456,7 @@ const militaresOrdenadosTroca = militaresNaOrdemBase
     // Na elaboração manual todos os candidatos da função precisam poder ser avaliados
     // pelo motor. Assim situações de descanso/24h aparecem como alerta em vez de
     // desaparecerem silenciosamente do seletor. Na edição comum mantém o filtro histórico.
-    if (!elaboracaoManualFuncao) {
+    if (!elaboracaoManualFuncao && !exibirTodosCandidatosEscala) {
       if (militarTemServicoNoTempoTroca(militar.id, tempoAnteriorTroca)) return false;
       if (militarTemServicoNoTempoTroca(militar.id, tempoSeguinteTroca)) return false;
     }
@@ -9454,7 +9465,7 @@ const militaresOrdenadosTroca = militaresNaOrdemBase
       || obterTiposEscalaDaEscala(estado.escala)[col.funcao]
       || 'corrida';
     const regrasTrocaEfetivas = obterRegrasEfetivasEdicaoManual(col.funcao, tipoTrocaEfetivo);
-    if (Number(regrasTrocaEfetivas.descanso?.folgasDepois || 0) > 0
+    if (!exibirIndisponiveisCandidatosEscala && Number(regrasTrocaEfetivas.descanso?.folgasDepois || 0) > 0
       && militarTemInicioIndisponibilidadePeriodoAmanhaTroca(militar.id)) return false;
     return true;
   })
@@ -9514,9 +9525,12 @@ const militaresOrdenadosTroca = militaresNaOrdemBase
   estado.militares.find(m => m.id === militarIdEscalado);
 
 const opcoes = militaresOrdenadosTroca
-  .map(m =>
-    `<option value="${escaparHTML(m.id)}">${escaparHTML(m.nome)} (${escaparHTML(m.saram)})${m.ativo === false ? ' - inativo' : ''}</option>`
-  )
+  .map(m => {
+    const classificacao = classificarCandidatoTrocaManual(dia, col.chave, m.id);
+    const avisos = classificacao.violacoes || [];
+    const situacao = avisos.length ? ` ⚠ ${avisos.join('; ')}` : '';
+    return `<option value="${escaparHTML(m.id)}">${escaparHTML(m.nome)} (${escaparHTML(m.saram)})${m.ativo === false ? ' - inativo' : ''}${escaparHTML(situacao)}</option>`;
+  })
   .join('');
           const textoBotaoJustificativa = militarEscalado
             ? `${escaparHTML(militarEscalado.nome)} (${escaparHTML(militarEscalado.saram)})`
@@ -10418,7 +10432,11 @@ const opcoes = militaresOrdenadosTroca
         const classificacaoTroca = classificarCandidatoTrocaManual(dia, chaveColuna, militarId);
         const violacoes = classificacaoTroca.violacoes;
 
-        if (classificacaoTroca.impeditivoAbsoluto) {
+        const permitirIndisponivelExcepcional = document.getElementById('exibirIndisponiveisCandidatosEscala')?.checked === true;
+        const motivosIndisponibilidade = violacoes.filter(v => /indispon[ií]vel|indisponibilidade|dia da semana/i.test(v));
+        const motivosImpedimentoNaoAutorizaveis = violacoes.filter(v => /mesma pessoa duas vezes|outra fun[cç][aã]o|militar n[aã]o encontrado/i.test(v));
+        const podeAutorizarIndisponibilidade = permitirIndisponivelExcepcional && motivosIndisponibilidade.length > 0 && motivosImpedimentoNaoAutorizaveis.length === 0;
+        if (classificacaoTroca.impeditivoAbsoluto && !podeAutorizarIndisponibilidade) {
           alert(`ALTERAÇÃO NÃO PERMITIDA pelas regras configuradas:\n\n- ${violacoes.join('\n- ')}`);
           renderizarTabelaEscala();
           return;
@@ -10428,7 +10446,7 @@ const opcoes = militaresOrdenadosTroca
         // exige ciência explícita. Se a regra estiver permitida/desativada na
         // configuração da função, ela não aparecerá em 'violacoes' e não
         // provocará confirmação.
-        if (classificacaoTroca.violacaoFolga) {
+        if (classificacaoTroca.violacaoFolga || podeAutorizarIndisponibilidade) {
           const funcaoTroca = obterFuncaoDaChave(chaveColuna);
           const tiposEscalaTroca = obterTiposEscalaDaEscala(estado.escala);
           const tipoTroca = estado.escala.tiposUsadosPorDia?.[dia]?.[funcaoTroca]
@@ -10441,7 +10459,9 @@ const opcoes = militaresOrdenadosTroca
             : 'Militar selecionado';
           const violacoesFolga = violacoes.filter(v => {
             const texto = String(v).toLowerCase();
-            return texto.includes('descanso')
+            return texto.includes('indisponib')
+              || texto.includes('dia da semana')
+              || texto.includes('descanso')
               || texto.includes('folga')
               || texto.includes('ficaria na 24')
               || texto.includes('dobraria serviço')
@@ -11435,7 +11455,7 @@ async function exportarPDF() {
       }
     }
 
-    function exportarXLS() {
+    function exportarXLS(formatoParaCopiar = false) {
       const elemento = document.getElementById('areaEscalaPDF');
       const copia = elemento.cloneNode(true);
       // Remove elementos exclusivos da interface antes de montar o arquivo XLS.
@@ -11452,15 +11472,21 @@ async function exportarPDF() {
         const saram = texto.querySelector('.pdf-militar-saram')?.textContent || '';
         const textoVisivel = document.createElement('div');
         textoVisivel.className = 'xls-militar';
-        textoVisivel.appendChild(document.createTextNode(nome.trim()));
-        if (saram) {
-          const quebraLinha = document.createElement('br');
-          quebraLinha.setAttribute('style', 'mso-data-placement:same-cell');
-          textoVisivel.appendChild(quebraLinha);
-          const saramEl = document.createElement('span');
-          saramEl.className = 'xls-saram';
-          saramEl.textContent = saram.trim();
-          textoVisivel.appendChild(saramEl);
+        if (formatoParaCopiar) {
+          // Texto plano sem quebra: ao copiar a célula no Excel, nome e SARAM seguem na mesma linha.
+          textoVisivel.textContent = [nome.trim(), saram.trim()].filter(Boolean).join(' ');
+        } else {
+          // Exportação tradicional: apresentação em duas linhas dentro da mesma célula.
+          textoVisivel.appendChild(document.createTextNode(nome.trim()));
+          if (saram) {
+            const quebraLinha = document.createElement('br');
+            quebraLinha.setAttribute('style', 'mso-data-placement:same-cell');
+            textoVisivel.appendChild(quebraLinha);
+            const saramEl = document.createElement('span');
+            saramEl.className = 'xls-saram';
+            saramEl.textContent = saram.trim();
+            textoVisivel.appendChild(saramEl);
+          }
         }
         celula.replaceChildren(textoVisivel);
         celula.setAttribute('valign', 'middle');
@@ -11500,7 +11526,7 @@ async function exportarPDF() {
       const url = URL.createObjectURL(arquivo);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `Escala_CCI_${document.getElementById('mesAnoEscala').value}.xls`;
+      link.download = `Escala_CCI_${document.getElementById('mesAnoEscala').value}${formatoParaCopiar ? '_PARA_COPIAR' : ''}.xls`;
       link.click();
       URL.revokeObjectURL(url);
     }
