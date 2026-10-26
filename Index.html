@@ -5594,7 +5594,7 @@ async function sairDoSistema() {
       });
 
       if (temTroca) adicionarItemLegenda(container, '#ccff00', 'Militar trocou o serviço');
-      if (temPuxado) adicionarItemLegenda(container, '#fee2e2', 'Militar foi puxado');
+      if (temPuxado) adicionarItemLegenda(container, '#fca5a5', 'Militar foi puxado');
       legendasObservacao.forEach(observacao => {
         adicionarItemLegenda(container, observacao.cor, observacao.legenda);
       });
@@ -9139,7 +9139,7 @@ if (salvou) {
       Object.entries(escala.alteracoesManuais || {}).forEach(([dia, alteracoesDia]) => {
         Object.entries(alteracoesDia || {}).forEach(([chave, alteracao]) => {
           if (cores[dia]?.[chave]?.cor) return;
-          const cor = alteracao?.tipo === 'troca' ? '#ccff00' : (alteracao?.tipo === 'puxado' ? '#fee2e2' : '');
+          const cor = alteracao?.tipo === 'troca' ? '#ccff00' : (alteracao?.tipo === 'puxado' ? '#fca5a5' : '');
           if (!cor) return;
           cores[dia] ||= {};
           cores[dia][chave] = { cor, legenda: alteracao.tipo === 'troca' ? 'Troca de serviço' : 'Militar puxado' };
@@ -9338,7 +9338,7 @@ cabecalho.innerHTML = `
           const observacaoCelula = estado.escala.observacoes?.[dia]?.[col.chave];
           const corAlteracaoManual = tipoAlteracaoManual === 'troca'
             ? '#ccff00'
-            : (tipoAlteracaoManual === 'puxado' ? '#fee2e2' : '');
+            : (tipoAlteracaoManual === 'puxado' ? '#fca5a5' : '');
           const corObservacaoValida = CORES_OBSERVACAO_PERMITIDAS.includes(observacaoCelula?.cor)
             ? observacaoCelula.cor
             : '';
@@ -11474,7 +11474,8 @@ async function exportarPDF() {
         textoVisivel.className = 'xls-militar';
         if (formatoParaCopiar) {
           // Texto plano sem quebra: ao copiar a célula no Excel, nome e SARAM seguem na mesma linha.
-          textoVisivel.textContent = [nome.trim(), saram.trim()].filter(Boolean).join(' ');
+          const numeroSaram = saram.trim().replace(/^SARAM\s*:\s*/i, '').trim();
+          textoVisivel.textContent = nome.trim() + (numeroSaram ? ` (${numeroSaram})` : '');
         } else {
           // Exportação tradicional: apresentação em duas linhas dentro da mesma célula.
           textoVisivel.appendChild(document.createTextNode(nome.trim()));

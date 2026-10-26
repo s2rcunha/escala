@@ -13,6 +13,13 @@
     .celula-militar { min-width: 150px; white-space: normal; }
     .militar-nome { display: block; font-weight: 600; }
     .militar-nome.escala-vermelha { color: #dc2626 !important; }
+    /* Cores da escala Web: troca #ccff00; militar puxado #fca5a5. */
+    .celula-militar[style*="#fca5a5"] .militar-nome.escala-vermelha { color: #991b1b !important; }
+    .tabela-dia { min-width: 0; width: 100%; max-width: 780px; margin: 0 auto; }
+    .tabela-dia th, .tabela-dia td { white-space: normal; }
+    .tabela-dia .celula-militar { min-width: 0; }
+    .pdf-exportacao .tabela-dia { width: 780px; min-width: 780px; }
+    .pdf-exportacao .tabela-dia th, .pdf-exportacao .tabela-dia td { white-space: normal; }
     .militar-saram { display: block; margin-top: 2px; font-size: 0.9em; font-weight: 400; color: #4b5563; }
     /* A visualização permanece rolável; somente a cópia do PDF é expandida. */
     .pdf-exportacao table { min-width: max-content; width: max-content; }
@@ -38,6 +45,12 @@
             <select id="seletorEscala" class="mt-1 min-w-[190px] rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800"
                     onchange="carregarEscalaPublicada(this.value)">
               <option value="">Carregando...</option>
+            </select>
+          </label>
+          <label class="text-xs font-semibold text-gray-600">
+            Dia da escala
+            <select id="seletorDia" class="mt-1 min-w-[155px] rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800" onchange="filtrarDiaEscala()" disabled>
+              <option value="">Mês completo</option>
             </select>
           </label>
           <label class="text-xs font-semibold text-gray-600">
@@ -101,7 +114,7 @@ function renderizarLegenda(publicacao) {
   const mapa = new Map();
   Object.values(publicacao.cores || {}).forEach(dia => {
     Object.values(dia || {}).forEach(item => {
-      if (item?.cor && item?.legenda) mapa.set(`${item.cor}|${item.legenda}`, item);
+      if (item?.cor && item?.legenda) mapa.set(`${item.cor}|${item.legenda}`, /puxad/i.test(item.legenda) ? {...item, cor: '#fca5a5'} : item);
     });
   });
   document.getElementById('legendaCores').innerHTML = [...mapa.values()].map(item =>
@@ -122,8 +135,41 @@ function atualizarSeletorFuncoes(publicacao) {
   seletor.value = '';
 }
 
+function atualizarSeletorDias(publicacao) {
+  const seletor = document.getElementById('seletorDia');
+  const selecionado = seletor.value;
+  if (!publicacao?.mesAno) {
+    seletor.innerHTML = '<option value="">Mês completo</option>';
+    seletor.disabled = true;
+    return;
+  }
+  const [ano, mes] = publicacao.mesAno.split('-').map(Number);
+  const qtd = new Date(ano, mes, 0).getDate();
+  const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  seletor.innerHTML = '<option value="">Mês completo</option>' +
+    Array.from({length: qtd}, (_, i) => {
+      const dia = i + 1;
+      return `<option value="${dia}">${String(dia).padStart(2, '0')}/${String(mes).padStart(2, '0')} — ${diasSemana[new Date(ano, mes - 1, dia).getDay()]}</option>`;
+    }).join('');
+  seletor.value = [...seletor.options].some(o => o.value === selecionado) ? selecionado : '';
+  seletor.disabled = false;
+}
+
+function filtrarDiaEscala() {
+  if (publicacaoAtual) renderizarEscala(publicacaoAtual);
+}
+
 function filtrarFuncaoEscala() {
   if (publicacaoAtual) renderizarEscala(publicacaoAtual);
+}
+
+function obterIdentificacaoMilitar(publicacao, dia, chave, vermelho) {
+  const publicado = publicacao.dados?.[dia]?.[chave] || '';
+  const nome = typeof publicado === 'object' ? (publicado.nome || '') : publicado;
+  const saram = typeof publicado === 'object' ? (publicado.saram || '') : '';
+  return nome
+    ? `<span class="militar-nome${vermelho ? ' escala-vermelha' : ''}">${escaparHTML(nome)}</span>${saram ? `<span class="militar-saram">SARAM: ${escaparHTML(saram)}</span>` : ''}`
+    : '<span class="text-gray-400">Não preenchido</span>';
 }
 
 function renderizarEscala(publicacao) {
@@ -131,7 +177,11 @@ function renderizarEscala(publicacao) {
   const diasNoMes = new Date(ano, mes, 0).getDate();
   const estrutura = publicacao.estrutura || { funcoes: [], vagas: {} };
   const colunas = [];
-  const indiceSelecionado = Number(document.getElementById('seletorFuncao').value || 0);
+  const diaSelecionado = Number(document.getElementById('seletorDia').value || 0);
+  const indiceSelecionado = diaSelecionado ? 0 : Number(document.getElementById('seletorFuncao').value || 0);
+  const seletorFuncao = document.getElementById('seletorFuncao');
+  seletorFuncao.disabled = !!diaSelecionado || !(publicacao.estrutura?.funcoes || []).length;
+  seletorFuncao.title = diaSelecionado ? 'A visualização por dia sempre exibe toda a equipe.' : '';
   const funcoesDisponiveis = (estrutura.funcoes || []).filter((funcao, indice, lista) =>
     lista.indexOf(funcao) === indice && Number(estrutura.vagas?.[funcao] || 0) > 0
   );
@@ -142,6 +192,22 @@ function renderizarEscala(publicacao) {
     for (let i = 0; i < qtd; i++) colunas.push({ funcao, chave: `${funcao} #${i + 1}` });
   });
 
+  const tabela = document.querySelector('#areaTabela table');
+  if (diaSelecionado >= 1 && diaSelecionado <= diasNoMes) {
+    tabela.classList.add('tabela-dia');
+    const vermelho = ehDiaVermelho(publicacao, ano, mes, diaSelecionado);
+    const diaSemana = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'][new Date(ano, mes - 1, diaSelecionado).getDay()];
+    document.getElementById('cabecalho').innerHTML = `<th class="border border-gray-300 p-3 text-left" style="width:38%">Função</th><th class="border border-gray-300 p-3 text-center">${escaparHTML(diaSemana)} — ${String(diaSelecionado).padStart(2, '0')}/${String(mes).padStart(2, '0')}/${ano}</th>`;
+    document.getElementById('corpo').innerHTML = colunas.map(col => {
+      const corOriginal = publicacao.cores?.[diaSelecionado]?.[col.chave]?.cor || '';
+      const cor = /puxad/i.test(publicacao.cores?.[diaSelecionado]?.[col.chave]?.legenda || '') ? '#fca5a5' : corOriginal;
+      const estilo = cor ? ` style="background-color:${escaparHTML(cor)}"` : '';
+      return `<tr><td class="border border-gray-300 p-3 font-semibold">${escaparHTML(col.funcao)}</td><td class="celula-militar border border-gray-300 p-3 text-center"${estilo}>${obterIdentificacaoMilitar(publicacao, diaSelecionado, col.chave, vermelho)}</td></tr>`;
+    }).join('');
+    renderizarLegenda(publicacao);
+    return;
+  }
+  tabela.classList.remove('tabela-dia');
   document.getElementById('cabecalho').innerHTML =
     '<th class="border border-gray-300 p-2">Dia</th><th class="border border-gray-300 p-2">Sem.</th>' +
     colunas.map(col => `<th class="border border-gray-300 p-2">${escaparHTML(col.funcao)}</th>`).join('');
@@ -158,7 +224,8 @@ function renderizarEscala(publicacao) {
       // Compatibilidade com publicações antigas, que armazenavam apenas o nome.
       const nome = typeof militarPublicado === 'object' ? (militarPublicado.nome || '') : militarPublicado;
       const saram = typeof militarPublicado === 'object' ? (militarPublicado.saram || '') : '';
-      const cor = publicacao.cores?.[dia]?.[col.chave]?.cor || '';
+      const corOriginal = publicacao.cores?.[dia]?.[col.chave]?.cor || '';
+      const cor = /puxad/i.test(publicacao.cores?.[dia]?.[col.chave]?.legenda || '') ? '#fca5a5' : corOriginal;
       const estilo = cor ? ` style="background-color:${escaparHTML(cor)}"` : '';
       const identificacao = nome
         ? `<span class="militar-nome${vermelho ? ' escala-vermelha' : ''}">${escaparHTML(nome)}</span>${saram ? `<span class="militar-saram">SARAM: ${escaparHTML(saram)}</span>` : ''}`
@@ -193,7 +260,7 @@ async function exportarPDF() {
     titulo.textContent = 'Escala de Serviço - CCI — ' + document.getElementById('mesPublicacao').textContent;
     copia.appendChild(titulo);
     const tabela = document.querySelector('#areaTabela table').cloneNode(true);
-    tabela.style.cssText = 'width:max-content;min-width:max-content;border-collapse:collapse;';
+    tabela.style.cssText = tabela.classList.contains('tabela-dia') ? 'width:780px;min-width:780px;border-collapse:collapse;' : 'width:max-content;min-width:max-content;border-collapse:collapse;';
     copia.appendChild(tabela);
     areaMedicao.appendChild(copia);
     document.body.appendChild(areaMedicao);
@@ -211,7 +278,7 @@ async function exportarPDF() {
       orientation: larguraPt >= alturaPt ? 'landscape' : 'portrait', compress: true
     });
     pdf.addImage(canvas.toDataURL('image/jpeg', 0.98), 'JPEG', 0, 0, larguraPt, alturaPt);
-    pdf.save('Escala_CCI_' + (document.getElementById('seletorEscala').value || 'publicada') + '.pdf');
+    pdf.save('Escala_CCI_' + (document.getElementById('seletorEscala').value || 'publicada') + (document.getElementById('seletorDia').value ? '_dia_' + document.getElementById('seletorDia').value.padStart(2, '0') : '') + '.pdf');
   } catch (erro) {
     console.error('Erro ao gerar PDF:', erro);
     alert('Não foi possível gerar o PDF. Verifique sua conexão e tente novamente.');
@@ -252,6 +319,7 @@ async function carregarListaEscalasPublicadas(mesPreferido = '') {
     seletor.disabled = true;
     publicacaoAtual = null;
     atualizarSeletorFuncoes(null);
+    atualizarSeletorDias(null);
     document.getElementById('areaTabela')?.classList.add('hidden');
     const corpo = document.getElementById('corpo');
     if (corpo) corpo.innerHTML = '';
@@ -296,6 +364,7 @@ async function carregarEscalaPublicada(mesAno = '') {
       mensagem.textContent = 'Nenhuma escala foi publicada até o momento.';
       publicacaoAtual = null;
       atualizarSeletorFuncoes(null);
+    atualizarSeletorDias(null);
       document.getElementById('mesPublicacao').textContent = 'Escala ainda não publicada';
       document.getElementById('ultimaAtualizacao').textContent = '';
       return;
@@ -312,6 +381,7 @@ async function carregarEscalaPublicada(mesAno = '') {
 
     publicacaoAtual = publicacao;
     atualizarSeletorFuncoes(publicacao);
+    atualizarSeletorDias(publicacao);
     renderizarEscala(publicacao);
     mensagem.classList.add('hidden');
     area.classList.remove('hidden');
