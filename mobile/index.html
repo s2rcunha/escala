@@ -325,7 +325,6 @@ body.cci-menu-recolhido .cci-nav-arrow{display:none}
 #areaEscalaPDF .cci-escala-scrollbar-sticky{position:sticky;bottom:0;z-index:20;width:100%;height:18px;overflow-x:auto;overflow-y:hidden;background:#f3f4f6;border:1px solid #d1d5db;border-top:0}
 #areaEscalaPDF .cci-escala-scrollbar-sticky>div{height:1px;min-width:100%}
 @media(max-width:767px){#areaEscalaPDF #tabelaEscalaPrincipal th:nth-child(1),#areaEscalaPDF #tabelaEscalaPrincipal td:nth-child(1){min-width:54px;width:54px;max-width:54px}#areaEscalaPDF #tabelaEscalaPrincipal th:nth-child(2),#areaEscalaPDF #tabelaEscalaPrincipal td:nth-child(2){left:54px;min-width:68px;width:68px;max-width:68px}}
-
 /* ANDROID 2026-10-01 — ergonomia mobile complementar.
    Não altera regras de escala; somente apresentação e alvos de toque. */
 @media (max-width:767px) {
@@ -469,7 +468,7 @@ body.cci-menu-recolhido #bannerConflitoServidor{
   <div class="aviso-pendencias-lista" id="listaAvisoEscalasNaoPublicadas"></div>
 </div>
 <header class="cci-topbar"><div class="cci-brand"><button aria-label="Abrir menu" class="cci-mobile" onclick="alternarMenuLateral()" type="button">☰</button><div class="cci-brand-mark">SESCI</div><div><div class="cci-brand-title">Sistema de Escala de Serviço - CCI</div><div class="cci-brand-sub">Gestão e geração automática de escalas de serviço</div></div></div><div class="cci-user"><div class="flex shrink-0 items-center gap-3 whitespace-nowrap" id="areaUsuarioLogado"><div class="text-right leading-tight"><div class="text-sm font-bold" id="nomeUsuarioLogado"></div><div class="text-xs" id="perfilUsuarioLogado"></div></div><button class="rounded px-3 py-2 text-sm font-semibold text-white" onclick="sairDoSistema()" type="button">Sair</button></div></div></header>
-<aside class="cci-sidebar" id="menuLateralCCI"><button class="cci-toggle" data-cci-descricao="Expanda ou recolha o menu lateral para aumentar a área de trabalho." onclick="alternarMenuLateral()" title="Expanda ou recolha o menu lateral para aumentar a área de trabalho." type="button"><span class="cci-nav-icon">☰</span><span class="cci-toggle-label">Recolher menu</span></button><div class="cci-nav-title">ESCALA</div><nav class="cci-nav"><div class="cci-nav-group" data-grupo="gerador"><button class="cci-nav-btn cci-nav-parent ativo" data-aba="gerador" data-cci-descricao="Gere, consulte e acompanhe a escala mensal de serviço." onclick="alternarSubmenuCCI('gerador')" title="Gere, consulte e acompanhe a escala mensal de serviço." type="button"><span class="cci-nav-icon">▦</span><span class="cci-nav-label">Escala Mensal</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu aberto" data-submenu="gerador"><button class="cci-submenu-btn ativo" data-aba="gerador" data-cci-descricao="Selecione o período e gere automaticamente uma nova escala mensal." data-subpagina="criar" onclick="abrirSubpaginaCCI('gerador','criar')" title="Selecione o período e gere automaticamente uma nova escala mensal." type="button"><span class="cci-submenu-dot">•</span><span>Criar Escala</span></button><button class="cci-submenu-btn" data-aba="gerador" data-cci-descricao="Consulte, edite, publique e exporte a escala mensal gerada." data-subpagina="visualizacao" onclick="abrirSubpaginaCCI('gerador','visualizacao')" title="Consulte, edite, publique e exporte a escala mensal gerada." type="button"><span class="cci-submenu-dot">•</span><span>Visualizar Escala</span></button><button class="cci-submenu-btn" data-aba="gerador" data-cci-descricao="Consulte os quadrinhos, lastros e totais acumulados dos militares." data-subpagina="quadrinhos" onclick="abrirSubpaginaCCI('gerador','quadrinhos')" title="Consulte os quadrinhos, lastros e totais acumulados dos militares." type="button"><span class="cci-submenu-dot">•</span><span>Quadrinhos e Totais</span></button><a class="cci-submenu-btn" href="https://s2rcunha.github.io/escala/visualizar.html" target="_blank" rel="noopener noreferrer" data-cci-descricao="Consulte as escalas publicadas." title="Consultar escala publicada" style="text-decoration:none"><span class="cci-submenu-dot">•</span><span>Escala Publicada ↗</span></a></div></div><div class="cci-nav-group" data-grupo="eventuais"><button class="cci-nav-btn cci-nav-parent" data-aba="eventuais" data-cci-descricao="Crie e gerencie escalas de missões e serviços eventuais em banco independente." onclick="alternarSubmenuCCI('eventuais')" title="Crie e gerencie escalas de missões e serviços eventuais em banco independente." type="button"><span class="cci-nav-icon">◆</span><span class="cci-nav-label">Escalas Eventuais</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="eventuais"><button class="somente-edicao cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Cadastre os modelos permanentes das missões eventuais, suas funções, distribuição, permanência e militares habilitados." title="Cadastre os modelos permanentes das missões eventuais, suas funções, distribuição, permanência e militares habilitados." data-subpagina="funcoes" onclick="abrirSubpaginaCCI('eventuais','tipos')" type="button"><span class="cci-submenu-dot">•</span><span>Tipos de Missão</span></button><button class="somente-edicao cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Crie uma ocorrência a partir de um Tipo de Missão, definindo período e quantidade de vagas necessárias." title="Crie uma ocorrência a partir de um Tipo de Missão, definindo período e quantidade de vagas necessárias." data-subpagina="criar" onclick="abrirSubpaginaCCI('eventuais','criar')" type="button"><span class="cci-submenu-dot">•</span><span>Criar Escala Eventual</span></button><button class="cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Consulte as ocorrências eventuais, gere a escala, faça ajustes, publique e exporte." title="Consulte as ocorrências eventuais, gere a escala, faça ajustes, publique e exporte." data-subpagina="lista" onclick="abrirSubpaginaCCI('eventuais','lista')" type="button"><span class="cci-submenu-dot">•</span><span>Visualizar Escalas</span></button><button class="cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Consulte os quadrinhos acumulados exclusivamente pelas escalas eventuais, separados por Tipo de Missão." title="Consulte os quadrinhos acumulados exclusivamente pelas escalas eventuais, separados por Tipo de Missão." data-subpagina="quadrinhos" onclick="abrirSubpaginaCCI('eventuais','quadrinhos')" type="button"><span class="cci-submenu-dot">•</span><span>Quadrinhos e Totais</span></button></div></div><div class="somente-edicao cci-nav-group" data-grupo="militares"><button class="cci-nav-btn cci-nav-parent" data-aba="militares" data-cci-descricao="Cadastre e gerencie os militares que compõem as escalas." onclick="alternarSubmenuCCI('militares')" title="Cadastre e gerencie os militares que compõem as escalas." type="button"><span class="cci-nav-icon">♟</span><span class="cci-nav-label">Militares</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="militares"><button class="cci-submenu-btn" data-aba="militares" data-cci-descricao="Inclua um novo militar, sua função e posição de antiguidade." data-subpagina="cadastrar" onclick="abrirSubpaginaCCI('militares','cadastrar')" title="Inclua um novo militar, sua função e posição de antiguidade." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar Militar</span></button><button class="cci-submenu-btn" data-aba="militares" data-cci-descricao="Consulte, edite e organize os militares já cadastrados." data-subpagina="efetivo" onclick="abrirSubpaginaCCI('militares','efetivo')" title="Consulte, edite e organize os militares já cadastrados." type="button"><span class="cci-submenu-dot">•</span><span>Militares Cadastrados</span></button></div></div><div class="somente-edicao cci-nav-group" data-grupo="vagas"><button class="cci-nav-btn cci-nav-parent" data-aba="vagas" data-cci-descricao="Configure as funções, vagas e regras usadas na montagem das escalas." onclick="alternarSubmenuCCI('vagas')" title="Configure as funções, vagas e regras usadas na montagem das escalas." type="button"><span class="cci-nav-icon">☷</span><span class="cci-nav-label">Estrutura da Equipe</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="vagas"><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Cadastre e mantenha as funções existentes na equipe de serviço." data-subpagina="funcoes" onclick="abrirSubpaginaCCI('vagas','funcoes')" title="Cadastre e mantenha as funções existentes na equipe de serviço." type="button"><span class="cci-submenu-dot">•</span><span>Funções da Equipe</span></button><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina quantas vagas de cada função são necessárias em cada serviço." data-subpagina="dimensionamento" onclick="abrirSubpaginaCCI('vagas','dimensionamento')" title="Defina quantas vagas de cada função são necessárias em cada serviço." type="button"><span class="cci-submenu-dot">•</span><span>Dimensionamento do Serviço</span></button><button class="cci-submenu-btn cci-submenu-parent" data-aba="vagas" data-cci-descricao="Configure a distribuição, descanso, lastro, justiça e classificação dos dias." data-submenu-pai="regras" onclick="alternarSubmenuRegrasCCI()" title="Configure a distribuição, descanso, lastro, justiça e classificação dos dias." type="button"><span class="cci-submenu-dot">•</span><span>Regras das Escalas</span><span class="cci-submenu-arrow">›</span></button><div class="cci-submenu-nivel2" data-submenu-nivel2="regras"><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina as regras de geração da escala para cada função do serviço." data-subpagina="regras" onclick="abrirSubpaginaCCI('vagas','regras')" title="Defina as regras de geração da escala para cada função do serviço." type="button"><span class="cci-submenu-dot">·</span><span>Configurações das Regras</span></button><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina as cores dos dias da semana e cadastre exceções por data." data-subpagina="classificacao" onclick="abrirSubpaginaCCI('vagas','classificacao')" title="Defina as cores dos dias da semana e cadastre exceções por data." type="button"><span class="cci-submenu-dot">·</span><span>Classificação dos Dias</span></button></div></div></div><div class="somente-edicao cci-nav-group" data-grupo="indisponibilidades"><button class="cci-nav-btn cci-nav-parent" data-aba="indisponibilidades" data-cci-descricao="Registre períodos e restrições em que militares não podem concorrer à escala." onclick="alternarSubmenuCCI('indisponibilidades')" title="Registre períodos e restrições em que militares não podem concorrer à escala." type="button"><span class="cci-nav-icon">⊘</span><span class="cci-nav-label">Indisponibilidades</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="indisponibilidades"><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Cadastre férias, cursos, missões, licenças e outras indisponibilidades por período." data-subpagina="periodo" onclick="abrirSubpaginaCCI('indisponibilidades','periodo')" title="Cadastre férias, cursos, missões, licenças e outras indisponibilidades por período." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar por Período</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Defina indisponibilidades recorrentes em determinados dias da semana." data-subpagina="semanal" onclick="abrirSubpaginaCCI('indisponibilidades','semanal')" title="Defina indisponibilidades recorrentes em determinados dias da semana." type="button"><span class="cci-submenu-dot">•</span><span>Indisponibilidade Semanal</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Importe várias indisponibilidades de uma só vez por arquivo CSV." data-subpagina="importar" onclick="abrirSubpaginaCCI('indisponibilidades','importar')" title="Importe várias indisponibilidades de uma só vez por arquivo CSV." type="button"><span class="cci-submenu-dot">•</span><span>Importar CSV</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Consulte e gerencie todas as indisponibilidades já cadastradas." data-subpagina="registros" onclick="abrirSubpaginaCCI('indisponibilidades','registros')" title="Consulte e gerencie todas as indisponibilidades já cadastradas." type="button"><span class="cci-submenu-dot">•</span><span>Registros Cadastrados</span></button></div></div><div class="somente-administrador cci-nav-group" data-grupo="backups"><button class="cci-nav-btn cci-nav-parent" data-aba="backups" data-cci-descricao="Proteja os dados do sistema por meio de exportação, importação e backups." onclick="alternarSubmenuCCI('backups')" title="Proteja os dados do sistema por meio de exportação, importação e backups." type="button"><span class="cci-nav-icon">↻</span><span class="cci-nav-label">Backups</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="backups"><button class="cci-submenu-btn" data-aba="backups" data-cci-descricao="Exporte, importe e gerencie as ferramentas de cópia de segurança." data-subpagina="gerenciar" onclick="abrirSubpaginaCCI('backups','gerenciar')" title="Exporte, importe e gerencie as ferramentas de cópia de segurança." type="button"><span class="cci-submenu-dot">•</span><span>Gerenciar Backups</span></button><button class="cci-submenu-btn" data-aba="backups" data-cci-descricao="Consulte, restaure e gerencie os backups armazenados." data-subpagina="lista" onclick="abrirSubpaginaCCI('backups','lista')" title="Consulte, restaure e gerencie os backups armazenados." type="button"><span class="cci-submenu-dot">•</span><span>Lista de Backups</span></button></div></div><div class="somente-administrador cci-nav-group" data-grupo="usuarios"><button class="cci-nav-btn cci-nav-parent" data-aba="usuarios" data-cci-descricao="Administre usuários, permissões de acesso e histórico de alterações." onclick="alternarSubmenuCCI('usuarios')" title="Administre usuários, permissões de acesso e histórico de alterações." type="button"><span class="cci-nav-icon">▣</span><span class="cci-nav-label">Usuários / Auditoria</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="usuarios"><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Crie um novo usuário e defina seu perfil de acesso ao sistema." data-subpagina="cadastrar" onclick="abrirSubpaginaCCI('usuarios','cadastrar')" title="Crie um novo usuário e defina seu perfil de acesso ao sistema." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar Usuário</span></button><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Consulte e gerencie os usuários cadastrados e suas permissões." data-subpagina="lista" onclick="abrirSubpaginaCCI('usuarios','lista')" title="Consulte e gerencie os usuários cadastrados e suas permissões." type="button"><span class="cci-submenu-dot">•</span><span>Usuários Cadastrados</span></button><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Consulte o histórico das alterações administrativas realizadas no sistema." data-subpagina="auditoria" onclick="abrirSubpaginaCCI('usuarios','auditoria')" title="Consulte o histórico das alterações administrativas realizadas no sistema." type="button"><span class="cci-submenu-dot">•</span><span>Auditoria do Sistema</span></button></div></div></nav><div class="cci-sidebar-credito">Desenvolvido por Sgt R.Cunha ®</div></aside><div aria-hidden="true" id="cciMenuTooltip" role="tooltip"></div>
+<aside class="cci-sidebar" id="menuLateralCCI"><button class="cci-toggle" data-cci-descricao="Expanda ou recolha o menu lateral para aumentar a área de trabalho." onclick="alternarMenuLateral()" title="Expanda ou recolha o menu lateral para aumentar a área de trabalho." type="button"><span class="cci-nav-icon">☰</span><span class="cci-toggle-label">Recolher menu</span></button><div class="cci-nav-title">ESCALA</div><nav class="cci-nav"><div class="cci-nav-group" data-grupo="gerador"><button class="cci-nav-btn cci-nav-parent ativo" data-aba="gerador" data-cci-descricao="Gere, consulte e acompanhe a escala mensal de serviço." onclick="alternarSubmenuCCI('gerador')" title="Gere, consulte e acompanhe a escala mensal de serviço." type="button"><span class="cci-nav-icon">▦</span><span class="cci-nav-label">Escala Mensal</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu aberto" data-submenu="gerador"><button class="cci-submenu-btn ativo" data-aba="gerador" data-cci-descricao="Selecione o período e gere automaticamente uma nova escala mensal." data-subpagina="criar" onclick="abrirSubpaginaCCI('gerador','criar')" title="Selecione o período e gere automaticamente uma nova escala mensal." type="button"><span class="cci-submenu-dot">•</span><span>Criar Escala</span></button><button class="cci-submenu-btn" data-aba="gerador" data-cci-descricao="Consulte, edite, publique e exporte a escala mensal gerada." data-subpagina="visualizacao" onclick="abrirSubpaginaCCI('gerador','visualizacao')" title="Consulte, edite, publique e exporte a escala mensal gerada." type="button"><span class="cci-submenu-dot">•</span><span>Visualizar Escala</span></button><button class="cci-submenu-btn" data-aba="gerador" data-cci-descricao="Consulte os quadrinhos, lastros e totais acumulados dos militares." data-subpagina="quadrinhos" onclick="abrirSubpaginaCCI('gerador','quadrinhos')" title="Consulte os quadrinhos, lastros e totais acumulados dos militares." type="button"><span class="cci-submenu-dot">•</span><span>Quadrinhos e Totais</span></button><a class="cci-submenu-btn" href="https://s2rcunha.github.io/escala/visualizar.html" target="_blank" rel="noopener noreferrer" data-cci-descricao="Abra a página pública de visualização das escalas publicadas em uma nova aba." title="Abra a visualização pública das escalas em uma nova aba."><span class="cci-submenu-dot">•</span><span>Visualização Pública ↗</span></a></div></div><div class="cci-nav-group" data-grupo="eventuais"><button class="cci-nav-btn cci-nav-parent" data-aba="eventuais" data-cci-descricao="Crie e gerencie escalas de missões e serviços eventuais em banco independente." onclick="alternarSubmenuCCI('eventuais')" title="Crie e gerencie escalas de missões e serviços eventuais em banco independente." type="button"><span class="cci-nav-icon">◆</span><span class="cci-nav-label">Escalas Eventuais</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="eventuais"><button class="somente-edicao cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Cadastre os modelos permanentes das missões eventuais, suas funções, distribuição, permanência e militares habilitados." title="Cadastre os modelos permanentes das missões eventuais, suas funções, distribuição, permanência e militares habilitados." data-subpagina="funcoes" onclick="abrirSubpaginaCCI('eventuais','tipos')" type="button"><span class="cci-submenu-dot">•</span><span>Tipos de Missão</span></button><button class="somente-edicao cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Crie uma ocorrência a partir de um Tipo de Missão, definindo período e quantidade de vagas necessárias." title="Crie uma ocorrência a partir de um Tipo de Missão, definindo período e quantidade de vagas necessárias." data-subpagina="criar" onclick="abrirSubpaginaCCI('eventuais','criar')" type="button"><span class="cci-submenu-dot">•</span><span>Criar Escala Eventual</span></button><button class="cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Consulte as ocorrências eventuais, gere a escala, faça ajustes, publique e exporte." title="Consulte as ocorrências eventuais, gere a escala, faça ajustes, publique e exporte." data-subpagina="lista" onclick="abrirSubpaginaCCI('eventuais','lista')" type="button"><span class="cci-submenu-dot">•</span><span>Visualizar Escalas</span></button><button class="cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Consulte os quadrinhos acumulados exclusivamente pelas escalas eventuais, separados por Tipo de Missão." title="Consulte os quadrinhos acumulados exclusivamente pelas escalas eventuais, separados por Tipo de Missão." data-subpagina="quadrinhos" onclick="abrirSubpaginaCCI('eventuais','quadrinhos')" type="button"><span class="cci-submenu-dot">•</span><span>Quadrinhos e Totais</span></button></div></div><div class="somente-edicao cci-nav-group" data-grupo="militares"><button class="cci-nav-btn cci-nav-parent" data-aba="militares" data-cci-descricao="Cadastre e gerencie os militares que compõem as escalas." onclick="alternarSubmenuCCI('militares')" title="Cadastre e gerencie os militares que compõem as escalas." type="button"><span class="cci-nav-icon">♟</span><span class="cci-nav-label">Militares</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="militares"><button class="cci-submenu-btn" data-aba="militares" data-cci-descricao="Inclua um novo militar, sua função e posição de antiguidade." data-subpagina="cadastrar" onclick="abrirSubpaginaCCI('militares','cadastrar')" title="Inclua um novo militar, sua função e posição de antiguidade." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar Militar</span></button><button class="cci-submenu-btn" data-aba="militares" data-cci-descricao="Consulte, edite e organize os militares já cadastrados." data-subpagina="efetivo" onclick="abrirSubpaginaCCI('militares','efetivo')" title="Consulte, edite e organize os militares já cadastrados." type="button"><span class="cci-submenu-dot">•</span><span>Militares Cadastrados</span></button></div></div><div class="somente-edicao cci-nav-group" data-grupo="vagas"><button class="cci-nav-btn cci-nav-parent" data-aba="vagas" data-cci-descricao="Configure as funções, vagas e regras usadas na montagem das escalas." onclick="alternarSubmenuCCI('vagas')" title="Configure as funções, vagas e regras usadas na montagem das escalas." type="button"><span class="cci-nav-icon">☷</span><span class="cci-nav-label">Estrutura da Equipe</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="vagas"><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Cadastre e mantenha as funções existentes na equipe de serviço." data-subpagina="funcoes" onclick="abrirSubpaginaCCI('vagas','funcoes')" title="Cadastre e mantenha as funções existentes na equipe de serviço." type="button"><span class="cci-submenu-dot">•</span><span>Funções da Equipe</span></button><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina quantas vagas de cada função são necessárias em cada serviço." data-subpagina="dimensionamento" onclick="abrirSubpaginaCCI('vagas','dimensionamento')" title="Defina quantas vagas de cada função são necessárias em cada serviço." type="button"><span class="cci-submenu-dot">•</span><span>Dimensionamento do Serviço</span></button><button class="cci-submenu-btn cci-submenu-parent" data-aba="vagas" data-cci-descricao="Configure a distribuição, descanso, lastro, justiça e classificação dos dias." data-submenu-pai="regras" onclick="alternarSubmenuRegrasCCI()" title="Configure a distribuição, descanso, lastro, justiça e classificação dos dias." type="button"><span class="cci-submenu-dot">•</span><span>Regras das Escalas</span><span class="cci-submenu-arrow">›</span></button><div class="cci-submenu-nivel2" data-submenu-nivel2="regras"><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina as regras de geração da escala para cada função do serviço." data-subpagina="regras" onclick="abrirSubpaginaCCI('vagas','regras')" title="Defina as regras de geração da escala para cada função do serviço." type="button"><span class="cci-submenu-dot">·</span><span>Configurações das Regras</span></button><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina as cores dos dias da semana e cadastre exceções por data." data-subpagina="classificacao" onclick="abrirSubpaginaCCI('vagas','classificacao')" title="Defina as cores dos dias da semana e cadastre exceções por data." type="button"><span class="cci-submenu-dot">·</span><span>Classificação dos Dias</span></button></div></div></div><div class="somente-edicao cci-nav-group" data-grupo="indisponibilidades"><button class="cci-nav-btn cci-nav-parent" data-aba="indisponibilidades" data-cci-descricao="Registre períodos e restrições em que militares não podem concorrer à escala." onclick="alternarSubmenuCCI('indisponibilidades')" title="Registre períodos e restrições em que militares não podem concorrer à escala." type="button"><span class="cci-nav-icon">⊘</span><span class="cci-nav-label">Indisponibilidades</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="indisponibilidades"><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Cadastre férias, cursos, missões, licenças e outras indisponibilidades por período." data-subpagina="periodo" onclick="abrirSubpaginaCCI('indisponibilidades','periodo')" title="Cadastre férias, cursos, missões, licenças e outras indisponibilidades por período." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar por Período</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Defina indisponibilidades recorrentes em determinados dias da semana." data-subpagina="semanal" onclick="abrirSubpaginaCCI('indisponibilidades','semanal')" title="Defina indisponibilidades recorrentes em determinados dias da semana." type="button"><span class="cci-submenu-dot">•</span><span>Indisponibilidade Semanal</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Importe várias indisponibilidades de uma só vez por arquivo CSV." data-subpagina="importar" onclick="abrirSubpaginaCCI('indisponibilidades','importar')" title="Importe várias indisponibilidades de uma só vez por arquivo CSV." type="button"><span class="cci-submenu-dot">•</span><span>Importar CSV</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Consulte e gerencie todas as indisponibilidades já cadastradas." data-subpagina="registros" onclick="abrirSubpaginaCCI('indisponibilidades','registros')" title="Consulte e gerencie todas as indisponibilidades já cadastradas." type="button"><span class="cci-submenu-dot">•</span><span>Registros Cadastrados</span></button></div></div><div class="somente-administrador cci-nav-group" data-grupo="backups"><button class="cci-nav-btn cci-nav-parent" data-aba="backups" data-cci-descricao="Proteja os dados do sistema por meio de exportação, importação e backups." onclick="alternarSubmenuCCI('backups')" title="Proteja os dados do sistema por meio de exportação, importação e backups." type="button"><span class="cci-nav-icon">↻</span><span class="cci-nav-label">Backups</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="backups"><button class="cci-submenu-btn" data-aba="backups" data-cci-descricao="Exporte, importe e gerencie as ferramentas de cópia de segurança." data-subpagina="gerenciar" onclick="abrirSubpaginaCCI('backups','gerenciar')" title="Exporte, importe e gerencie as ferramentas de cópia de segurança." type="button"><span class="cci-submenu-dot">•</span><span>Gerenciar Backups</span></button><button class="cci-submenu-btn" data-aba="backups" data-cci-descricao="Consulte, restaure e gerencie os backups armazenados." data-subpagina="lista" onclick="abrirSubpaginaCCI('backups','lista')" title="Consulte, restaure e gerencie os backups armazenados." type="button"><span class="cci-submenu-dot">•</span><span>Lista de Backups</span></button></div></div><div class="somente-administrador cci-nav-group" data-grupo="usuarios"><button class="cci-nav-btn cci-nav-parent" data-aba="usuarios" data-cci-descricao="Administre usuários, permissões de acesso e histórico de alterações." onclick="alternarSubmenuCCI('usuarios')" title="Administre usuários, permissões de acesso e histórico de alterações." type="button"><span class="cci-nav-icon">▣</span><span class="cci-nav-label">Usuários / Auditoria</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="usuarios"><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Crie um novo usuário e defina seu perfil de acesso ao sistema." data-subpagina="cadastrar" onclick="abrirSubpaginaCCI('usuarios','cadastrar')" title="Crie um novo usuário e defina seu perfil de acesso ao sistema." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar Usuário</span></button><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Consulte e gerencie os usuários cadastrados e suas permissões." data-subpagina="lista" onclick="abrirSubpaginaCCI('usuarios','lista')" title="Consulte e gerencie os usuários cadastrados e suas permissões." type="button"><span class="cci-submenu-dot">•</span><span>Usuários Cadastrados</span></button><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Consulte o histórico das alterações administrativas realizadas no sistema." data-subpagina="auditoria" onclick="abrirSubpaginaCCI('usuarios','auditoria')" title="Consulte o histórico das alterações administrativas realizadas no sistema." type="button"><span class="cci-submenu-dot">•</span><span>Auditoria do Sistema</span></button></div></div></nav><div class="cci-sidebar-credito">Desenvolvido por Sgt R.Cunha ®</div></aside><div aria-hidden="true" id="cciMenuTooltip" role="tooltip"></div>
 <main class="cci-main"><div class="cci-page-heading"><div><h2 class="cci-page-title" id="tituloPaginaCCI">Escala Mensal</h2><p class="cci-page-sub" id="subtituloPaginaCCI">Geração, consulta e manutenção da escala mensal.</p></div></div>
 <!-- ABA 1: GERADOR E VISUALIZAÇÃO DA ESCALA -->
 <section class="aba-conteudo space-y-4" id="aba-gerador">
@@ -519,6 +518,7 @@ body.cci-menu-recolhido #bannerConflitoServidor{
 <div class="flex gap-2 cci-nao-exportar-pdf">
 <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold" onclick="exportarPDF()">📄 Exportar PDF</button>
 <button class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-sm font-semibold" onclick="exportarXLS()">Exportar XLS</button>
+<button class="bg-teal-700 hover:bg-teal-800 text-white px-4 py-2 rounded text-sm font-semibold" onclick="exportarXLS(true)" title="Nome e SARAM em uma única linha para copiar e colar em outras planilhas">Exportar XLS para copiar</button>
 <button class="somente-edicao bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded text-sm font-semibold" id="botaoPublicarEscala" onclick="publicarEscalaAtual()">📢 Publicar escala</button>
 <button class="somente-edicao bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm font-semibold" onclick="limparEscala()">Limpar</button>
 <button class="somente-edicao bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded text-sm font-semibold" onclick="excluirEscalaFuncao()">Excluir escala de uma função</button>
@@ -528,6 +528,10 @@ body.cci-menu-recolhido #bannerConflitoServidor{
 <p class="text-xs text-gray-500" id="subtituloEscala"></p>
 <p class="legenda-substituicao text-xs font-bold text-yellow-800">Célula amarela: militar escalado automaticamente no lugar de outro por causa das regras</p>
 <div class="mt-2 flex flex-wrap justify-center gap-2 text-xs" id="legendaCoresEscala"></div>
+</div>
+<div class="somente-edicao flex flex-wrap items-center justify-center gap-4 mb-3 rounded border border-blue-100 bg-blue-50 px-3 py-2 text-sm" id="opcoesExibicaoCandidatosEscala">
+<label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="exibirTodosCandidatosEscala" onchange="renderizarTabelaEscala()"/> Exibir todos os militares (inclusive quem dobraria serviço)</label>
+<label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="exibirIndisponiveisCandidatosEscala" onchange="renderizarTabelaEscala()"/> Exibir militares indisponíveis</label>
 </div>
 <div class="cci-escala-scroll" id="scrollTabelaEscala">
 <table class="w-full border-collapse border border-gray-300 text-xs" id="tabelaEscalaPrincipal">
@@ -5621,7 +5625,7 @@ async function sairDoSistema() {
       });
 
       if (temTroca) adicionarItemLegenda(container, '#ccff00', 'Militar trocou o serviço');
-      if (temPuxado) adicionarItemLegenda(container, '#fee2e2', 'Militar foi puxado');
+      if (temPuxado) adicionarItemLegenda(container, '#fca5a5', 'Militar foi puxado');
       legendasObservacao.forEach(observacao => {
         adicionarItemLegenda(container, observacao.cor, observacao.legenda);
       });
@@ -9166,7 +9170,7 @@ if (salvou) {
       Object.entries(escala.alteracoesManuais || {}).forEach(([dia, alteracoesDia]) => {
         Object.entries(alteracoesDia || {}).forEach(([chave, alteracao]) => {
           if (cores[dia]?.[chave]?.cor) return;
-          const cor = alteracao?.tipo === 'troca' ? '#ccff00' : (alteracao?.tipo === 'puxado' ? '#fee2e2' : '');
+          const cor = alteracao?.tipo === 'troca' ? '#ccff00' : (alteracao?.tipo === 'puxado' ? '#fca5a5' : '');
           if (!cor) return;
           cores[dia] ||= {};
           cores[dia][chave] = { cor, legenda: alteracao.tipo === 'troca' ? 'Troca de serviço' : 'Militar puxado' };
@@ -9365,7 +9369,7 @@ cabecalho.innerHTML = `
           const observacaoCelula = estado.escala.observacoes?.[dia]?.[col.chave];
           const corAlteracaoManual = tipoAlteracaoManual === 'troca'
             ? '#ccff00'
-            : (tipoAlteracaoManual === 'puxado' ? '#fee2e2' : '');
+            : (tipoAlteracaoManual === 'puxado' ? '#fca5a5' : '');
           const corObservacaoValida = CORES_OBSERVACAO_PERMITIDAS.includes(observacaoCelula?.cor)
             ? observacaoCelula.cor
             : '';
@@ -9461,13 +9465,19 @@ const militarTemInicioIndisponibilidadePeriodoAmanhaTroca = militarId =>
     i.inicio === dataSeguinteTrocaStr
   );
 
+const exibirTodosCandidatosEscala = document.getElementById('exibirTodosCandidatosEscala')?.checked === true;
+const exibirIndisponiveisCandidatosEscala = document.getElementById('exibirIndisponiveisCandidatosEscala')?.checked === true;
+const indisponivelParaDropdown = militarId =>
+  militarIndisponivelNaDataTroca(militarId) ||
+  militarTemInicioIndisponibilidadePeriodoAmanhaTroca(militarId);
+
 const militaresOrdenadosTroca = militaresNaOrdemBase
   .filter(militar => {
     // O militar já escalado nesta célula é mostrado separadamente
     // como a opção selecionada, evitando duplicidade no <select>.
     if (militar.id === militarIdEscalado) return false;
 
-    if (militarIndisponivelNaDataTroca(militar.id)) return false;
+    if (!exibirIndisponiveisCandidatosEscala && indisponivelParaDropdown(militar.id)) return false;
 
     // Regra de apresentação do dropdown: quem já está escalado no serviço
     // imediatamente anterior ou posterior não deve ser oferecido como opção.
@@ -9477,7 +9487,7 @@ const militaresOrdenadosTroca = militaresNaOrdemBase
     // Na elaboração manual todos os candidatos da função precisam poder ser avaliados
     // pelo motor. Assim situações de descanso/24h aparecem como alerta em vez de
     // desaparecerem silenciosamente do seletor. Na edição comum mantém o filtro histórico.
-    if (!elaboracaoManualFuncao) {
+    if (!elaboracaoManualFuncao && !exibirTodosCandidatosEscala) {
       if (militarTemServicoNoTempoTroca(militar.id, tempoAnteriorTroca)) return false;
       if (militarTemServicoNoTempoTroca(militar.id, tempoSeguinteTroca)) return false;
     }
@@ -9486,7 +9496,7 @@ const militaresOrdenadosTroca = militaresNaOrdemBase
       || obterTiposEscalaDaEscala(estado.escala)[col.funcao]
       || 'corrida';
     const regrasTrocaEfetivas = obterRegrasEfetivasEdicaoManual(col.funcao, tipoTrocaEfetivo);
-    if (Number(regrasTrocaEfetivas.descanso?.folgasDepois || 0) > 0
+    if (!exibirIndisponiveisCandidatosEscala && Number(regrasTrocaEfetivas.descanso?.folgasDepois || 0) > 0
       && militarTemInicioIndisponibilidadePeriodoAmanhaTroca(militar.id)) return false;
     return true;
   })
@@ -9546,9 +9556,12 @@ const militaresOrdenadosTroca = militaresNaOrdemBase
   estado.militares.find(m => m.id === militarIdEscalado);
 
 const opcoes = militaresOrdenadosTroca
-  .map(m =>
-    `<option value="${escaparHTML(m.id)}">${escaparHTML(m.nome)} (${escaparHTML(m.saram)})${m.ativo === false ? ' - inativo' : ''}</option>`
-  )
+  .map(m => {
+    const classificacao = classificarCandidatoTrocaManual(dia, col.chave, m.id);
+    const avisos = classificacao.violacoes || [];
+    const situacao = avisos.length ? ` ⚠ ${avisos.join('; ')}` : '';
+    return `<option value="${escaparHTML(m.id)}">${escaparHTML(m.nome)} (${escaparHTML(m.saram)})${m.ativo === false ? ' - inativo' : ''}${escaparHTML(situacao)}</option>`;
+  })
   .join('');
           const textoBotaoJustificativa = militarEscalado
             ? `${escaparHTML(militarEscalado.nome)} (${escaparHTML(militarEscalado.saram)})`
@@ -10450,7 +10463,11 @@ const opcoes = militaresOrdenadosTroca
         const classificacaoTroca = classificarCandidatoTrocaManual(dia, chaveColuna, militarId);
         const violacoes = classificacaoTroca.violacoes;
 
-        if (classificacaoTroca.impeditivoAbsoluto) {
+        const permitirIndisponivelExcepcional = document.getElementById('exibirIndisponiveisCandidatosEscala')?.checked === true;
+        const motivosIndisponibilidade = violacoes.filter(v => /indispon[ií]vel|indisponibilidade|dia da semana/i.test(v));
+        const motivosImpedimentoNaoAutorizaveis = violacoes.filter(v => /mesma pessoa duas vezes|outra fun[cç][aã]o|militar n[aã]o encontrado/i.test(v));
+        const podeAutorizarIndisponibilidade = permitirIndisponivelExcepcional && motivosIndisponibilidade.length > 0 && motivosImpedimentoNaoAutorizaveis.length === 0;
+        if (classificacaoTroca.impeditivoAbsoluto && !podeAutorizarIndisponibilidade) {
           alert(`ALTERAÇÃO NÃO PERMITIDA pelas regras configuradas:\n\n- ${violacoes.join('\n- ')}`);
           renderizarTabelaEscala();
           return;
@@ -10460,7 +10477,7 @@ const opcoes = militaresOrdenadosTroca
         // exige ciência explícita. Se a regra estiver permitida/desativada na
         // configuração da função, ela não aparecerá em 'violacoes' e não
         // provocará confirmação.
-        if (classificacaoTroca.violacaoFolga) {
+        if (classificacaoTroca.violacaoFolga || podeAutorizarIndisponibilidade) {
           const funcaoTroca = obterFuncaoDaChave(chaveColuna);
           const tiposEscalaTroca = obterTiposEscalaDaEscala(estado.escala);
           const tipoTroca = estado.escala.tiposUsadosPorDia?.[dia]?.[funcaoTroca]
@@ -10473,7 +10490,9 @@ const opcoes = militaresOrdenadosTroca
             : 'Militar selecionado';
           const violacoesFolga = violacoes.filter(v => {
             const texto = String(v).toLowerCase();
-            return texto.includes('descanso')
+            return texto.includes('indisponib')
+              || texto.includes('dia da semana')
+              || texto.includes('descanso')
               || texto.includes('folga')
               || texto.includes('ficaria na 24')
               || texto.includes('dobraria serviço')
@@ -11458,19 +11477,7 @@ async function exportarPDF() {
           compress: true
         });
         pdf.addImage(canvas.toDataURL('image/jpeg', 0.98), 'JPEG', 0, 0, larguraPt, alturaPt);
-        const nomeArquivo = `Escala_CCI_${document.getElementById('mesAnoEscala').value}.pdf`;
-        const executandoNoCapacitor = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform());
-        if (executandoNoCapacitor) {
-          const Filesystem = window.Capacitor?.Plugins?.Filesystem;
-          const Share = window.Capacitor?.Plugins?.Share;
-          if (!Filesystem || !Share) throw new Error('Plugins nativos Filesystem/Share não disponíveis. Execute npm install e npx cap sync android.');
-          const dataUri = pdf.output('datauristring');
-          const base64 = dataUri.substring(dataUri.indexOf(',') + 1);
-          const arquivo = await Filesystem.writeFile({ path: `sesci/${nomeArquivo}`, data: base64, directory: 'CACHE', recursive: true });
-          await Share.share({ title: 'Escala de Serviço - CCI', text: `Escala ${document.getElementById('mesAnoEscala').value}`, url: arquivo.uri, dialogTitle: 'Salvar ou compartilhar PDF' });
-        } else {
-          pdf.save(nomeArquivo);
-        }
+        pdf.save(`Escala_CCI_${document.getElementById('mesAnoEscala').value}.pdf`);
       } catch (erro) {
         console.error('Erro ao exportar PDF:', erro);
         alert('Não foi possível gerar o PDF. Verifique sua conexão e tente novamente.');
@@ -11479,7 +11486,7 @@ async function exportarPDF() {
       }
     }
 
-    function exportarXLS() {
+    function exportarXLS(formatoParaCopiar = false) {
       const elemento = document.getElementById('areaEscalaPDF');
       const copia = elemento.cloneNode(true);
       // Remove elementos exclusivos da interface antes de montar o arquivo XLS.
@@ -11496,15 +11503,26 @@ async function exportarPDF() {
         const saram = texto.querySelector('.pdf-militar-saram')?.textContent || '';
         const textoVisivel = document.createElement('div');
         textoVisivel.className = 'xls-militar';
-        textoVisivel.appendChild(document.createTextNode(nome.trim()));
-        if (saram) {
-          textoVisivel.appendChild(document.createElement('br'));
-          const saramEl = document.createElement('span');
-          saramEl.className = 'xls-saram';
-          saramEl.textContent = saram.trim();
-          textoVisivel.appendChild(saramEl);
+        if (formatoParaCopiar) {
+          // Texto plano sem quebra: ao copiar a célula no Excel, nome e SARAM seguem na mesma linha.
+          const numeroSaram = saram.trim().replace(/^SARAM\s*:\s*/i, '').trim();
+          textoVisivel.textContent = nome.trim() + (numeroSaram ? ` (${numeroSaram})` : '');
+        } else {
+          // Exportação tradicional: apresentação em duas linhas dentro da mesma célula.
+          textoVisivel.appendChild(document.createTextNode(nome.trim()));
+          if (saram) {
+            const quebraLinha = document.createElement('br');
+            quebraLinha.setAttribute('style', 'mso-data-placement:same-cell');
+            textoVisivel.appendChild(quebraLinha);
+            const saramEl = document.createElement('span');
+            saramEl.className = 'xls-saram';
+            saramEl.textContent = saram.trim();
+            textoVisivel.appendChild(saramEl);
+          }
         }
         celula.replaceChildren(textoVisivel);
+        celula.setAttribute('valign', 'middle');
+        celula.style.verticalAlign = 'middle';
       });
 
       // Nenhum controle interativo deve seguir para o HTML interpretado pelo Excel.
@@ -11521,15 +11539,16 @@ async function exportarPDF() {
             <meta charset="UTF-8">
             <style>
               table { border-collapse: collapse; font-family: Arial, sans-serif; font-size: 11px; }
-              th, td { border: 1px solid #999; padding: 6px; vertical-align: top; mso-number-format:"\\@"; }
+              th, td { border: 1px solid #999; padding: 6px; vertical-align: middle; mso-number-format:"\\@"; }
               th { background: #374151; color: #fff; font-weight: bold; text-align: center; }
               .xls-linha-branca td { background: #ffffff; }
               .xls-linha-cinza td { background: #f3f4f6; }
               .xls-dia-vermelho td:first-child,
               .xls-dia-vermelho td:nth-child(2),
               .text-red-600 { color: #dc2626; font-weight: bold; }
-              .xls-militar { white-space: normal; mso-data-placement:same-cell; line-height: 1.25; }
+              .xls-militar { white-space: normal; line-height: 1.25; text-align: center; }
               .xls-saram { font-size: 10px; color: #555; font-weight: normal; }
+              td:has(.xls-militar) { vertical-align: middle; text-align: center; }
             </style>
           </head>
           <body>${copia.innerHTML}</body>
@@ -11539,7 +11558,7 @@ async function exportarPDF() {
       const url = URL.createObjectURL(arquivo);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `Escala_CCI_${document.getElementById('mesAnoEscala').value}.xls`;
+      link.download = `Escala_CCI_${document.getElementById('mesAnoEscala').value}${formatoParaCopiar ? '_PARA_COPIAR' : ''}.xls`;
       link.click();
       URL.revokeObjectURL(url);
     }
