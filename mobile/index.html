@@ -966,6 +966,11 @@ body.cci-menu-recolhido #bannerConflitoServidor{
       <option value="">Todos os meses</option>
     </select>
   </label>
+  <label class="block text-xs font-semibold text-gray-700">Função
+    <select id="filtroFuncaoIndisponibilidades" class="mt-1 block min-w-[190px] rounded border bg-white p-2 text-sm" onchange="renderizarIndisponibilidades()">
+      <option value="">Todas as funções</option>
+    </select>
+  </label>
   <label class="block text-xs font-semibold text-gray-700">Militar
     <select id="filtroMilitarIndisponibilidades" class="mt-1 block min-w-[210px] rounded border bg-white p-2 text-sm" onchange="renderizarIndisponibilidades()">
       <option value="">Todos os militares</option>
@@ -6199,8 +6204,12 @@ async function confirmarImportacaoIndisponibilidades() {
     return;
   }
 
-  const registrosValidos =
-    previaImportacaoIndisponibilidades.validos || [];
+  // Revalida na confirmação: a prévia pode ter sido criada em outro dia.
+  // Registros iniciados no passado são aceitos se ainda estiverem vigentes.
+  const hojeImportacao = obterDataLocalHojeIndisponibilidade();
+  const registrosValidos = (previaImportacaoIndisponibilidades.validos || [])
+    .filter(registro => registro.fim && registro.fim >= hojeImportacao);
+  const descartadosPorData = (previaImportacaoIndisponibilidades.validos || []).length - registrosValidos.length;
 
   if (registrosValidos.length === 0) {
     alert('Não existem registros válidos para importar.');
@@ -6212,7 +6221,8 @@ async function confirmarImportacaoIndisponibilidades() {
   const confirmar = confirm(
     `Confirma a importação de ${quantidade} ` +
     `indisponibilidade(s)?\n\n` +
-    `Registros com erro ou já cadastrados não serão importados.`
+    `Registros com erro, já cadastrados ou encerrados antes de hoje não serão importados.` +
+    (descartadosPorData ? `\n${descartadosPorData} registro(s) descartado(s) por data vencida.` : '')
   );
 
   if (!confirmar) {
@@ -6498,6 +6508,12 @@ for (let i = 1; i < linhas.length; i++) {
         );
       }
 
+      // Permite início anterior a hoje quando o término é hoje ou futuro.
+      // Descarta somente períodos inteiramente encerrados.
+      if (fim && fim < obterDataLocalHojeIndisponibilidade()) {
+        erros.push('Indisponibilidade encerrada antes da data atual');
+      }
+
       if (!motivo) {
         erros.push(
           'Motivo não informado'
@@ -6626,10 +6642,32 @@ if (
   }
 }
 
+    // Data local (não UTC), para não antecipar ou atrasar o dia conforme o fuso.
+    function obterDataLocalHojeIndisponibilidade() {
+      const agora = new Date();
+      return `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}-${String(agora.getDate()).padStart(2, '0')}`;
+    }
+
+    function atualizarLimitesDatasIndisponibilidade() {
+      const hoje = obterDataLocalHojeIndisponibilidade();
+      const inicio = document.getElementById('indispInicio');
+      const fim = document.getElementById('indispFim');
+      if (inicio) inicio.min = hoje;
+      if (fim) fim.min = inicio?.value && inicio.value > hoje ? inicio.value : hoje;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      atualizarLimitesDatasIndisponibilidade();
+      document.getElementById('indispInicio')?.addEventListener('change', atualizarLimitesDatasIndisponibilidade);
+      document.getElementById('indispInicio')?.addEventListener('focus', atualizarLimitesDatasIndisponibilidade);
+      document.getElementById('indispFim')?.addEventListener('focus', atualizarLimitesDatasIndisponibilidade);
+    });
+
     // GESTÃO DE INDISPONIBILIDADES
     function salvarIndisponibilidade(e) {
-      if (!podeEditarSistema()) { alert('Acesso somente para consulta.'); return; }
       e.preventDefault();
+      if (!podeEditarSistema()) { alert('Acesso somente para consulta.'); return; }
+      atualizarLimitesDatasIndisponibilidade();
       const funcao = document.getElementById('indispFuncao').value;
       const militarId = document.getElementById('indispMilitar').value;
       const inicio = document.getElementById('indispInicio').value;
@@ -6640,14 +6678,22 @@ if (
         alert('Selecione um militar da função escolhida.');
         return;
       }
+      const hoje = obterDataLocalHojeIndisponibilidade();
+      if (inicio < hoje || fim < hoje) {
+        alert('Não é permitido cadastrar indisponibilidades com datas anteriores à data atual.');
+        document.getElementById(inicio < hoje ? 'indispInicio' : 'indispFim').focus();
+        return;
+      }
       if (fim < inicio) {
         alert('A data final não pode ser anterior à data inicial.');
+        document.getElementById('indispFim').focus();
         return;
       }
 
       estado.indisponibilidades.push({ id: Date.now().toString(), militarId, inicio, fim, motivo });
       salvarEstado();
       document.getElementById('formIndisponibilidade').reset();
+      atualizarLimitesDatasIndisponibilidade();
       renderizarMilitaresIndisponibilidade();
       renderizarIndisponibilidades();
     }
@@ -6752,7 +6798,8 @@ if (
     function atualizarFiltrosIndisponibilidades() {
       const seletorMes = document.getElementById('filtroMesIndisponibilidades');
       const seletorMilitar = document.getElementById('filtroMilitarIndisponibilidades');
-      if (!seletorMes || !seletorMilitar) return;
+      const seletorFuncao = document.getElementById('filtroFuncaoIndisponibilidades');
+      if (!seletorMes || !seletorMilitar || !seletorFuncao) return;
       const agora = new Date();
       const mesAtual = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`;
       if (!seletorMes.dataset.inicializado) {
@@ -6781,9 +6828,18 @@ if (
         [...meses].sort().reverse().map(m => `<option value="${m}">${escaparHTML(rotuloMes(m))}</option>`).join('');
       seletorMes.value = mesSelecionado && meses.has(mesSelecionado) ? mesSelecionado : (mesSelecionado === '' ? '' : mesAtual);
 
-      const militarSelecionado = seletorMilitar.value;
+      const funcaoSelecionada = seletorFuncao.value;
       const ids = new Set([...(estado.indisponibilidades || []), ...(estado.indisponibilidadesSemana || [])].map(i => String(i.militarId)));
-      const militares = (estado.militares || []).filter(m => ids.has(String(m.id)))
+      const militaresComRegistros = (estado.militares || []).filter(m => ids.has(String(m.id)));
+      const funcoes = [...new Set(militaresComRegistros.map(m => String(m.funcao || '').trim()).filter(Boolean))]
+        .sort((a, b) => a.localeCompare(b, 'pt-BR'));
+      seletorFuncao.innerHTML = '<option value="">Todas as funções</option>' +
+        funcoes.map(f => `<option value="${escaparHTML(f)}">${escaparHTML(f)}</option>`).join('');
+      seletorFuncao.value = funcoes.includes(funcaoSelecionada) ? funcaoSelecionada : '';
+
+      const militarSelecionado = seletorMilitar.value;
+      const militares = militaresComRegistros
+        .filter(m => !seletorFuncao.value || String(m.funcao || '').trim() === seletorFuncao.value)
         .sort((a, b) => String(a.nome || '').localeCompare(String(b.nome || ''), 'pt-BR'));
       seletorMilitar.innerHTML = '<option value="">Todos os militares</option>' +
         militares.map(m => `<option value="${escaparHTML(m.id)}">${escaparHTML(m.nome)}</option>`).join('');
@@ -6796,13 +6852,15 @@ if (
       atualizarFiltrosIndisponibilidades();
       const mes = document.getElementById('filtroMesIndisponibilidades')?.value || '';
       const militarId = document.getElementById('filtroMilitarIndisponibilidades')?.value || '';
+      const funcao = document.getElementById('filtroFuncaoIndisponibilidades')?.value || '';
+      const funcoesPorMilitar = new Map((estado.militares || []).map(m => [String(m.id), String(m.funcao || '').trim()]));
       const inicioMes = mes ? `${mes}-01` : '';
       const fimMes = mes ? (() => {
         const [ano, numeroMes] = mes.split('-').map(Number);
         const ultimo = new Date(ano, numeroMes, 0).getDate();
         return `${mes}-${String(ultimo).padStart(2, '0')}`;
       })() : '';
-      const correspondeMilitar = i => !militarId || String(i.militarId) === militarId;
+      const correspondeMilitar = i => (!militarId || String(i.militarId) === militarId) && (!funcao || funcoesPorMilitar.get(String(i.militarId)) === funcao);
       const diasSemanaNomes = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
       const podeEditar = podeEditarSistema();
       const linhasPeriodo = (estado.indisponibilidades || [])
