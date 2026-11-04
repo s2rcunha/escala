@@ -48,15 +48,21 @@
             </select>
           </label>
           <label class="text-xs font-semibold text-gray-600">
-            Dia da escala
-            <select id="seletorDia" class="mt-1 min-w-[155px] rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800" onchange="filtrarDiaEscala()" disabled>
-              <option value="">Mês completo</option>
-            </select>
-          </label>
-          <label class="text-xs font-semibold text-gray-600">
             Exibir função
             <select id="seletorFuncao" class="mt-1 min-w-[190px] rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800" onchange="filtrarFuncaoEscala()" disabled>
               <option value="">Todas as funções</option>
+            </select>
+          </label>
+          <label class="text-xs font-semibold text-gray-600">
+            Militar escalado
+            <select id="seletorMilitar" class="mt-1 min-w-[210px] max-w-[270px] rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800" onchange="filtrarMilitarEscala()" disabled>
+              <option value="">Todos os militares</option>
+            </select>
+          </label>
+          <label class="text-xs font-semibold text-gray-600">
+            Dia da escala
+            <select id="seletorDia" class="mt-1 min-w-[155px] rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800" onchange="filtrarDiaEscala()" disabled>
+              <option value="">Mês completo</option>
             </select>
           </label>
           <button id="btnImprimir" type="button" onclick="exportarPDF()" class="inline-flex items-center justify-center rounded bg-gray-800 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-700">Gerar PDF</button>
@@ -155,12 +161,59 @@ function atualizarSeletorDias(publicacao) {
   seletor.disabled = false;
 }
 
+// A lista considera apenas militares efetivamente escalados no mês publicado.
+// O SARAM identifica o militar quando disponível; publicações antigas usam o nome.
+function identificarMilitar(publicado) {
+  if (!publicado) return null;
+  const nome = String(typeof publicado === 'object' ? (publicado.nome || '') : publicado).trim();
+  const saram = String(typeof publicado === 'object' ? (publicado.saram || '') : '').trim();
+  if (!nome) return null;
+  const chave = saram ? 's:' + saram.replace(/\D/g, '') : 'n:' + nome.toLocaleLowerCase('pt-BR').replace(/\s+/g, ' ');
+  return { nome, saram, chave };
+}
+
+function atualizarSeletorMilitares(publicacao) {
+  const seletor = document.getElementById('seletorMilitar');
+  const anterior = seletor.value;
+  const indiceFuncao = Number(document.getElementById('seletorFuncao').value || 0);
+  const estrutura = publicacao?.estrutura || {funcoes: [], vagas: {}};
+  const funcoes = (estrutura.funcoes || []).filter((funcao, indice, lista) =>
+    lista.indexOf(funcao) === indice && Number(estrutura.vagas?.[funcao] || 0) > 0
+  );
+  const funcaoEscolhida = indiceFuncao > 0 ? funcoes[indiceFuncao - 1] : null;
+  const chavesPermitidas = new Set();
+  (funcaoEscolhida ? [funcaoEscolhida] : funcoes).forEach(funcao => {
+    const vagas = Number(estrutura.vagas?.[funcao] || 0);
+    for (let i = 1; i <= vagas; i++) chavesPermitidas.add(`${funcao} #${i}`);
+  });
+  const militares = new Map();
+  Object.values(publicacao?.dados || {}).forEach(dia => {
+    Object.entries(dia || {}).forEach(([chave, registro]) => {
+      if (!chavesPermitidas.has(chave)) return;
+      const militar = identificarMilitar(registro);
+      if (militar && !militares.has(militar.chave)) militares.set(militar.chave, militar);
+    });
+  });
+  const lista = [...militares.values()].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', {sensitivity:'base'}));
+  seletor.innerHTML = '<option value="">Todos os militares</option>' +
+    lista.map(m => `<option value="${escaparHTML(m.chave)}">${escaparHTML(m.nome)}${m.saram ? ' — ' + escaparHTML(m.saram) : ''}</option>`).join('');
+  seletor.value = lista.some(m => m.chave === anterior) ? anterior : '';
+  seletor.disabled = !lista.length;
+}
+
+function filtrarMilitarEscala() {
+  if (publicacaoAtual) renderizarEscala(publicacaoAtual);
+}
+
 function filtrarDiaEscala() {
   if (publicacaoAtual) renderizarEscala(publicacaoAtual);
 }
 
 function filtrarFuncaoEscala() {
-  if (publicacaoAtual) renderizarEscala(publicacaoAtual);
+  if (publicacaoAtual) {
+    atualizarSeletorMilitares(publicacaoAtual);
+    renderizarEscala(publicacaoAtual);
+  }
 }
 
 function obterIdentificacaoMilitar(publicacao, dia, chave, vermelho) {
@@ -177,11 +230,15 @@ function renderizarEscala(publicacao) {
   const diasNoMes = new Date(ano, mes, 0).getDate();
   const estrutura = publicacao.estrutura || { funcoes: [], vagas: {} };
   const colunas = [];
-  const diaSelecionado = Number(document.getElementById('seletorDia').value || 0);
+  const militarSelecionado = document.getElementById('seletorMilitar').value;
+  const diaSelecionado = militarSelecionado ? 0 : Number(document.getElementById('seletorDia').value || 0);
   const indiceSelecionado = diaSelecionado ? 0 : Number(document.getElementById('seletorFuncao').value || 0);
   const seletorFuncao = document.getElementById('seletorFuncao');
   seletorFuncao.disabled = !!diaSelecionado || !(publicacao.estrutura?.funcoes || []).length;
-  seletorFuncao.title = diaSelecionado ? 'A visualização por dia sempre exibe toda a equipe.' : '';
+  seletorFuncao.title = diaSelecionado ? 'A visualização por dia sempre exibe toda a equipe.' : ''; 
+  const seletorDia = document.getElementById('seletorDia');
+  seletorDia.disabled = !!militarSelecionado;
+  seletorDia.title = militarSelecionado ? 'Para escolher um dia, selecione Todos os militares.' : '';
   const funcoesDisponiveis = (estrutura.funcoes || []).filter((funcao, indice, lista) =>
     lista.indexOf(funcao) === indice && Number(estrutura.vagas?.[funcao] || 0) > 0
   );
@@ -193,6 +250,26 @@ function renderizarEscala(publicacao) {
   });
 
   const tabela = document.querySelector('#areaTabela table');
+  if (militarSelecionado) {
+    tabela.classList.add('tabela-dia');
+    document.getElementById('cabecalho').innerHTML = '<th class="border border-gray-300 p-3 text-center">Dia</th><th class="border border-gray-300 p-3 text-left">Função</th><th class="border border-gray-300 p-3 text-center">Militar</th>';
+    const nomesDias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const linhas = [];
+    for (let dia = 1; dia <= diasNoMes; dia++) {
+      const vermelho = ehDiaVermelho(publicacao, ano, mes, dia);
+      colunas.forEach(col => {
+        const militar = identificarMilitar(publicacao.dados?.[dia]?.[col.chave]);
+        if (!militar || militar.chave !== militarSelecionado) return;
+        const corInfo = publicacao.cores?.[dia]?.[col.chave];
+        const cor = /puxad/i.test(corInfo?.legenda || '') ? '#fca5a5' : (corInfo?.cor || '');
+        const estilo = cor ? ` style="background-color:${escaparHTML(cor)}"` : '';
+        linhas.push(`<tr class="${vermelho ? 'bg-amber-50' : ''}"><td class="border border-gray-300 p-3 text-center font-bold">${String(dia).padStart(2, '0')}/${String(mes).padStart(2, '0')} (${nomesDias[new Date(ano, mes - 1, dia).getDay()]})</td><td class="border border-gray-300 p-3 font-semibold">${escaparHTML(col.funcao)}</td><td class="celula-militar border border-gray-300 p-3 text-center"${estilo}>${obterIdentificacaoMilitar(publicacao, dia, col.chave, vermelho)}</td></tr>`);
+      });
+    }
+    document.getElementById('corpo').innerHTML = linhas.length ? linhas.join('') : '<tr><td colspan="3" class="p-6 text-center text-gray-500">Nenhum serviço encontrado para este militar no mês.</td></tr>';
+    renderizarLegenda(publicacao);
+    return;
+  }
   if (diaSelecionado >= 1 && diaSelecionado <= diasNoMes) {
     tabela.classList.add('tabela-dia');
     const vermelho = ehDiaVermelho(publicacao, ano, mes, diaSelecionado);
@@ -278,7 +355,7 @@ async function exportarPDF() {
       orientation: larguraPt >= alturaPt ? 'landscape' : 'portrait', compress: true
     });
     pdf.addImage(canvas.toDataURL('image/jpeg', 0.98), 'JPEG', 0, 0, larguraPt, alturaPt);
-    pdf.save('Escala_CCI_' + (document.getElementById('seletorEscala').value || 'publicada') + (document.getElementById('seletorDia').value ? '_dia_' + document.getElementById('seletorDia').value.padStart(2, '0') : '') + '.pdf');
+    pdf.save('Escala_CCI_' + (document.getElementById('seletorEscala').value || 'publicada') + (document.getElementById('seletorMilitar').value ? '_militar_' + (document.getElementById('seletorMilitar').selectedOptions[0]?.textContent || '').replace(/[^a-zA-Z0-9_-]+/g, '_').slice(0, 65) : (document.getElementById('seletorDia').value ? '_dia_' + document.getElementById('seletorDia').value.padStart(2, '0') : '')) + '.pdf');
   } catch (erro) {
     console.error('Erro ao gerar PDF:', erro);
     alert('Não foi possível gerar o PDF. Verifique sua conexão e tente novamente.');
@@ -320,6 +397,7 @@ async function carregarListaEscalasPublicadas(mesPreferido = '') {
     publicacaoAtual = null;
     atualizarSeletorFuncoes(null);
     atualizarSeletorDias(null);
+    atualizarSeletorMilitares(null);
     document.getElementById('areaTabela')?.classList.add('hidden');
     const corpo = document.getElementById('corpo');
     if (corpo) corpo.innerHTML = '';
@@ -365,6 +443,7 @@ async function carregarEscalaPublicada(mesAno = '') {
       publicacaoAtual = null;
       atualizarSeletorFuncoes(null);
     atualizarSeletorDias(null);
+    atualizarSeletorMilitares(null);
       document.getElementById('mesPublicacao').textContent = 'Escala ainda não publicada';
       document.getElementById('ultimaAtualizacao').textContent = '';
       return;
@@ -382,6 +461,7 @@ async function carregarEscalaPublicada(mesAno = '') {
     publicacaoAtual = publicacao;
     atualizarSeletorFuncoes(publicacao);
     atualizarSeletorDias(publicacao);
+    atualizarSeletorMilitares(publicacao);
     renderizarEscala(publicacao);
     mensagem.classList.add('hidden');
     area.classList.remove('hidden');
