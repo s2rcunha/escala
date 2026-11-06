@@ -26,6 +26,15 @@
     .pdf-exportacao th, .pdf-exportacao td { white-space: nowrap; }
     .pdf-exportacao .celula-militar { white-space: normal; }
 
+
+    .militar-com-detalhes { display:inline-flex; flex-direction:column; align-items:center; gap:2px; width:100%; border-radius:5px; padding:3px; cursor:pointer; text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px; }
+    .militar-com-detalhes:focus-visible { outline:2px solid #2563eb; outline-offset:2px; }
+    .indicador-detalhes { font-size:10px; font-weight:600; color:#1e40af; text-decoration:none; }
+    #modalDetalhesEscala { position:fixed; inset:0; z-index:10000; background:rgba(15,23,42,.67); display:none; align-items:center; justify-content:center; padding:12px; }
+    #modalDetalhesEscala.aberto { display:flex; }
+    .conteudo-detalhes { width:min(620px,100%); max-height:88vh; overflow:auto; background:white; border-radius:12px; padding:18px; box-shadow:0 15px 40px #0004; }
+    .texto-detalhes { white-space:pre-wrap; overflow-wrap:anywhere; font:inherit; line-height:1.5; }
+    @media print { #modalDetalhesEscala { display:none!important; } }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -91,6 +100,15 @@
 
     <footer class="py-5 text-center text-xs text-gray-500">Consulta da escala publicada pelo CCI</footer>
   </main>
+
+
+  <div id="modalDetalhesEscala" role="dialog" aria-modal="true" aria-labelledby="tituloDetalhesEscala" onclick="if(event.target===this)fecharDetalhesEscala()">
+    <div class="conteudo-detalhes">
+      <div class="flex items-start justify-between gap-3 mb-4"><div><h2 id="tituloDetalhesEscala" class="text-lg font-bold text-gray-900">Detalhes do serviço</h2><p id="subtituloDetalhesEscala" class="text-sm text-gray-600"></p></div><button type="button" class="rounded bg-gray-200 px-3 py-2 font-semibold" onclick="fecharDetalhesEscala()" aria-label="Fechar detalhes">✕</button></div>
+      <div id="corpoDetalhesEscala" class="space-y-4 text-sm"></div>
+      <div class="mt-5 text-right"><button type="button" class="rounded bg-gray-800 px-4 py-2 text-white" onclick="fecharDetalhesEscala()">Fechar</button></div>
+    </div>
+  </div>
 
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwX4H9ATieL04h7vZJ6taBdNbgDzB8CoPaHahRj7rAXyArRod3GKlAGoyHmq06KEqGaeA/exec';
@@ -216,12 +234,47 @@ function filtrarFuncaoEscala() {
   }
 }
 
+function obterDetalhesPublicos(publicacao, dia, chave) {
+  const d = publicacao?.detalhes?.[dia]?.[chave];
+  return d && (d.alteracao?.texto || d.observacao?.texto) ? d : null;
+}
+function fecharDetalhesEscala() {
+  document.getElementById('modalDetalhesEscala')?.classList.remove('aberto');
+  document.body.style.overflow = '';
+}
+function abrirDetalhesEscala(dia, chaveCodificada) {
+  const chave = decodeURIComponent(chaveCodificada);
+  const detalhes = obterDetalhesPublicos(publicacaoAtual, dia, chave);
+  if (!detalhes) return;
+  const militar = identificarMilitar(publicacaoAtual?.dados?.[dia]?.[chave]);
+  document.getElementById('tituloDetalhesEscala').textContent = militar?.nome || 'Detalhes do serviço';
+  const [ano,mes] = (publicacaoAtual?.mesAno || '').split('-');
+  document.getElementById('subtituloDetalhesEscala').textContent = `${String(dia).padStart(2,'0')}/${mes}/${ano} · ${chave}`;
+  const blocos = [];
+  if (detalhes.alteracao?.texto) {
+    const rotulo = detalhes.alteracao.tipo === 'puxado' ? 'Militar puxado' : 'Troca de serviço';
+    blocos.push(`<section><h3 class="font-bold text-base mb-2">${rotulo}</h3><div class="texto-detalhes rounded bg-gray-50 border p-3">${escaparHTML(detalhes.alteracao.texto)}</div></section>`);
+  }
+  if (detalhes.observacao?.texto) {
+    blocos.push(`<section><h3 class="font-bold text-base mb-2">Observação do escalante</h3><div class="texto-detalhes rounded bg-gray-50 border p-3">${escaparHTML(detalhes.observacao.texto)}</div>${detalhes.observacao.legenda ? `<p class="mt-2 text-xs text-gray-600">Legenda: ${escaparHTML(detalhes.observacao.legenda)}</p>` : ''}</section>`);
+  }
+  document.getElementById('corpoDetalhesEscala').innerHTML = blocos.join('');
+  document.getElementById('modalDetalhesEscala').classList.add('aberto');
+  document.body.style.overflow = 'hidden';
+  document.querySelector('#modalDetalhesEscala button')?.focus();
+}
+document.addEventListener('keydown', event => { if (event.key === 'Escape') fecharDetalhesEscala(); });
+function envolverIdentificacaoComDetalhes(publicacao, dia, chave, identificacao) {
+  if (!obterDetalhesPublicos(publicacao, dia, chave)) return identificacao;
+  return `<button type="button" class="militar-com-detalhes" title="Ver justificativa ou observação" onclick="abrirDetalhesEscala(${Number(dia)}, '${encodeURIComponent(chave)}')">${identificacao}<span class="indicador-detalhes">ⓘ Ver detalhes</span></button>`;
+}
+
 function obterIdentificacaoMilitar(publicacao, dia, chave, vermelho) {
   const publicado = publicacao.dados?.[dia]?.[chave] || '';
   const nome = typeof publicado === 'object' ? (publicado.nome || '') : publicado;
   const saram = typeof publicado === 'object' ? (publicado.saram || '') : '';
   return nome
-    ? `<span class="militar-nome${vermelho ? ' escala-vermelha' : ''}">${escaparHTML(nome)}</span>${saram ? `<span class="militar-saram">SARAM: ${escaparHTML(saram)}</span>` : ''}`
+    ? envolverIdentificacaoComDetalhes(publicacao, dia, chave, `<span class="militar-nome${vermelho ? ' escala-vermelha' : ''}">${escaparHTML(nome)}</span>${saram ? `<span class="militar-saram">SARAM: ${escaparHTML(saram)}</span>` : ''}`)
     : '<span class="text-gray-400">Não preenchido</span>';
 }
 
@@ -307,7 +360,7 @@ function renderizarEscala(publicacao) {
       const identificacao = nome
         ? `<span class="militar-nome${vermelho ? ' escala-vermelha' : ''}">${escaparHTML(nome)}</span>${saram ? `<span class="militar-saram">SARAM: ${escaparHTML(saram)}</span>` : ''}`
         : '';
-      html += `<td class="celula-militar border p-2 text-center"${estilo}>${identificacao}</td>`;
+      html += `<td class="celula-militar border p-2 text-center"${estilo}>${envolverIdentificacaoComDetalhes(publicacao, dia, col.chave, identificacao)}</td>`;
     });
     html += '</tr>';
   }
@@ -338,6 +391,12 @@ async function exportarPDF() {
     copia.appendChild(titulo);
     const tabela = document.querySelector('#areaTabela table').cloneNode(true);
     tabela.style.cssText = tabela.classList.contains('tabela-dia') ? 'width:780px;min-width:780px;border-collapse:collapse;' : 'width:max-content;min-width:max-content;border-collapse:collapse;';
+    tabela.querySelectorAll('.militar-com-detalhes').forEach(botao => {
+      const span = document.createElement('span');
+      span.innerHTML = botao.innerHTML;
+      span.querySelectorAll('.indicador-detalhes').forEach(el => el.remove());
+      botao.replaceWith(span);
+    });
     copia.appendChild(tabela);
     areaMedicao.appendChild(copia);
     document.body.appendChild(areaMedicao);

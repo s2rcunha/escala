@@ -9280,13 +9280,49 @@ if (salvou) {
           cores[dia][chave] = { cor, legenda: alteracao.tipo === 'troca' ? 'Troca de serviço' : 'Militar puxado' };
         });
       });
+      // Publica somente os registros destinados à consulta pública:
+      // alterações manuais (puxado/troca) e observações do escalante.
+      // Justificativas automáticas da geração não são expostas.
+      const detalhes = {};
+      const incluirDetalhe = (dia, chave, campo, valor) => {
+        detalhes[dia] ||= {};
+        detalhes[dia][chave] ||= {};
+        detalhes[dia][chave][campo] = valor;
+      };
+      Object.entries(escala.alteracoesManuais || {}).forEach(([dia, vagas]) => {
+        Object.entries(vagas || {}).forEach(([chave, alteracao]) => {
+          if (!['puxado', 'troca'].includes(alteracao?.tipo)) return;
+          const justificativa = String(escala.justificativas?.[dia]?.[chave] || '');
+          // A última alteração manual é a que corresponde ao militar atual.
+          const marcadores = [...justificativa.matchAll(/(?:^|\n)ALTERAÇÃO MANUAL:/g)];
+          const trecho = marcadores.length
+            ? justificativa.slice(marcadores[marcadores.length - 1].index).split(/\n\n(?=OBSERVAÇÃO:|ALTERAÇÃO MANUAL:)/)[0].trim()
+            : '';
+          incluirDetalhe(dia, chave, 'alteracao', {
+            tipo: alteracao.tipo,
+            texto: trecho || (alteracao.tipo === 'puxado' ? 'Militar puxado para este serviço.' : 'Troca de serviço registrada.'),
+            dataHora: alteracao.dataHora || ''
+          });
+        });
+      });
+      Object.entries(escala.observacoes || {}).forEach(([dia, vagas]) => {
+        Object.entries(vagas || {}).forEach(([chave, observacao]) => {
+          if (!String(observacao?.texto || '').trim()) return;
+          incluirDetalhe(dia, chave, 'observacao', {
+            texto: String(observacao.texto),
+            legenda: String(observacao.legenda || ''),
+            dataHora: observacao.dataHora || ''
+          });
+        });
+      });
       return {
         mesAno,
         titulo: 'Escala de Serviço - Célula Contraincêndio',
         estrutura: structuredClone(estrutura),
         diasVermelhos: Array.isArray(escala.diasVermelhos) ? [...escala.diasVermelhos] : [],
         dados: dadosPublicos,
-        cores
+        cores,
+        detalhes
       };
     }
 
