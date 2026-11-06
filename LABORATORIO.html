@@ -7049,6 +7049,75 @@ if (
       seletorMilitar.value = militares.some(m => String(m.id) === militarSelecionado) ? militarSelecionado : '';
     }
 
+
+    function labEditarIndisponibilidade(id){
+      if(!podeEditarSistema())return;
+      const item=(estado.indisponibilidades||[]).find(i=>String(i.id)===String(id));
+      if(!item)return alert('Indisponibilidade não encontrada.');
+      const militar=estado.militares.find(m=>String(m.id)===String(item.militarId));
+      const overlay=document.createElement('div');
+      overlay.style.cssText='position:fixed;inset:0;background:#0f172acc;z-index:300005;display:flex;align-items:center;justify-content:center;padding:12px';
+      const painel=document.createElement('div');
+      painel.style.cssText='background:white;width:min(550px,100%);max-height:94vh;overflow:auto;border-radius:12px;padding:20px;font:14px Arial';
+      painel.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><h2 style="font-size:19px;font-weight:bold;color:#581c87">Editar indisponibilidade</h2><button type="button" id="labEditFechar" style="font-size:22px">✕</button></div>
+      <p style="margin:9px 0;color:#475569">${escaparHTML(militar?.nome||'Militar não encontrado')}</p>
+      <form id="labEditForm" style="display:grid;gap:12px">
+        <label>Tipo de indisponibilidade<select id="labEditTipo" style="display:block;width:100%;border:1px solid #94a3b8;padding:9px;border-radius:5px"></select></label>
+        <label>Motivo / observação<input id="labEditMotivo" maxlength="500" style="display:block;width:100%;border:1px solid #94a3b8;padding:9px;border-radius:5px" required></label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <label>Data inicial<input type="date" id="labEditInicio" required style="display:block;width:100%;border:1px solid #94a3b8;padding:9px;border-radius:5px"></label>
+          <label>Data final<input type="date" id="labEditFim" required style="display:block;width:100%;border:1px solid #94a3b8;padding:9px;border-radius:5px"></label>
+        </div>
+        <div id="labEditHoras" style="display:none;background:#f5f3ff;padding:12px;border-radius:7px">
+          <b>Horários do compromisso parcial</b>
+          <p style="font-size:12px;color:#475569;margin:5px 0">Preencha os horários que não constam no CSV. As margens adicionais em horas são aplicadas conforme a regra do tipo selecionado.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <label>Início<input type="time" id="labEditHoraInicio" style="display:block;width:100%;border:1px solid #94a3b8;padding:9px;border-radius:5px"></label>
+            <label>Término<input type="time" id="labEditHoraFim" style="display:block;width:100%;border:1px solid #94a3b8;padding:9px;border-radius:5px"></label>
+          </div>
+        </div>
+        <p id="labEditInfo" style="font-size:12px;color:#475569"></p>
+        <div style="display:flex;gap:9px;justify-content:flex-end"><button type="button" id="labEditCancelar" style="border:1px solid #94a3b8;padding:10px;border-radius:6px">Cancelar</button><button type="submit" style="background:#581c87;color:white;padding:10px 15px;border-radius:6px">Salvar alterações locais</button></div>
+      </form>`;
+      overlay.appendChild(painel);document.body.appendChild(overlay);
+      const el=id=>painel.querySelector('#'+id);
+      el('labEditTipo').innerHTML=labConfig().tipos.map(t=>`<option value="${escaparHTML(t.id)}">${escaparHTML(t.nome)} (${t.classe})</option>`).join('');
+      el('labEditTipo').value=labConfig().tipos.some(t=>t.id===item.labTipoId)?item.labTipoId:'outro';
+      el('labEditMotivo').value=item.motivo||'';
+      el('labEditInicio').value=item.inicio||'';
+      el('labEditFim').value=item.fim||'';
+      el('labEditHoraInicio').value=item.labHoraInicio||'';
+      el('labEditHoraFim').value=item.labHoraFim||'';
+      const atualizar=()=>{
+        const t=labTipo(el('labEditTipo').value);
+        el('labEditHoras').style.display=t.classe==='parcial'?'block':'none';
+        el('labEditInfo').textContent=t.classe==='parcial'
+          ?`Proteção adicional: ${t.horasAntes||0}h antes e ${t.horasDepois||0}h depois; ${t.antes||0} ${t.unidadeAntes||'corridos'} antes e ${t.depois||0} ${t.unidadeDepois||'corridos'} depois.`
+          :`Proteção: ${t.antes||0} ${t.unidadeAntes||'corridos'} antes e ${t.depois||0} ${t.unidadeDepois||'corridos'} depois.`;
+      };
+      el('labEditTipo').onchange=atualizar;atualizar();
+      const fechar=()=>overlay.remove();
+      el('labEditFechar').onclick=fechar;el('labEditCancelar').onclick=fechar;
+      el('labEditForm').onsubmit=async e=>{
+        e.preventDefault();
+        const inicio=el('labEditInicio').value,fim=el('labEditFim').value;
+        const tipoId=el('labEditTipo').value,tipo=labTipo(tipoId);
+        const horaInicio=el('labEditHoraInicio').value,horaFim=el('labEditHoraFim').value;
+        if(!inicio||!fim||fim<inicio){alert('Verifique as datas inicial e final.');return;}
+        if(tipo.classe==='parcial'&&(!horaInicio||!horaFim)){
+          alert('Informe os horários inicial e final da indisponibilidade parcial.');return;
+        }
+        if(tipo.classe==='parcial'&&inicio===fim&&horaFim<=horaInicio){
+          alert('Para compromisso de um único dia, o horário final deve ser posterior ao inicial.');return;
+        }
+        item.inicio=inicio;item.fim=fim;item.motivo=el('labEditMotivo').value.trim();
+        item.labTipoId=tipoId;
+        item.labHoraInicio=tipo.classe==='parcial'?horaInicio:'';
+        item.labHoraFim=tipo.classe==='parcial'?horaFim:'';
+        await salvarEstado('edicao_indisponibilidade_laboratorio');
+        fechar();renderizarIndisponibilidades();
+      };
+    }
     function renderizarIndisponibilidades() {
       const tbody = document.getElementById('tabelaIndisponibilidades');
       if (!tbody) return;
@@ -7077,7 +7146,7 @@ if (
             <td class="p-2 text-xs">${formatarDataBR(i.inicio)}</td>
             <td class="p-2 text-xs">${formatarDataBR(i.fim)}</td>
             <td class="p-2 text-xs text-gray-600">${escaparHTML(i.motivo)}</td>
-            ${podeEditar ? `<td class="p-2 text-right"><button data-indisponibilidade-id="${escaparHTML(i.id)}" onclick="removerIndisponibilidade(this.dataset.indisponibilidadeId)" class="text-red-600 hover:underline text-xs">Excluir</button></td>` : ''}
+            ${podeEditar ? `<td class="p-2 text-right whitespace-nowrap"><button data-indisponibilidade-id="${escaparHTML(i.id)}" onclick="labEditarIndisponibilidade(this.dataset.indisponibilidadeId)" class="text-purple-700 hover:underline text-xs mr-3">Editar</button><button data-indisponibilidade-id="${escaparHTML(i.id)}" onclick="removerIndisponibilidade(this.dataset.indisponibilidadeId)" class="text-red-600 hover:underline text-xs">Excluir</button></td>` : ''}
           </tr>`;
         });
       const linhasSemanais = (estado.indisponibilidadesSemana || [])
