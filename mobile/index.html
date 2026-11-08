@@ -325,38 +325,6 @@ body.cci-menu-recolhido .cci-nav-arrow{display:none}
 #areaEscalaPDF .cci-escala-scrollbar-sticky{position:sticky;bottom:0;z-index:20;width:100%;height:18px;overflow-x:auto;overflow-y:hidden;background:#f3f4f6;border:1px solid #d1d5db;border-top:0}
 #areaEscalaPDF .cci-escala-scrollbar-sticky>div{height:1px;min-width:100%}
 @media(max-width:767px){#areaEscalaPDF #tabelaEscalaPrincipal th:nth-child(1),#areaEscalaPDF #tabelaEscalaPrincipal td:nth-child(1){min-width:54px;width:54px;max-width:54px}#areaEscalaPDF #tabelaEscalaPrincipal th:nth-child(2),#areaEscalaPDF #tabelaEscalaPrincipal td:nth-child(2){left:54px;min-width:68px;width:68px;max-width:68px}}
-
-/* ANDROID 2026-10-01 — ergonomia mobile complementar.
-   Não altera regras de escala; somente apresentação e alvos de toque. */
-@media (max-width:767px) {
-  .aba-conteudo { gap:8px !important; }
-  .aba-conteudo > div.bg-white, .aba-conteudo > div[class*="bg-white"] {
-    padding:9px !important; max-width:100%; overflow-wrap:anywhere;
-  }
-  .aba-conteudo input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
-  .aba-conteudo select, .aba-conteudo textarea {
-    width:100%; max-width:100%; min-height:44px !important; font-size:16px !important;
-  }
-  .aba-conteudo textarea { min-height:88px !important; }
-  .aba-conteudo button { min-height:42px; touch-action:manipulation; }
-  .aba-conteudo .overflow-x-auto { -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain; }
-  #aba-eventuais table, #aba-militares table, #aba-vagas table,
-  #aba-indisponibilidades table, #aba-backups table, #aba-usuarios table {
-    min-width:max-content;
-  }
-  #aba-eventuais th, #aba-eventuais td { padding:6px !important; }
-  #aba-eventuais .grid, #aba-militares .grid, #aba-vagas .grid,
-  #aba-indisponibilidades .grid, #aba-backups .grid, #aba-usuarios .grid {
-    gap:8px !important;
-  }
-  .fixed.inset-0 { padding:8px !important; }
-  .fixed.inset-0 > form, .fixed.inset-0 > div[class*="bg-white"] {
-    width:min(100%, 96vw) !important; max-height:92vh; overflow-y:auto; -webkit-overflow-scrolling:touch;
-  }
-  #avisoEscalasNaoPublicadas { max-height:42vh; overflow-y:auto; }
-  .cci-page-sub { line-height:1.3; }
-}
-
 </style>
 <style>
 /* ETAPA 21 — descrições contextuais do menu lateral */
@@ -410,6 +378,7 @@ body.cci-menu-recolhido #bannerConflitoServidor{
 
 </style></head>
 <body class="bg-gray-100 font-sans text-gray-800">
+
 <!-- =====================================================
        TELA DE LOGIN
        ===================================================== -->
@@ -469,7 +438,7 @@ body.cci-menu-recolhido #bannerConflitoServidor{
   <div class="aviso-pendencias-lista" id="listaAvisoEscalasNaoPublicadas"></div>
 </div>
 <header class="cci-topbar"><div class="cci-brand"><button aria-label="Abrir menu" class="cci-mobile" onclick="alternarMenuLateral()" type="button">☰</button><div class="cci-brand-mark">SESCI</div><div><div class="cci-brand-title">Sistema de Escala de Serviço - CCI</div><div class="cci-brand-sub">Gestão e geração automática de escalas de serviço</div></div></div><div class="cci-user"><div class="flex shrink-0 items-center gap-3 whitespace-nowrap" id="areaUsuarioLogado"><div class="text-right leading-tight"><div class="text-sm font-bold" id="nomeUsuarioLogado"></div><div class="text-xs" id="perfilUsuarioLogado"></div></div><button class="rounded px-3 py-2 text-sm font-semibold text-white" onclick="sairDoSistema()" type="button">Sair</button></div></div></header>
-<aside class="cci-sidebar" id="menuLateralCCI"><button class="cci-toggle" data-cci-descricao="Expanda ou recolha o menu lateral para aumentar a área de trabalho." onclick="alternarMenuLateral()" title="Expanda ou recolha o menu lateral para aumentar a área de trabalho." type="button"><span class="cci-nav-icon">☰</span><span class="cci-toggle-label">Recolher menu</span></button><div class="cci-nav-title">ESCALA</div><nav class="cci-nav"><div class="cci-nav-group" data-grupo="gerador"><button class="cci-nav-btn cci-nav-parent ativo" data-aba="gerador" data-cci-descricao="Gere, consulte e acompanhe a escala mensal de serviço." onclick="alternarSubmenuCCI('gerador')" title="Gere, consulte e acompanhe a escala mensal de serviço." type="button"><span class="cci-nav-icon">▦</span><span class="cci-nav-label">Escala Mensal</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu aberto" data-submenu="gerador"><button class="cci-submenu-btn ativo" data-aba="gerador" data-cci-descricao="Selecione o período e gere automaticamente uma nova escala mensal." data-subpagina="criar" onclick="abrirSubpaginaCCI('gerador','criar')" title="Selecione o período e gere automaticamente uma nova escala mensal." type="button"><span class="cci-submenu-dot">•</span><span>Criar Escala</span></button><button class="cci-submenu-btn" data-aba="gerador" data-cci-descricao="Consulte, edite, publique e exporte a escala mensal gerada." data-subpagina="visualizacao" onclick="abrirSubpaginaCCI('gerador','visualizacao')" title="Consulte, edite, publique e exporte a escala mensal gerada." type="button"><span class="cci-submenu-dot">•</span><span>Visualizar Escala</span></button><button class="cci-submenu-btn" data-aba="gerador" data-cci-descricao="Consulte os quadrinhos, lastros e totais acumulados dos militares." data-subpagina="quadrinhos" onclick="abrirSubpaginaCCI('gerador','quadrinhos')" title="Consulte os quadrinhos, lastros e totais acumulados dos militares." type="button"><span class="cci-submenu-dot">•</span><span>Quadrinhos e Totais</span></button><a class="cci-submenu-btn" href="https://s2rcunha.github.io/escala/visualizar.html" target="_blank" rel="noopener noreferrer" data-cci-descricao="Abra a página pública de visualização das escalas publicadas em uma nova aba." title="Abra a visualização pública das escalas em uma nova aba."><span class="cci-submenu-dot">•</span><span>Visualização Pública ↗</span></a></div></div><div class="cci-nav-group" data-grupo="eventuais"><button class="cci-nav-btn cci-nav-parent" data-aba="eventuais" data-cci-descricao="Crie e gerencie escalas de missões e serviços eventuais em banco independente." onclick="alternarSubmenuCCI('eventuais')" title="Crie e gerencie escalas de missões e serviços eventuais em banco independente." type="button"><span class="cci-nav-icon">◆</span><span class="cci-nav-label">Escalas Eventuais</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="eventuais"><button class="somente-edicao cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Cadastre os modelos permanentes das missões eventuais, suas funções, distribuição, permanência e militares habilitados." title="Cadastre os modelos permanentes das missões eventuais, suas funções, distribuição, permanência e militares habilitados." data-subpagina="funcoes" onclick="abrirSubpaginaCCI('eventuais','tipos')" type="button"><span class="cci-submenu-dot">•</span><span>Tipos de Missão</span></button><button class="somente-edicao cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Crie uma ocorrência a partir de um Tipo de Missão, definindo período e quantidade de vagas necessárias." title="Crie uma ocorrência a partir de um Tipo de Missão, definindo período e quantidade de vagas necessárias." data-subpagina="criar" onclick="abrirSubpaginaCCI('eventuais','criar')" type="button"><span class="cci-submenu-dot">•</span><span>Criar Escala Eventual</span></button><button class="cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Consulte as ocorrências eventuais, gere a escala, faça ajustes, publique e exporte." title="Consulte as ocorrências eventuais, gere a escala, faça ajustes, publique e exporte." data-subpagina="lista" onclick="abrirSubpaginaCCI('eventuais','lista')" type="button"><span class="cci-submenu-dot">•</span><span>Visualizar Escalas</span></button><button class="cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Consulte os quadrinhos acumulados exclusivamente pelas escalas eventuais, separados por Tipo de Missão." title="Consulte os quadrinhos acumulados exclusivamente pelas escalas eventuais, separados por Tipo de Missão." data-subpagina="quadrinhos" onclick="abrirSubpaginaCCI('eventuais','quadrinhos')" type="button"><span class="cci-submenu-dot">•</span><span>Quadrinhos e Totais</span></button></div></div><div class="somente-edicao cci-nav-group" data-grupo="militares"><button class="cci-nav-btn cci-nav-parent" data-aba="militares" data-cci-descricao="Cadastre e gerencie os militares que compõem as escalas." onclick="alternarSubmenuCCI('militares')" title="Cadastre e gerencie os militares que compõem as escalas." type="button"><span class="cci-nav-icon">♟</span><span class="cci-nav-label">Militares</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="militares"><button class="cci-submenu-btn" data-aba="militares" data-cci-descricao="Inclua um novo militar, sua função e posição de antiguidade." data-subpagina="cadastrar" onclick="abrirSubpaginaCCI('militares','cadastrar')" title="Inclua um novo militar, sua função e posição de antiguidade." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar Militar</span></button><button class="cci-submenu-btn" data-aba="militares" data-cci-descricao="Consulte, edite e organize os militares já cadastrados." data-subpagina="efetivo" onclick="abrirSubpaginaCCI('militares','efetivo')" title="Consulte, edite e organize os militares já cadastrados." type="button"><span class="cci-submenu-dot">•</span><span>Militares Cadastrados</span></button></div></div><div class="somente-edicao cci-nav-group" data-grupo="vagas"><button class="cci-nav-btn cci-nav-parent" data-aba="vagas" data-cci-descricao="Configure as funções, vagas e regras usadas na montagem das escalas." onclick="alternarSubmenuCCI('vagas')" title="Configure as funções, vagas e regras usadas na montagem das escalas." type="button"><span class="cci-nav-icon">☷</span><span class="cci-nav-label">Estrutura da Equipe</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="vagas"><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Cadastre e mantenha as funções existentes na equipe de serviço." data-subpagina="funcoes" onclick="abrirSubpaginaCCI('vagas','funcoes')" title="Cadastre e mantenha as funções existentes na equipe de serviço." type="button"><span class="cci-submenu-dot">•</span><span>Funções da Equipe</span></button><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina quantas vagas de cada função são necessárias em cada serviço." data-subpagina="dimensionamento" onclick="abrirSubpaginaCCI('vagas','dimensionamento')" title="Defina quantas vagas de cada função são necessárias em cada serviço." type="button"><span class="cci-submenu-dot">•</span><span>Dimensionamento do Serviço</span></button><button class="cci-submenu-btn cci-submenu-parent" data-aba="vagas" data-cci-descricao="Configure a distribuição, descanso, lastro, justiça e classificação dos dias." data-submenu-pai="regras" onclick="alternarSubmenuRegrasCCI()" title="Configure a distribuição, descanso, lastro, justiça e classificação dos dias." type="button"><span class="cci-submenu-dot">•</span><span>Regras das Escalas</span><span class="cci-submenu-arrow">›</span></button><div class="cci-submenu-nivel2" data-submenu-nivel2="regras"><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina as regras de geração da escala para cada função do serviço." data-subpagina="regras" onclick="abrirSubpaginaCCI('vagas','regras')" title="Defina as regras de geração da escala para cada função do serviço." type="button"><span class="cci-submenu-dot">·</span><span>Configurações das Regras</span></button><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina as cores dos dias da semana e cadastre exceções por data." data-subpagina="classificacao" onclick="abrirSubpaginaCCI('vagas','classificacao')" title="Defina as cores dos dias da semana e cadastre exceções por data." type="button"><span class="cci-submenu-dot">·</span><span>Classificação dos Dias</span></button></div></div></div><div class="cci-nav-group" data-grupo="indisponibilidades"><button class="cci-nav-btn cci-nav-parent" data-aba="indisponibilidades" data-cci-descricao="Registre períodos e restrições em que militares não podem concorrer à escala." onclick="alternarSubmenuCCI('indisponibilidades')" title="Registre períodos e restrições em que militares não podem concorrer à escala." type="button"><span class="cci-nav-icon">⊘</span><span class="cci-nav-label">Indisponibilidades</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="indisponibilidades"><button class="somente-edicao cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Cadastre férias, cursos, missões, licenças e outras indisponibilidades por período." data-subpagina="periodo" onclick="abrirSubpaginaCCI('indisponibilidades','periodo')" title="Cadastre férias, cursos, missões, licenças e outras indisponibilidades por período." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar por Período</span></button><button class="somente-edicao cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Defina indisponibilidades recorrentes em determinados dias da semana." data-subpagina="semanal" onclick="abrirSubpaginaCCI('indisponibilidades','semanal')" title="Defina indisponibilidades recorrentes em determinados dias da semana." type="button"><span class="cci-submenu-dot">•</span><span>Indisponibilidade Semanal</span></button><button class="somente-edicao cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Importe várias indisponibilidades de uma só vez por arquivo CSV." data-subpagina="importar" onclick="abrirSubpaginaCCI('indisponibilidades','importar')" title="Importe várias indisponibilidades de uma só vez por arquivo CSV." type="button"><span class="cci-submenu-dot">•</span><span>Importar CSV</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Consulte e gerencie todas as indisponibilidades já cadastradas." data-subpagina="registros" onclick="abrirSubpaginaCCI('indisponibilidades','registros')" title="Consulte e gerencie todas as indisponibilidades já cadastradas." type="button"><span class="cci-submenu-dot">•</span><span>Registros Cadastrados</span></button></div></div><div class="somente-administrador cci-nav-group" data-grupo="backups"><button class="cci-nav-btn cci-nav-parent" data-aba="backups" data-cci-descricao="Proteja os dados do sistema por meio de exportação, importação e backups." onclick="alternarSubmenuCCI('backups')" title="Proteja os dados do sistema por meio de exportação, importação e backups." type="button"><span class="cci-nav-icon">↻</span><span class="cci-nav-label">Backups</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="backups"><button class="cci-submenu-btn" data-aba="backups" data-cci-descricao="Exporte, importe e gerencie as ferramentas de cópia de segurança." data-subpagina="gerenciar" onclick="abrirSubpaginaCCI('backups','gerenciar')" title="Exporte, importe e gerencie as ferramentas de cópia de segurança." type="button"><span class="cci-submenu-dot">•</span><span>Gerenciar Backups</span></button><button class="cci-submenu-btn" data-aba="backups" data-cci-descricao="Consulte, restaure e gerencie os backups armazenados." data-subpagina="lista" onclick="abrirSubpaginaCCI('backups','lista')" title="Consulte, restaure e gerencie os backups armazenados." type="button"><span class="cci-submenu-dot">•</span><span>Lista de Backups</span></button></div></div><div class="somente-administrador cci-nav-group" data-grupo="usuarios"><button class="cci-nav-btn cci-nav-parent" data-aba="usuarios" data-cci-descricao="Administre usuários, permissões de acesso e histórico de alterações." onclick="alternarSubmenuCCI('usuarios')" title="Administre usuários, permissões de acesso e histórico de alterações." type="button"><span class="cci-nav-icon">▣</span><span class="cci-nav-label">Usuários / Auditoria</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="usuarios"><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Crie um novo usuário e defina seu perfil de acesso ao sistema." data-subpagina="cadastrar" onclick="abrirSubpaginaCCI('usuarios','cadastrar')" title="Crie um novo usuário e defina seu perfil de acesso ao sistema." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar Usuário</span></button><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Consulte e gerencie os usuários cadastrados e suas permissões." data-subpagina="lista" onclick="abrirSubpaginaCCI('usuarios','lista')" title="Consulte e gerencie os usuários cadastrados e suas permissões." type="button"><span class="cci-submenu-dot">•</span><span>Usuários Cadastrados</span></button><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Consulte o histórico das alterações administrativas realizadas no sistema." data-subpagina="auditoria" onclick="abrirSubpaginaCCI('usuarios','auditoria')" title="Consulte o histórico das alterações administrativas realizadas no sistema." type="button"><span class="cci-submenu-dot">•</span><span>Auditoria do Sistema</span></button></div></div></nav><div class="cci-sidebar-credito">Desenvolvido por Sgt R.Cunha ®</div></aside><div aria-hidden="true" id="cciMenuTooltip" role="tooltip"></div>
+<aside class="cci-sidebar" id="menuLateralCCI"><button class="cci-toggle" data-cci-descricao="Expanda ou recolha o menu lateral para aumentar a área de trabalho." onclick="alternarMenuLateral()" title="Expanda ou recolha o menu lateral para aumentar a área de trabalho." type="button"><span class="cci-nav-icon">☰</span><span class="cci-toggle-label">Recolher menu</span></button><div class="cci-nav-title">ESCALA</div><nav class="cci-nav"><div class="cci-nav-group" data-grupo="gerador"><button class="cci-nav-btn cci-nav-parent ativo" data-aba="gerador" data-cci-descricao="Gere, consulte e acompanhe a escala mensal de serviço." onclick="alternarSubmenuCCI('gerador')" title="Gere, consulte e acompanhe a escala mensal de serviço." type="button"><span class="cci-nav-icon">▦</span><span class="cci-nav-label">Escala Mensal</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu aberto" data-submenu="gerador"><button class="somente-edicao cci-submenu-btn ativo" data-aba="gerador" data-cci-descricao="Selecione o período e gere automaticamente uma nova escala mensal." data-subpagina="criar" onclick="abrirSubpaginaCCI('gerador','criar')" title="Selecione o período e gere automaticamente uma nova escala mensal." type="button"><span class="cci-submenu-dot">•</span><span>Criar Escala</span></button><button class="cci-submenu-btn" data-aba="gerador" data-cci-descricao="Consulte, edite, publique e exporte a escala mensal gerada." data-subpagina="visualizacao" onclick="abrirSubpaginaCCI('gerador','visualizacao')" title="Consulte, edite, publique e exporte a escala mensal gerada." type="button"><span class="cci-submenu-dot">•</span><span>Visualizar Escala</span></button><button class="cci-submenu-btn" data-aba="gerador" data-cci-descricao="Consulte os quadrinhos, lastros e totais acumulados dos militares." data-subpagina="quadrinhos" onclick="abrirSubpaginaCCI('gerador','quadrinhos')" title="Consulte os quadrinhos, lastros e totais acumulados dos militares." type="button"><span class="cci-submenu-dot">•</span><span>Quadrinhos e Totais</span></button><a class="cci-submenu-btn" href="https://s2rcunha.github.io/escala/visualizar.html" target="_blank" rel="noopener noreferrer" data-cci-descricao="Abra a página pública de visualização das escalas publicadas em uma nova aba." title="Abra a visualização pública das escalas em uma nova aba."><span class="cci-submenu-dot">•</span><span>Visualização Pública ↗</span></a></div></div><div class="cci-nav-group" data-grupo="eventuais"><button class="cci-nav-btn cci-nav-parent" data-aba="eventuais" data-cci-descricao="Crie e gerencie escalas de missões e serviços eventuais em banco independente." onclick="alternarSubmenuCCI('eventuais')" title="Crie e gerencie escalas de missões e serviços eventuais em banco independente." type="button"><span class="cci-nav-icon">◆</span><span class="cci-nav-label">Escalas Eventuais</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="eventuais"><button class="somente-edicao cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Cadastre os modelos permanentes das missões eventuais, suas funções, distribuição, permanência e militares habilitados." title="Cadastre os modelos permanentes das missões eventuais, suas funções, distribuição, permanência e militares habilitados." data-subpagina="funcoes" onclick="abrirSubpaginaCCI('eventuais','tipos')" type="button"><span class="cci-submenu-dot">•</span><span>Tipos de Missão</span></button><button class="somente-edicao cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Crie uma ocorrência a partir de um Tipo de Missão, definindo período e quantidade de vagas necessárias." title="Crie uma ocorrência a partir de um Tipo de Missão, definindo período e quantidade de vagas necessárias." data-subpagina="criar" onclick="abrirSubpaginaCCI('eventuais','criar')" type="button"><span class="cci-submenu-dot">•</span><span>Criar Escala Eventual</span></button><button class="cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Consulte as ocorrências eventuais, gere a escala, faça ajustes, publique e exporte." title="Consulte as ocorrências eventuais, gere a escala, faça ajustes, publique e exporte." data-subpagina="lista" onclick="abrirSubpaginaCCI('eventuais','lista')" type="button"><span class="cci-submenu-dot">•</span><span>Visualizar Escalas</span></button><button class="cci-submenu-btn" data-aba="eventuais" data-cci-descricao="Consulte os quadrinhos acumulados exclusivamente pelas escalas eventuais, separados por Tipo de Missão." title="Consulte os quadrinhos acumulados exclusivamente pelas escalas eventuais, separados por Tipo de Missão." data-subpagina="quadrinhos" onclick="abrirSubpaginaCCI('eventuais','quadrinhos')" type="button"><span class="cci-submenu-dot">•</span><span>Quadrinhos e Totais</span></button></div></div><div class="somente-edicao cci-nav-group" data-grupo="militares"><button class="cci-nav-btn cci-nav-parent" data-aba="militares" data-cci-descricao="Cadastre e gerencie os militares que compõem as escalas." onclick="alternarSubmenuCCI('militares')" title="Cadastre e gerencie os militares que compõem as escalas." type="button"><span class="cci-nav-icon">♟</span><span class="cci-nav-label">Militares</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="militares"><button class="cci-submenu-btn" data-aba="militares" data-cci-descricao="Inclua um novo militar, sua função e posição de antiguidade." data-subpagina="cadastrar" onclick="abrirSubpaginaCCI('militares','cadastrar')" title="Inclua um novo militar, sua função e posição de antiguidade." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar Militar</span></button><button class="cci-submenu-btn" data-aba="militares" data-cci-descricao="Consulte, edite e organize os militares já cadastrados." data-subpagina="efetivo" onclick="abrirSubpaginaCCI('militares','efetivo')" title="Consulte, edite e organize os militares já cadastrados." type="button"><span class="cci-submenu-dot">•</span><span>Militares Cadastrados</span></button></div></div><div class="somente-edicao cci-nav-group" data-grupo="vagas"><button class="cci-nav-btn cci-nav-parent" data-aba="vagas" data-cci-descricao="Configure as funções, vagas e regras usadas na montagem das escalas." onclick="alternarSubmenuCCI('vagas')" title="Configure as funções, vagas e regras usadas na montagem das escalas." type="button"><span class="cci-nav-icon">☷</span><span class="cci-nav-label">Estrutura da Equipe</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="vagas"><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Cadastre e mantenha as funções existentes na equipe de serviço." data-subpagina="funcoes" onclick="abrirSubpaginaCCI('vagas','funcoes')" title="Cadastre e mantenha as funções existentes na equipe de serviço." type="button"><span class="cci-submenu-dot">•</span><span>Funções da Equipe</span></button><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina quantas vagas de cada função são necessárias em cada serviço." data-subpagina="dimensionamento" onclick="abrirSubpaginaCCI('vagas','dimensionamento')" title="Defina quantas vagas de cada função são necessárias em cada serviço." type="button"><span class="cci-submenu-dot">•</span><span>Dimensionamento do Serviço</span></button><button class="cci-submenu-btn cci-submenu-parent" data-aba="vagas" data-cci-descricao="Configure a distribuição, descanso, lastro, justiça e classificação dos dias." data-submenu-pai="regras" onclick="alternarSubmenuRegrasCCI()" title="Configure a distribuição, descanso, lastro, justiça e classificação dos dias." type="button"><span class="cci-submenu-dot">•</span><span>Regras das Escalas</span><span class="cci-submenu-arrow">›</span></button><div class="cci-submenu-nivel2" data-submenu-nivel2="regras"><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina as regras de geração da escala para cada função do serviço." data-subpagina="regras" onclick="abrirSubpaginaCCI('vagas','regras')" title="Defina as regras de geração da escala para cada função do serviço." type="button"><span class="cci-submenu-dot">·</span><span>Configurações das Regras</span></button><button class="cci-submenu-btn" data-aba="vagas" data-cci-descricao="Defina as cores dos dias da semana e cadastre exceções por data." data-subpagina="classificacao" onclick="abrirSubpaginaCCI('vagas','classificacao')" title="Defina as cores dos dias da semana e cadastre exceções por data." type="button"><span class="cci-submenu-dot">·</span><span>Classificação dos Dias</span></button></div></div></div><div class="cci-nav-group" data-grupo="indisponibilidades"><button class="cci-nav-btn cci-nav-parent" data-aba="indisponibilidades" data-cci-descricao="Registre períodos e restrições em que militares não podem concorrer à escala." onclick="alternarSubmenuCCI('indisponibilidades')" title="Registre períodos e restrições em que militares não podem concorrer à escala." type="button"><span class="cci-nav-icon">⊘</span><span class="cci-nav-label">Indisponibilidades</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="indisponibilidades"><button class="somente-edicao cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Cadastre férias, cursos, missões, licenças e outras indisponibilidades por período." data-subpagina="periodo" onclick="abrirSubpaginaCCI('indisponibilidades','periodo')" title="Cadastre férias, cursos, missões, licenças e outras indisponibilidades por período." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar por Período</span></button><button class="somente-edicao cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Defina indisponibilidades recorrentes em determinados dias da semana." data-subpagina="semanal" onclick="abrirSubpaginaCCI('indisponibilidades','semanal')" title="Defina indisponibilidades recorrentes em determinados dias da semana." type="button"><span class="cci-submenu-dot">•</span><span>Indisponibilidade Semanal</span></button><button class="somente-edicao cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Importe várias indisponibilidades de uma só vez por arquivo CSV." data-subpagina="importar" onclick="abrirSubpaginaCCI('indisponibilidades','importar')" title="Importe várias indisponibilidades de uma só vez por arquivo CSV." type="button"><span class="cci-submenu-dot">•</span><span>Importar CSV</span></button><button class="cci-submenu-btn" data-aba="indisponibilidades" data-cci-descricao="Consulte e gerencie todas as indisponibilidades já cadastradas." data-subpagina="registros" onclick="abrirSubpaginaCCI('indisponibilidades','registros')" title="Consulte e gerencie todas as indisponibilidades já cadastradas." type="button"><span class="cci-submenu-dot">•</span><span>Registros Cadastrados</span></button></div></div><div class="somente-administrador cci-nav-group" data-grupo="backups"><button class="cci-nav-btn cci-nav-parent" data-aba="backups" data-cci-descricao="Proteja os dados do sistema por meio de exportação, importação e backups." onclick="alternarSubmenuCCI('backups')" title="Proteja os dados do sistema por meio de exportação, importação e backups." type="button"><span class="cci-nav-icon">↻</span><span class="cci-nav-label">Backups</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="backups"><button class="cci-submenu-btn" data-aba="backups" data-cci-descricao="Exporte, importe e gerencie as ferramentas de cópia de segurança." data-subpagina="gerenciar" onclick="abrirSubpaginaCCI('backups','gerenciar')" title="Exporte, importe e gerencie as ferramentas de cópia de segurança." type="button"><span class="cci-submenu-dot">•</span><span>Gerenciar Backups</span></button><button class="cci-submenu-btn" data-aba="backups" data-cci-descricao="Consulte, restaure e gerencie os backups armazenados." data-subpagina="lista" onclick="abrirSubpaginaCCI('backups','lista')" title="Consulte, restaure e gerencie os backups armazenados." type="button"><span class="cci-submenu-dot">•</span><span>Lista de Backups</span></button></div></div><div class="somente-administrador cci-nav-group" data-grupo="usuarios"><button class="cci-nav-btn cci-nav-parent" data-aba="usuarios" data-cci-descricao="Administre usuários, permissões de acesso e histórico de alterações." onclick="alternarSubmenuCCI('usuarios')" title="Administre usuários, permissões de acesso e histórico de alterações." type="button"><span class="cci-nav-icon">▣</span><span class="cci-nav-label">Usuários / Auditoria</span><span class="cci-nav-arrow">›</span></button><div class="cci-submenu" data-submenu="usuarios"><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Crie um novo usuário e defina seu perfil de acesso ao sistema." data-subpagina="cadastrar" onclick="abrirSubpaginaCCI('usuarios','cadastrar')" title="Crie um novo usuário e defina seu perfil de acesso ao sistema." type="button"><span class="cci-submenu-dot">•</span><span>Cadastrar Usuário</span></button><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Consulte e gerencie os usuários cadastrados e suas permissões." data-subpagina="lista" onclick="abrirSubpaginaCCI('usuarios','lista')" title="Consulte e gerencie os usuários cadastrados e suas permissões." type="button"><span class="cci-submenu-dot">•</span><span>Usuários Cadastrados</span></button><button class="cci-submenu-btn" data-aba="usuarios" data-cci-descricao="Consulte o histórico das alterações administrativas realizadas no sistema." data-subpagina="auditoria" onclick="abrirSubpaginaCCI('usuarios','auditoria')" title="Consulte o histórico das alterações administrativas realizadas no sistema." type="button"><span class="cci-submenu-dot">•</span><span>Auditoria do Sistema</span></button></div></div></nav><div class="cci-sidebar-credito">Desenvolvido por Sgt R.Cunha ®</div></aside><div aria-hidden="true" id="cciMenuTooltip" role="tooltip"></div>
 <main class="cci-main"><div class="cci-page-heading"><div><h2 class="cci-page-title" id="tituloPaginaCCI">Escala Mensal</h2><p class="cci-page-sub" id="subtituloPaginaCCI">Geração, consulta e manutenção da escala mensal.</p></div></div>
 <!-- ABA 1: GERADOR E VISUALIZAÇÃO DA ESCALA -->
 <section class="aba-conteudo space-y-4" id="aba-gerador">
@@ -527,7 +496,7 @@ body.cci-menu-recolhido #bannerConflitoServidor{
 <div class="text-center mb-4">
 <h2 class="text-xl font-bold uppercase" id="tituloEscala">Escala de Serviço - Célula Contraincêndio</h2>
 <p class="text-xs text-gray-500" id="subtituloEscala"></p>
-<p class="legenda-substituicao text-xs font-bold text-yellow-800">Célula amarela: militar escalado automaticamente no lugar de outro por causa das regras</p>
+<p class="legenda-substituicao text-xs font-bold text-yellow-800">Célula amarela: antecipação automática efetivamente registrada na rotação</p>
 <div class="mt-2 flex flex-wrap justify-center gap-2 text-xs" id="legendaCoresEscala"></div>
 </div>
 <div class="somente-edicao flex flex-wrap items-center justify-center gap-4 mb-3 rounded border border-blue-100 bg-blue-50 px-3 py-2 text-sm" id="opcoesExibicaoCandidatosEscala">
@@ -854,7 +823,11 @@ body.cci-menu-recolhido #bannerConflitoServidor{
 <!-- ABA 4: INDISPONIBILIDADES -->
 <section class="aba-conteudo hidden space-y-4" id="aba-indisponibilidades">
 <div class="bg-white p-4 rounded shadow-sm cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="periodo">
-<h3 class="font-bold text-lg mb-3">Cadastrar Indisponibilidade (Férias, Missões, Licenças)</h3>
+<div class="mb-4 rounded-lg border-2 border-purple-300 bg-purple-50 p-3">
+<h3 class="font-bold text-purple-900 mb-2">Regras de indisponibilidade</h3>
+<p class="text-xs mb-2">Configure tipos totais ou parciais, dias corridos/úteis de proteção.</p>
+<div class="flex flex-wrap gap-2 mb-2"><button type="button" onclick="labAbrirRegras()" class="bg-purple-800 text-white rounded px-3 py-2 text-sm">⚙ Configurar regras de indisponibilidade</button></div>
+</div><h3 class="font-bold text-lg mb-3">Cadastrar Indisponibilidade (Férias, Missões, Licenças)</h3>
 <form class="grid grid-cols-1 md:grid-cols-6 gap-3" id="formIndisponibilidade" onsubmit="salvarIndisponibilidade(event)">
 <select class="border p-2 rounded text-sm" id="indispFuncao" onchange="renderizarMilitaresIndisponibilidade()" required="">
 <option value="">Selecione a Função</option>
@@ -864,7 +837,10 @@ body.cci-menu-recolhido #bannerConflitoServidor{
 </select>
 <input class="border p-2 rounded text-sm" id="indispInicio" required="" type="date"/>
 <input class="border p-2 rounded text-sm" id="indispFim" required="" type="date"/>
+<select id="labTipoIndisp" class="border p-2 rounded text-sm" onchange="labAtualizarCamposIndisp()" title="Tipo de indisponibilidade"><option value="">Tipo de indisponibilidade</option></select>
 <input class="border p-2 rounded text-sm" id="indispMotivo" placeholder="Motivo (Ex: Férias, Curso)" required="" type="text"/>
+<div id="labCamposParciais" class="md:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-2" style="display:none"><label class="text-sm">Horário inicial <input id="labHoraInicio" type="time" class="border p-2 rounded w-full" value="10:00"></label><label class="text-sm">Horário final <input id="labHoraFim" type="time" class="border p-2 rounded w-full" value="11:00"></label></div>
+<div class="md:col-span-6 text-xs text-purple-700 font-semibold">A proteção do tipo escolhido será aplicada às próximas gerações de escala.</div>
 <button class="bg-red-600 text-white p-2 rounded font-semibold hover:bg-red-700" type="submit">Registrar</button>
 </form>
 </div>
@@ -1654,6 +1630,7 @@ estado.escala = {};
       }
 }
 
+
     async function carregarEstado() {
     try {
       const dados = await executarAppsScript('carregarDados', tokenSessao);
@@ -2113,6 +2090,17 @@ async function salvarEstadoNoServidor(
       return 'semanaFimSemana';
     }
 
+    // JUSTIÇA SOBRE COMPENSAÇÃO — com justiça por cor ativa na função, o menor
+    // acumulado da cor decide a vaga; estar na lista de adiantados não tira o
+    // militar da disputa (a dívida é quitada quando a rotação passa por ele).
+    // false = comportamento anterior.
+    const JUSTICA_ACUMULADO_SOBRE_COMPENSACAO = true;
+    function justicaPorCorSobrepoeCompensacao(funcao, tipoFuncao) {
+      if (!JUSTICA_ACUMULADO_SOBRE_COMPENSACAO) return false;
+      if (tipoFuncao !== 'semanaFimSemana') return false;
+      return obterRegrasEfetivasFuncao(funcao, tipoFuncao).justica?.separarPretoVermelho !== false;
+    }
+
     function obterTiposEscalaSelecionados() {
       return estado.funcoes.reduce((tipos, funcao) => {
         const regra = garantirRegrasEscalaFuncao(funcao);
@@ -2270,7 +2258,7 @@ async function salvarEstadoNoServidor(
                       <p data-regra-aviso="equalizacaoCores" class="mt-1 pl-6 text-[10px] ${r.distribuicao === 'corrida' ? 'text-amber-700' : 'hidden text-gray-500'}">Disponível apenas em “Quadrinhos”.</p>
                     </div>
                     <label class="flex items-start gap-2 text-xs font-medium text-gray-700 sm:col-span-2 xl:col-span-1 2xl:col-span-2">
-                      <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.justica.usarRotacaoDesempate !== false ? 'checked' : ''} ${r.distribuicao === 'corrida' ? 'disabled' : ''} data-regra-funcao="${escaparHTML(f)}" data-regra-campo="justicaRotacao" title="Marcado: quando candidatos ficam empatados pelos critérios anteriores, a posição na rotação decide a prioridade. Desmarcado: a rotação não é usada como critério de desempate.">
+                      <input class="mt-0.5 h-4 w-4 shrink-0" type="checkbox" ${r.justica.usarRotacaoDesempate !== false ? 'checked' : ''} ${r.distribuicao === 'corrida' ? 'disabled' : ''} data-regra-funcao="${escaparHTML(f)}" data-regra-campo="justicaRotacao" title="Na escala por quadrinhos, empates no total de quadrinhos + lastros são resolvidos sempre pelo militar mais moderno.">
                       <span>Usar rotação por antiguidade como desempate</span>
                     </label>
                   </div>
@@ -6664,6 +6652,208 @@ if (
     });
 
     // GESTÃO DE INDISPONIBILIDADES
+
+    // ===== LABORATÓRIO: regras de indisponibilidade isoladas =====
+    const LAB_PADRAO = [
+      {id:'ferias',nome:'Férias',classe:'total',antes:1,unidadeAntes:'uteis',depois:2,unidadeDepois:'uteis'},
+      {id:'missao',nome:'Missão',classe:'total',antes:0,unidadeAntes:'corridos',depois:0,unidadeDepois:'corridos'},
+      {id:'curso',nome:'Curso',classe:'total',antes:0,unidadeAntes:'corridos',depois:0,unidadeDepois:'corridos'},
+      {id:'consulta',nome:'Consulta médica',classe:'parcial',antes:0,unidadeAntes:'corridos',depois:0,unidadeDepois:'corridos'},
+      {id:'outro',nome:'Outro',classe:'total',antes:0,unidadeAntes:'corridos',depois:0,unidadeDepois:'corridos'}
+    ];
+    function labConfig(){
+      if(!estado.labRegrasIndisponibilidade)estado.labRegrasIndisponibilidade={tipos:structuredClone(LAB_PADRAO),rendicao:'09:00'};
+      return estado.labRegrasIndisponibilidade;
+    }
+    function labTipo(id){return labConfig().tipos.find(t=>t.id===id)||labConfig().tipos.find(t=>t.id==='outro')||LAB_PADRAO[4]}
+    function labDate(iso){const [y,m,d]=String(iso).split('-').map(Number);return new Date(y,m-1,d)}
+    function labISO(date){return [date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-')}
+    function labUteis(date){
+      // A classificação efetiva do SESCI é a fonte única: feriados nacionais,
+      // dias especiais, classificação semanal e exceções cadastradas pelo escalante.
+      return obterClassificacaoDia(date).cor !== 'vermelho';
+    }
+    function labMover(iso,quant,unidade,sinal){
+      const d=labDate(iso);let n=0,limite=0;
+      while(n<Math.max(0,Math.min(365,Number(quant)||0))&&limite++<1000){
+        d.setDate(d.getDate()+sinal);
+        if(unidade==='corridos'||labUteis(d))n++;
+      }
+      return labISO(d);
+    }
+    function labDataHora(iso,hora){return labDate(iso).getTime()+(Number(hora.split(':')[0])*60+Number(hora.split(':')[1]))*60000}
+    function labConflitos(militarId,dataStr){
+      const config=labConfig(),inicioServico=labDataHora(dataStr,config.rendicao||'09:00');
+      const fimServico=inicioServico+24*60*60*1000;
+      return (estado.indisponibilidades||[]).filter(i=>String(i.militarId)===String(militarId)).flatMap(i=>{
+        if(!i.inicio||!i.fim)return [];
+        const tipo=labTipo(i.labTipoId||'outro');
+        const antes=labMover(i.inicio,tipo.antes,tipo.unidadeAntes,-1);
+        const depois=labMover(i.fim,tipo.depois,tipo.unidadeDepois,1);
+        const inicioProtegido=labDataHora(antes,'00:00');
+        const fimProtegido=labDataHora(depois,'00:00')+24*60*60*1000;
+        const intervalos=[];
+        if(tipo.classe==='parcial'){
+          // Proteções adicionais bloqueiam dias inteiros, compromisso principal apenas seu horário.
+          if(antes<i.inicio)intervalos.push([inicioProtegido,labDataHora(i.inicio,'00:00'),'proteção anterior']);
+          if(depois>i.fim)intervalos.push([labDataHora(labMover(i.fim,1,'corridos',1),'00:00'),fimProtegido,'proteção posterior']);
+          if(i.labHoraInicio&&i.labHoraFim){
+            let d=labDate(i.inicio),ultimo=labDate(i.fim),limite=0;
+            while(d<=ultimo&&limite++<366){
+              const dia=labISO(d);
+              let a=labDataHora(dia,i.labHoraInicio),b=labDataHora(dia,i.labHoraFim);
+              if(b<=a)b+=86400000;
+              const margemAntes=Math.max(0,Number(tipo.horasAntes)||0)*3600000;
+              const margemDepois=Math.max(0,Number(tipo.horasDepois)||0)*3600000;
+              intervalos.push([a-margemAntes,b+margemDepois,'horário parcial e margens de '+(tipo.horasAntes||0)+'h antes / '+(tipo.horasDepois||0)+'h depois']);
+              d.setDate(d.getDate()+1);
+            }
+          }else{
+            intervalos.push([labDataHora(i.inicio,'00:00'),labDataHora(i.fim,'00:00')+86400000,'parcial sem horário (bloqueio conservador)']);
+          }
+        }else intervalos.push([inicioProtegido,fimProtegido,'indisponibilidade total e proteção']);
+        return intervalos.filter(([a,b])=>inicioServico<b&&fimServico>a)
+          .map(([a,b,causa])=>({motivo:i.motivo||tipo.nome,tipo:tipo.nome,causa,inicio:new Date(a).toLocaleString('pt-BR'),fim:new Date(b).toLocaleString('pt-BR')}));
+      });
+    }
+    function labIndisponivel(militarId,dataStr){return labConflitos(militarId,dataStr).length>0}
+    function labInicioAmanha(militarId,dataStr){return false} // O conflito real de horários já cobre a rendição.
+    function labAtualizarCamposIndisp(){
+      const sel=document.getElementById('labTipoIndisp');
+      if(!sel)return;
+      const anterior=sel.value;
+      sel.innerHTML=labConfig().tipos.map(t=>'<option value="'+escaparHTML(t.id)+'">'+escaparHTML(t.nome)+' ('+(t.classe==='parcial'?'parcial':'total')+')</option>').join('');
+      if(labConfig().tipos.some(t=>t.id===anterior))sel.value=anterior;
+      const parcial=labTipo(sel.value).classe==='parcial';
+      document.getElementById('labCamposParciais').style.display=parcial?'grid':'none';
+    }
+    function labAbrirRegras(){
+      const cfg=labConfig();
+      const overlay=document.createElement('div');
+      overlay.id='labOverlay';
+      overlay.style.cssText='position:fixed;inset:0;z-index:300000;background:rgba(15,23,42,.7);display:flex;justify-content:center;align-items:center;padding:14px';
+      const panel=document.createElement('div');
+      panel.style.cssText='background:white;width:min(740px,100%);max-height:92vh;overflow:auto;border-radius:14px;padding:20px;font:14px Arial;box-shadow:0 18px 45px #0004';
+      panel.innerHTML=`
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+          <h2 style="font-size:20px;font-weight:bold;color:#581c87">⚙ Regras de indisponibilidade</h2>
+          <button id="labFecharConfig" type="button" style="font-size:20px;padding:6px" aria-label="Fechar">✕</button>
+        </div>
+        <p style="margin:10px 0;color:#475569">Selecione um tipo para editar apenas suas regras. As configurações serão salvas no SESCI.</p>
+        <label style="display:block;font-weight:bold;margin-bottom:5px">Tipo cadastrado</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px">
+          <select id="labSeletorTipo" style="flex:1;min-width:180px;border:1px solid #94a3b8;border-radius:6px;padding:10px"></select>
+          <button id="labNovoTipo" type="button" style="background:#581c87;color:white;padding:9px 12px;border-radius:6px">+ Novo tipo</button>
+          <button id="labExcluirTipo" type="button" style="border:1px solid #b91c1c;color:#b91c1c;padding:9px 12px;border-radius:6px">Excluir</button>
+        </div>
+        <section style="border:1px solid #ddd6fe;border-radius:10px;padding:14px;background:#faf7ff">
+          <label style="display:block;margin-bottom:12px">Nome do tipo
+            <input id="labNomeTipo" maxlength="80" style="display:block;width:100%;border:1px solid #94a3b8;border-radius:5px;padding:9px;margin-top:5px">
+          </label>
+          <label style="display:block;margin-bottom:12px">Classificação
+            <select id="labClasseTipo" style="display:block;width:100%;border:1px solid #94a3b8;border-radius:5px;padding:9px;margin-top:5px">
+              <option value="total">Total — período integral</option>
+              <option value="parcial">Parcial — horário específico</option>
+            </select>
+          </label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div><label>Proteção antes (dias)
+              <input id="labAntes" type="number" min="0" max="365" style="display:block;width:100%;border:1px solid #94a3b8;padding:8px;border-radius:5px">
+            </label><select id="labUnidadeAntes" style="width:100%;border:1px solid #94a3b8;padding:8px;margin-top:6px;border-radius:5px"><option value="uteis">Dias úteis</option><option value="corridos">Dias corridos</option></select></div>
+            <div><label>Proteção depois (dias)
+              <input id="labDepois" type="number" min="0" max="365" style="display:block;width:100%;border:1px solid #94a3b8;padding:8px;border-radius:5px">
+            </label><select id="labUnidadeDepois" style="width:100%;border:1px solid #94a3b8;padding:8px;margin-top:6px;border-radius:5px"><option value="uteis">Dias úteis</option><option value="corridos">Dias corridos</option></select></div>
+          </div>
+          <div id="labHorasParciais" style="display:none;margin-top:14px;padding:12px;border:1px solid #c4b5fd;border-radius:8px;background:white">
+            <strong>Margens para indisponibilidade parcial</strong>
+            <p style="font-size:12px;color:#475569;margin:6px 0 10px">Horas adicionais de impedimento antes do início e depois do fim do compromisso. Aceita frações (ex.: 1,5 = 1h30). O serviço só é apto quando não se sobrepõe ao intervalo ampliado.</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <label>Horas antes <input id="labHorasAntes" type="number" min="0" max="72" step=".5" style="display:block;width:100%;border:1px solid #94a3b8;padding:8px;border-radius:5px"></label>
+              <label>Horas depois <input id="labHorasDepois" type="number" min="0" max="72" step=".5" style="display:block;width:100%;border:1px solid #94a3b8;padding:8px;border-radius:5px"></label>
+            </div>
+          </div>
+        </section>
+        <div style="margin-top:14px;padding:12px;background:#f1f5f9;border-radius:8px">
+          <b>Calendário de dias úteis</b>
+          <p style="font-size:12px;margin-top:5px;color:#475569">O sistema usa os dias classificados como <b>vermelhos no próprio SESCI</b>, incluindo feriados nacionais, dias especiais e alterações feitas pelo escalante. Não é necessário cadastrar feriados novamente aqui. Um dia vermelho não conta como útil; os dias intermediários continuam protegidos.</p>
+          <label style="display:block;margin-top:10px">Horário de rendição <input id="labRend" type="time" style="border:1px solid #94a3b8;border-radius:5px;padding:7px"></label>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px">
+          <button id="labCancelarConfig" type="button" style="padding:10px 14px;border:1px solid #94a3b8;border-radius:6px">Cancelar</button>
+          <button id="labSalvarConfig" type="button" style="padding:10px 14px;background:#581c87;color:white;border-radius:6px">Salvar regras</button>
+        </div>`;
+      overlay.appendChild(panel);document.body.appendChild(overlay);
+      const el=id=>panel.querySelector('#'+id);
+      const draft=structuredClone(cfg);
+      let atual='';
+      const num=(id,max)=>Math.min(max,Math.max(0,Number(el(id).value)||0));
+      function salvarCampos(){
+        const t=draft.tipos.find(x=>x.id===atual);if(!t)return;
+        t.nome=el('labNomeTipo').value.trim()||t.nome;
+        t.classe=el('labClasseTipo').value;
+        t.antes=num('labAntes',365);t.depois=num('labDepois',365);
+        t.unidadeAntes=el('labUnidadeAntes').value;t.unidadeDepois=el('labUnidadeDepois').value;
+        t.horasAntes=num('labHorasAntes',72);t.horasDepois=num('labHorasDepois',72);
+      }
+      function listar(){
+        el('labSeletorTipo').innerHTML=draft.tipos.map(t=>'<option value="'+escaparHTML(t.id)+'">'+escaparHTML(t.nome)+'</option>').join('');
+        if(!draft.tipos.some(t=>t.id===atual))atual=draft.tipos[0]?.id||'';
+        el('labSeletorTipo').value=atual;
+      }
+      function exibir(){
+        const t=draft.tipos.find(x=>x.id===atual);if(!t)return;
+        el('labNomeTipo').value=t.nome;el('labClasseTipo').value=t.classe;
+        el('labAntes').value=t.antes||0;el('labDepois').value=t.depois||0;
+        el('labUnidadeAntes').value=t.unidadeAntes||'corridos';el('labUnidadeDepois').value=t.unidadeDepois||'corridos';
+        el('labHorasAntes').value=t.horasAntes||0;el('labHorasDepois').value=t.horasDepois||0;
+        el('labHorasParciais').style.display=t.classe==='parcial'?'block':'none';
+        el('labExcluirTipo').disabled=draft.tipos.length<=1;
+        el('labExcluirTipo').style.opacity=draft.tipos.length<=1?'.4':'1';
+      }
+      el('labClasseTipo').onchange=()=>el('labHorasParciais').style.display=el('labClasseTipo').value==='parcial'?'block':'none';
+      el('labSeletorTipo').onchange=()=>{salvarCampos();atual=el('labSeletorTipo').value;exibir()};
+      el('labNovoTipo').onclick=()=>{
+        salvarCampos();
+        const nome=prompt('Nome do novo tipo de indisponibilidade:');
+        if(!nome?.trim())return;
+        const id='tipo_'+Date.now()+'_'+Math.floor(Math.random()*1000);
+        draft.tipos.push({id,nome:nome.trim().slice(0,80),classe:'total',antes:0,depois:0,unidadeAntes:'corridos',unidadeDepois:'corridos',horasAntes:0,horasDepois:0});
+        atual=id;listar();exibir();
+      };
+      el('labExcluirTipo').onclick=()=>{
+        if(draft.tipos.length<=1)return;
+        const t=draft.tipos.find(x=>x.id===atual);
+        if((estado.indisponibilidades||[]).some(i=>i.labTipoId===atual)){alert('Este tipo já está vinculado a indisponibilidades cadastradas. Exclua ou altere esses registros antes.');return;}
+        if(!confirm('Excluir o tipo '+t.nome+'?'))return;
+        draft.tipos=draft.tipos.filter(x=>x.id!==atual);atual=draft.tipos[0].id;listar();exibir();
+      };
+      const fechar=()=>overlay.remove();
+      el('labFecharConfig').onclick=fechar;el('labCancelarConfig').onclick=fechar;
+      el('labRend').value=draft.rendicao||'09:00';
+      el('labSalvarConfig').onclick=async()=>{
+        salvarCampos();draft.rendicao=el('labRend').value||'09:00';
+        const botao=el('labSalvarConfig');
+        botao.disabled=true;botao.textContent='Salvando no servidor...';
+        const anterior=structuredClone(cfg);
+        cfg.tipos=structuredClone(draft.tipos);cfg.rendicao=draft.rendicao;
+        let confirmado=false;
+        try {
+          confirmado=(await salvarEstado('regras_indisponibilidade'))===true;
+        } catch(erro) {
+          console.error('Erro ao salvar regras de indisponibilidade:',erro);
+        } finally {
+          botao.disabled=false;botao.textContent='Salvar regras';
+        }
+        if(!confirmado){
+          cfg.tipos=anterior.tipos;cfg.rendicao=anterior.rendicao;
+          alert('As regras NÃO foram confirmadas pelo servidor. Verifique sua conexão ou um possível conflito de versão e tente novamente.');
+          return;
+        }
+        labAtualizarCamposIndisp();fechar();
+        alert('Tipos e regras salvos no servidor. Gere novamente a escala para aplicar.');
+      };
+      atual=draft.tipos[0]?.id||'';listar();exibir();
+    }
     function salvarIndisponibilidade(e) {
       e.preventDefault();
       if (!podeEditarSistema()) { alert('Acesso somente para consulta.'); return; }
@@ -6690,7 +6880,14 @@ if (
         return;
       }
 
-      estado.indisponibilidades.push({ id: Date.now().toString(), militarId, inicio, fim, motivo });
+      const tipoId=document.getElementById('labTipoIndisp')?.value || 'outro';
+      const tipoConfig=labTipo(tipoId);
+      const horaInicio=document.getElementById('labHoraInicio')?.value || '';
+      const horaFim=document.getElementById('labHoraFim')?.value || '';
+      if(tipoConfig.classe==='parcial' && (!horaInicio || !horaFim || (inicio===fim && horaFim<=horaInicio))) {
+        alert('Informe um intervalo de horário válido para a indisponibilidade parcial.'); return;
+      }
+      estado.indisponibilidades.push({ id: Date.now().toString(), militarId, inicio, fim, motivo, labTipoId:tipoId, labHoraInicio:horaInicio, labHoraFim:horaFim });
       salvarEstado();
       document.getElementById('formIndisponibilidade').reset();
       atualizarLimitesDatasIndisponibilidade();
@@ -6846,6 +7043,87 @@ if (
       seletorMilitar.value = militares.some(m => String(m.id) === militarSelecionado) ? militarSelecionado : '';
     }
 
+
+    function labEditarIndisponibilidade(id){
+      if(!podeEditarSistema())return;
+      const item=(estado.indisponibilidades||[]).find(i=>String(i.id)===String(id));
+      if(!item)return alert('Indisponibilidade não encontrada.');
+      const militar=estado.militares.find(m=>String(m.id)===String(item.militarId));
+      const overlay=document.createElement('div');
+      overlay.style.cssText='position:fixed;inset:0;background:#0f172acc;z-index:300005;display:flex;align-items:center;justify-content:center;padding:12px';
+      const painel=document.createElement('div');
+      painel.style.cssText='background:white;width:min(550px,100%);max-height:94vh;overflow:auto;border-radius:12px;padding:20px;font:14px Arial';
+      painel.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><h2 style="font-size:19px;font-weight:bold;color:#581c87">Editar indisponibilidade</h2><button type="button" id="labEditFechar" style="font-size:22px">✕</button></div>
+      <p style="margin:9px 0;color:#475569">${escaparHTML(militar?.nome||'Militar não encontrado')}</p>
+      <form id="labEditForm" style="display:grid;gap:12px">
+        <label>Tipo de indisponibilidade<select id="labEditTipo" style="display:block;width:100%;border:1px solid #94a3b8;padding:9px;border-radius:5px"></select></label>
+        <label>Motivo / observação<input id="labEditMotivo" maxlength="500" style="display:block;width:100%;border:1px solid #94a3b8;padding:9px;border-radius:5px" required></label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <label>Data inicial<input type="date" id="labEditInicio" required style="display:block;width:100%;border:1px solid #94a3b8;padding:9px;border-radius:5px"></label>
+          <label>Data final<input type="date" id="labEditFim" required style="display:block;width:100%;border:1px solid #94a3b8;padding:9px;border-radius:5px"></label>
+        </div>
+        <div id="labEditHoras" style="display:none;background:#f5f3ff;padding:12px;border-radius:7px">
+          <b>Horários do compromisso parcial</b>
+          <p style="font-size:12px;color:#475569;margin:5px 0">Preencha os horários que não constam no CSV. As margens adicionais em horas são aplicadas conforme a regra do tipo selecionado.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <label>Início<input type="time" id="labEditHoraInicio" style="display:block;width:100%;border:1px solid #94a3b8;padding:9px;border-radius:5px"></label>
+            <label>Término<input type="time" id="labEditHoraFim" style="display:block;width:100%;border:1px solid #94a3b8;padding:9px;border-radius:5px"></label>
+          </div>
+        </div>
+        <p id="labEditInfo" style="font-size:12px;color:#475569"></p>
+        <div style="display:flex;gap:9px;justify-content:flex-end"><button type="button" id="labEditCancelar" style="border:1px solid #94a3b8;padding:10px;border-radius:6px">Cancelar</button><button type="submit" style="background:#581c87;color:white;padding:10px 15px;border-radius:6px">Salvar alterações</button></div>
+      </form>`;
+      overlay.appendChild(painel);document.body.appendChild(overlay);
+      const el=id=>painel.querySelector('#'+id);
+      el('labEditTipo').innerHTML=labConfig().tipos.map(t=>`<option value="${escaparHTML(t.id)}">${escaparHTML(t.nome)} (${t.classe})</option>`).join('');
+      el('labEditTipo').value=labConfig().tipos.some(t=>t.id===item.labTipoId)?item.labTipoId:'outro';
+      el('labEditMotivo').value=item.motivo||'';
+      el('labEditInicio').value=item.inicio||'';
+      el('labEditFim').value=item.fim||'';
+      el('labEditHoraInicio').value=item.labHoraInicio||'';
+      el('labEditHoraFim').value=item.labHoraFim||'';
+      const atualizar=()=>{
+        const t=labTipo(el('labEditTipo').value);
+        el('labEditHoras').style.display=t.classe==='parcial'?'block':'none';
+        el('labEditInfo').textContent=t.classe==='parcial'
+          ?`Proteção adicional: ${t.horasAntes||0}h antes e ${t.horasDepois||0}h depois; ${t.antes||0} ${t.unidadeAntes||'corridos'} antes e ${t.depois||0} ${t.unidadeDepois||'corridos'} depois.`
+          :`Proteção: ${t.antes||0} ${t.unidadeAntes||'corridos'} antes e ${t.depois||0} ${t.unidadeDepois||'corridos'} depois.`;
+      };
+      el('labEditTipo').onchange=atualizar;atualizar();
+      const fechar=()=>overlay.remove();
+      el('labEditFechar').onclick=fechar;el('labEditCancelar').onclick=fechar;
+      el('labEditForm').onsubmit=async e=>{
+        e.preventDefault();
+        const inicio=el('labEditInicio').value,fim=el('labEditFim').value;
+        const tipoId=el('labEditTipo').value,tipo=labTipo(tipoId);
+        const horaInicio=el('labEditHoraInicio').value,horaFim=el('labEditHoraFim').value;
+        if(!inicio||!fim||fim<inicio){alert('Verifique as datas inicial e final.');return;}
+        if(tipo.classe==='parcial'&&(!horaInicio||!horaFim)){
+          alert('Informe os horários inicial e final da indisponibilidade parcial.');return;
+        }
+        if(tipo.classe==='parcial'&&inicio===fim&&horaFim<=horaInicio){
+          alert('Para compromisso de um único dia, o horário final deve ser posterior ao inicial.');return;
+        }
+        const anterior=structuredClone(item);
+        item.inicio=inicio;item.fim=fim;item.motivo=el('labEditMotivo').value.trim();
+        item.labTipoId=tipoId;
+        item.labHoraInicio=tipo.classe==='parcial'?horaInicio:'';
+        item.labHoraFim=tipo.classe==='parcial'?horaFim:'';
+        const botao=el('labEditForm').querySelector('button[type="submit"]');
+        botao.disabled=true;botao.textContent='Salvando no servidor...';
+        let confirmado=false;
+        try { confirmado=(await salvarEstado('edicao_indisponibilidade'))===true; }
+        catch(erro){ console.error('Erro ao salvar indisponibilidade:',erro); }
+        finally {botao.disabled=false;botao.textContent='Salvar alterações';}
+        if(!confirmado){
+          Object.keys(item).forEach(chave=>delete item[chave]);
+          Object.assign(item,anterior);
+          alert('A edição NÃO foi confirmada pelo servidor. Os dados anteriores foram restaurados nesta tela.');
+          return;
+        }
+        fechar();renderizarIndisponibilidades();
+      };
+    }
     function renderizarIndisponibilidades() {
       const tbody = document.getElementById('tabelaIndisponibilidades');
       if (!tbody) return;
@@ -6874,7 +7152,7 @@ if (
             <td class="p-2 text-xs">${formatarDataBR(i.inicio)}</td>
             <td class="p-2 text-xs">${formatarDataBR(i.fim)}</td>
             <td class="p-2 text-xs text-gray-600">${escaparHTML(i.motivo)}</td>
-            ${podeEditar ? `<td class="p-2 text-right"><button data-indisponibilidade-id="${escaparHTML(i.id)}" onclick="removerIndisponibilidade(this.dataset.indisponibilidadeId)" class="text-red-600 hover:underline text-xs">Excluir</button></td>` : ''}
+            ${podeEditar ? `<td class="p-2 text-right whitespace-nowrap"><button data-indisponibilidade-id="${escaparHTML(i.id)}" onclick="labEditarIndisponibilidade(this.dataset.indisponibilidadeId)" class="text-purple-700 hover:underline text-xs mr-3">Editar</button><button data-indisponibilidade-id="${escaparHTML(i.id)}" onclick="removerIndisponibilidade(this.dataset.indisponibilidadeId)" class="text-red-600 hover:underline text-xs">Excluir</button></td>` : ''}
           </tr>`;
         });
       const linhasSemanais = (estado.indisponibilidadesSemana || [])
@@ -7290,6 +7568,8 @@ try {
       let diasDaSemanaServico = {}; 
       let contadorEventosRotacao = {};
       let ultimoEventoPorMilitar = {};
+      const ultimaDataEventoRotacaoPorMilitar = {};
+      const ultimoMotivoEventoRotacaoPorMilitar = {};
       const escalaAnterior = obterEscalaAnterior(mesAno);
       const ultimosMilitaresPorFuncao = obterUltimosMilitaresPorFuncao(escalaAnterior);
       const ultimosMilitaresPorFuncaoECor = obterUltimosMilitaresPorFuncaoECor(escalaAnterior);
@@ -7406,12 +7686,58 @@ try {
         });
       });
 
+      // Recupera o critério principal independentemente do antigo prefixo "Escolha:".
+      // Não interpreta as análises de candidatos como motivo do escolhido.
+      const extrairMotivoEscolhaHistorica = texto => {
+        const linhas = String(texto || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+        const motivos = [];
+        let dentroDosCandidatos = false;
+        for (const linha of linhas) {
+          if (/^Candidatos não utilizados\s*:/i.test(linha)) { dentroDosCandidatos = true; continue; }
+          if (dentroDosCandidatos) {
+            if (/^(Pulados por|Lastro:|Exceção:|Exceção de geração:|Último serviço|Histórico:)/i.test(linha)) {
+              dentroDosCandidatos = false;
+            } else { continue; }
+          }
+          if (/^(Serviço:|Histórico:|Último serviço|Pulados por|Lastro:)/i.test(linha)) continue;
+          if (/\bfoi escalad[oa] em\b/i.test(linha)) continue;
+          if (/^Exceção(?: de geração)?\s*:/i.test(linha)) {
+            motivos.push(linha); continue;
+          }
+          const motivo = linha.replace(/^Escolha\s*:\s*/i, '').trim();
+          if (motivo && !/^(Candidatos não utilizados|[\wÀ-ÿ .-]+\s*\([^)]*\)\s*:)/i.test(motivo)) {
+            motivos.push(motivo);
+          }
+        }
+        return motivos.join(' ').trim();
+      };
+
       Object.entries(ultimosEventosAnteriores).forEach(([chaveRotacao, militares]) => {
         if (militares.length > 0) {
           ultimoMilitarPorRotacao[chaveRotacao] = militares[militares.length - 1];
         }
         militares.forEach(militarId => {
           ultimoEventoPorMilitar[`${militarId}:${chaveRotacao}`] = 0;
+          // A data deve ser do mesmo evento/cor, e não de outro serviço do militar.
+          const dataAnterior = ultimasDatasAnteriores[`${militarId}:${chaveRotacao}`];
+          if (Number.isFinite(dataAnterior)) {
+            ultimaDataEventoRotacaoPorMilitar[`${militarId}:${chaveRotacao}`] = dataAnterior;
+            // Recupera o motivo efetivamente registrado na escala anterior,
+            // somente para a mesma data, função, cor e militar.
+            const diaAnterior = new Date(dataAnterior).getDate();
+            const vagasDiaAnterior = escalaAnterior?.dados?.[diaAnterior] || {};
+            const vagaAnterior = Object.keys(vagasDiaAnterior).find(vaga =>
+              String(vagasDiaAnterior[vaga]) === String(militarId) &&
+              vaga.startsWith(chaveRotacao.split(':cor:')[0] + ' #')
+            );
+            if (vagaAnterior) {
+              const textoAnterior = String(escalaAnterior?.justificativas?.[diaAnterior]?.[vagaAnterior] || '');
+              const motivoHistorico = extrairMotivoEscolhaHistorica(textoAnterior);
+              if (motivoHistorico) {
+                ultimoMotivoEventoRotacaoPorMilitar[`${militarId}:${chaveRotacao}`] = motivoHistorico;
+              }
+            }
+          }
         });
       });
 
@@ -7473,7 +7799,7 @@ try {
           const tipoFuncaoConfigurado = tiposEscala[col.funcao] || 'corrida';
           const militarEstaIndisponivel = militarId =>
             !reproduzirPrefixo
-            && estado.indisponibilidades.some(i => i.militarId === militarId && dataStr >= i.inicio && dataStr <= i.fim);
+            && labIndisponivel(militarId,dataStr);
           const militarTemIndisponibilidadeSemanal = militarId =>
             !reproduzirPrefixo
             && estado.indisponibilidadesSemana.some(i => i.militarId === militarId && Number(i.diaSemana) === diaSemana);
@@ -7487,7 +7813,7 @@ try {
             const dataSeguinte = new Date(dataObj);
             dataSeguinte.setDate(dataSeguinte.getDate() + 1);
             const dataSeguinteStr = `${dataSeguinte.getFullYear()}-${String(dataSeguinte.getMonth() + 1).padStart(2, '0')}-${String(dataSeguinte.getDate()).padStart(2, '0')}`;
-            return estado.indisponibilidades.some(i => i.militarId === militarId && i.inicio === dataSeguinteStr);
+            return labInicioAmanha(militarId,dataStr);
           };
           const militaresAtivosDaFuncao = obterMilitaresParaEscala(col.funcao);
           const efetivoDisponivelFuncao = militaresAtivosDaFuncao
@@ -7757,52 +8083,163 @@ try {
 
             const ultimoEvento = ultimoEventoPorMilitar[`${militar.id}:${chaveRotacao}`];
             if (ultimoEvento !== undefined && eventoRotacao - ultimoEvento < 2) {
-              motivos.push('repetiria o evento anterior desta rotação');
+              const dataEventoAnterior = ultimaDataEventoRotacaoPorMilitar[`${militar.id}:${chaveRotacao}`];
+              const dataFormatada = Number.isFinite(dataEventoAnterior)
+                ? formatarDataBR(new Date(dataEventoAnterior))
+                : '';
+              const motivoAnterior = ultimoMotivoEventoRotacaoPorMilitar[`${militar.id}:${chaveRotacao}`];
+              const detalhesEvento = [
+                dataFormatada ? `em: ${dataFormatada}` : '',
+                motivoAnterior ? `motivo: ${motivoAnterior}` : 'motivo: não registrado no histórico'
+              ].filter(Boolean).join('; ');
+              motivos.push(`já havia sido utilizado nesta rodada (${detalhesEvento})`);
             }
 
             if (tipoFuncao === 'semanaFimSemana') {
               const bloqueadoAte = bloqueiosRotacao[chaveRotacao]?.[militar.id];
               if (bloqueadoAte && chavePeriodoAtual <= bloqueadoAte) {
-                motivos.push('estava adiantado na rodada anterior e deveria ser pulado nesta rodada');
+                // Localiza a data real em que a antecipação foi registrada, sem inferi-la
+                // apenas de um serviço comum na mesma rotação.
+                const localizarDataAdiantamento = () => {
+                  const registros = [];
+                  const fontes = [...obterEscalasHistoricas().filter(e => e?.mesAno && e.mesAno <= mesAno)];
+                  // Inclui a escala em geração, ainda não persistida.
+                  fontes.push({ mesAno, dados: novaEscala, adiantamentosAutomaticos, alteracoesManuais });
+                  for (const fonte of fontes) {
+                    for (const [diaRegistro, colunas] of Object.entries(fonte.adiantamentosAutomaticos || {})) {
+                      const dataISO = `${fonte.mesAno}-${String(diaRegistro).padStart(2, '0')}`;
+                      if (dataISO >= dataStr) continue;
+                      for (const [chaveColuna, registro] of Object.entries(colunas || {})) {
+                        if (registro?.militarId === militar.id && registro?.chaveRotacao === chaveRotacao) {
+                          registros.push(dataISO);
+                        }
+                      }
+                    }
+                  }
+                  if (!registros.length) return '';
+                  registros.sort();
+                  const [anoAd, mesAd, diaAd] = registros[registros.length - 1].split('-');
+                  return `${diaAd}/${mesAd}/${anoAd}`;
+                };
+                const dataAdiantamento = localizarDataAdiantamento();
+                motivos.push(dataAdiantamento
+                  ? `foi escalado antecipadamente em ${dataAdiantamento} e está sendo pulado nesta rodada para compensar a antecipação`
+                  : 'possui bloqueio registrado na rotação, mas não há registro de antecipação automática que confirme sua origem');
               }
             }
 
             return [...new Set(motivos)];
           };
 
-          const obterAnaliseRotacaoAteEscolhido = escolhido => {
-            if (!proximoMilitarDaRotacao || militaresDaRotacao.length === 0) return [];
-
-            const analise = [];
-            let indiceAnalise = militaresDaRotacao.findIndex(militar => militar.id === proximoMilitarDaRotacao.id);
-            if (indiceAnalise === -1) return analise;
-
-            for (let passo = 0; passo < militaresDaRotacao.length; passo++) {
-              const militarAnalisado = militaresDaRotacao[indiceAnalise];
-              const nomeMilitar = obterNomeMilitar(militarAnalisado.id);
-
-              if (militarAnalisado.id === escolhido.id) {
-                analise.push(`${nomeMilitar}: escolhido para a vaga.`);
-                break;
+          // Auditoria das preferências efetivamente aplicadas nesta vaga.
+          // Não altera elegibilidade, ordem nem o resultado da geração.
+          const motivosPreferenciaNestaVaga = new Map();
+          const registrarPreferenciaAplicada = (antes, depois, obterMotivo) => {
+            const idsDepois = new Set(depois.map(m => m.id));
+            antes.forEach(m => {
+              if (!idsDepois.has(m.id)) {
+                motivosPreferenciaNestaVaga.set(m.id, obterMotivo(m));
               }
-
-              const motivos = obterMotivosImpedimento(militarAnalisado);
-              if (motivos.length > 0) {
-                // V19 — a justificativa exibe apenas o motivo impeditivo principal.
-                // Os demais motivos continuam sendo calculados pelo motor e permanecem
-                // disponíveis para a lógica de elegibilidade/rotação.
-                analise.push(`${nomeMilitar}: ${motivos[0]}.`);
-              } else if (tipoFuncao === 'semanaFimSemana' && pendenciasRotacao[chaveRotacao] === escolhido.id) {
-                analise.push(`${nomeMilitar}: estava válido, mas havia militar pendente com prioridade nesta rotação.`);
-              } else {
-                analise.push(`${nomeMilitar}: estava válido, mas outro militar foi escolhido pelo critério de equilíbrio aplicado nesta rotação.`);
-              }
-
-              indiceAnalise = (indiceAnalise + 1) % militaresDaRotacao.length;
-            }
-
-            return analise;
+            });
           };
+          const localizarDataAntecipacaoJustificativa = militar => {
+            const registros = [];
+            const fontes = [...obterEscalasHistoricas().filter(e => e?.mesAno && e.mesAno <= mesAno)];
+            fontes.push({ mesAno, dados: novaEscala, adiantamentosAutomaticos, alteracoesManuais });
+            for (const fonte of fontes) {
+              for (const [diaRegistro, colunas] of Object.entries(fonte.adiantamentosAutomaticos || {})) {
+                const dataISO = `${fonte.mesAno}-${String(diaRegistro).padStart(2, '0')}`;
+                if (dataISO >= dataStr) continue;
+                for (const registro of Object.values(colunas || {})) {
+                  if (registro?.militarId === militar.id && registro?.chaveRotacao === chaveRotacao) registros.push(dataISO);
+                }
+              }
+            }
+            if (!registros.length) return '';
+            registros.sort();
+            const [anoAd, mesAd, diaAd] = registros[registros.length - 1].split('-');
+            return `${diaAd}/${mesAd}/${anoAd}`;
+          };
+          const motivoCompensacao = militar => {
+            const data = localizarDataAntecipacaoJustificativa(militar);
+            // A justificativa não pode transformar um bloqueio legado ou um
+            // serviço por equilíbrio de quadrinhos em antecipação comprovada.
+            return data
+              ? `foi escalado antecipadamente em ${data} e teve a prioridade reduzida para compensar a antecipação`
+              : 'teve a prioridade reduzida pelo estado da rotação, sem registro de antecipação automática confirmado';
+          };
+
+          // Desempate da justiça: maior ordem cadastral = militar mais moderno.
+          // A antiguidade somente desempata totais iguais (quadrinhos + lastros).
+          const compararModernidadeJustica = (a, b) =>
+            (Number(b.ordem ?? 0) - Number(a.ordem ?? 0)) || String(a.id).localeCompare(String(b.id));
+
+          // Auditoria contrafactual: o impedido só era prioritário se venceria
+          // a escolha pelo MESMO acumulado de justiça (quadrinhos + lastros)
+          // e pelos mesmos critérios de desempate da vaga.
+          const identificarPrioritariosNaVaga = (escolhido, contexto) => {
+            if (!proximoMilitarAntesDosPulos || !militaresDaRotacao.length) return [];
+            const idsPulados = new Set(militaresPuladosPorIndisponibilidade);
+            const inicio = militaresDaRotacao.findIndex(m => m.id === proximoMilitarAntesDosPulos.id);
+            if (inicio < 0) return [];
+            const valorEscolhido = contexto.valoresAntes.get(escolhido.id);
+            const minimoDiasIndispLonga = Math.max(1, Number(obterRegrasEfetivasFuncao(col.funcao, tipoFuncao).lastro?.minimoDiasIndisponibilidade || 30));
+            const distanciaEscolhido = (militaresDaRotacao.findIndex(m => m.id === escolhido.id) - inicio + militaresDaRotacao.length) % militaresDaRotacao.length;
+            const lista = [];
+            for (let passo = 0; passo < militaresDaRotacao.length; passo++) {
+              const militar = militaresDaRotacao[(inicio + passo) % militaresDaRotacao.length];
+              if (militar.id === escolhido.id) continue;
+              // Indisponível por período longo não é "prioritário": já é tratado por lastro.
+              if (obterIndisponibilidadeLongaNaData(militar.id, dataStr, minimoDiasIndispLonga)) continue;
+              const valor = contexto.valoresAntes.get(militar.id);
+              if (!Number.isFinite(valor) || !Number.isFinite(valorEscolhido)) continue;
+              if (contexto.priorizarCor) {
+                if (valor > valorEscolhido) continue;
+                // No empate de quadrinhos + lastros, somente um militar
+                // mais moderno que o escolhido poderia ter prioridade.
+                if (valor === valorEscolhido && compararModernidadeJustica(militar, escolhido) >= 0) continue;
+              }
+              // A posição na rotação não supera a modernidade quando
+              // a justiça está ativa. Mantém o corte por rotação apenas
+              // quando não há priorização de quadrinhos.
+              if (!contexto.priorizarCor && passo >= distanciaEscolhido) continue;
+              const motivos = obterMotivosImpedimento(militar);
+              let origem = '';
+              let motivo = '';
+              if (idsPulados.has(militar.id)) {
+                origem = 'pulo_indisponibilidade';
+                motivo = motivos[0] || 'indisponibilidade registrada nesta data';
+              } else if (motivos.length && !podeSerEscalado(militar)) {
+                origem = 'impedimento_operacional';
+                motivo = motivos[0];
+              } else if (militaresPuladosPorAdiantamento.includes(militar.id)) {
+                origem = 'compensacao';
+                motivo = 'tinha compensação por antecipação anterior e foi pulado nesta vaga';
+              } else if (motivosPreferenciaNestaVaga.has(militar.id)) {
+                origem = 'preferencia';
+                motivo = motivosPreferenciaNestaVaga.get(militar.id);
+              } else {
+                continue; // concorreu e perdeu pelos critérios da vaga: não era prioritário
+              }
+              // Encurta o histórico aninhado de "já havia sido utilizado nesta rodada (...; motivo: ...)".
+              motivo = motivo.replace(/;\s*motivo:[\s\S]*\)$/, ')');
+              lista.push({ id: militar.id, motivo, origem, valor, distancia: passo });
+            }
+            lista.sort((a, b) => {
+              if (contexto.priorizarCor) {
+                if (a.valor !== b.valor) return a.valor - b.valor;
+                const ma = militaresDaRotacao.find(m => m.id === a.id);
+                const mb = militaresDaRotacao.find(m => m.id === b.id);
+                return compararModernidadeJustica(ma, mb);
+              }
+              return a.distancia - b.distancia;
+            });
+            return lista;
+          };
+          // Antecipação só nasce de impedimento real (não de compensação/preferência).
+          const identificarPrioritarioImpedidoNaVaga = (escolhido, contexto) =>
+            identificarPrioritariosNaVaga(escolhido, contexto)
+              .find(p => p.origem === 'pulo_indisponibilidade' || p.origem === 'impedimento_operacional') || null;
 
           // Quem acabou de cumprir uma compensação por adiantamento deve ficar
           // fora da disputa DESTA vaga. Sem isso, o critério de menor acumulado
@@ -7817,12 +8254,14 @@ try {
 
           let candidatos = candidatosElegiveisAntesCompensacao
             .filter(m => !idsPuladosPorAdiantamentoNestaVaga.has(m.id));
+          registrarPreferenciaAplicada(candidatosElegiveisAntesCompensacao, candidatos, motivoCompensacao);
 
           // Se a preferência de compensação eliminaria TODOS os candidatos, volta
           // para os elegíveis originais. Isso restaura a cobertura da vaga sem
           // liberar militar indisponível nem quebrar as regras de elegibilidade.
           if (candidatos.length === 0 && candidatosElegiveisAntesCompensacao.length > 0) {
             candidatos = [...candidatosElegiveisAntesCompensacao];
+            candidatos.forEach(m => motivosPreferenciaNestaVaga.delete(m.id));
           }
 
           let excecaoVermelhaConsecutiva = false;
@@ -7831,6 +8270,8 @@ try {
           if (tipoFuncao === 'semanaFimSemana' && corServico !== 'vermelho' && regraCorAtual.evitarConsecutivos) {
             const candidatosSemRepetirCor = candidatos.filter(m => !obterUltimoMilitarDaCorAntes(m.id, col.funcao, corServico, dataObj, novaEscala, mesAno));
             if (candidatosSemRepetirCor.length > 0) {
+              registrarPreferenciaAplicada(candidatos, candidatosSemRepetirCor,
+                () => `foi preterido para evitar repetição consecutiva de serviço da cor ${obterCorServicoPorId(corServico).nome}`);
               candidatos = candidatosSemRepetirCor;
             } else if (candidatos.length > 0) {
               const autorizar = regraCorAtual.confirmarExcecao === false || confirm(`Não há candidato para ${dia}/${String(mes).padStart(2,'0')} sem repetir consecutivamente a cor ${obterCorServicoPorId(corServico).nome} na função ${col.funcao}. Deseja abrir uma exceção somente para esta vaga?`);
@@ -7855,6 +8296,7 @@ try {
 
           const filtrarMilitaresAdiantados = candidatosBase => {
             if (tipoFuncao !== 'semanaFimSemana'
+              || justicaPorCorSobrepoeCompensacao(col.funcao, tipoFuncao)
               || !militaresAdiantadosRotacao[chaveRotacao]
               || militaresAdiantadosRotacao[chaveRotacao].size === 0) {
               return candidatosBase;
@@ -7882,13 +8324,29 @@ try {
           };
 
           if (tipoFuncao === 'semanaFimSemana') {
-            candidatos = filtrarBloqueiosComoPreferencia(candidatos);
+            const candidatosAposBloqueio = filtrarBloqueiosComoPreferencia(candidatos);
+            registrarPreferenciaAplicada(candidatos, candidatosAposBloqueio, m => {
+              const ate = bloqueiosRotacao[chaveRotacao]?.[m.id];
+              const periodoLegivel = (() => {
+                if (!/^\d{4}-\d{2}-\d{2}$/.test(String(ate || ''))) return '';
+                const inicio = new Date(`${ate}T12:00:00Z`);
+                if (Number.isNaN(inicio.getTime())) return '';
+                const fim = new Date(inicio.getTime());
+                fim.setUTCDate(fim.getUTCDate() + 6);
+                const formatar = data => `${String(data.getUTCDate()).padStart(2, '0')}/${String(data.getUTCMonth() + 1).padStart(2, '0')}/${data.getUTCFullYear()}`;
+                return `, válida até a semana de ${formatar(inicio)} a ${formatar(fim)}`;
+              })();
+              return `teve a prioridade reduzida por compensação de serviço antecipado${periodoLegivel}`;
+            });
+            candidatos = candidatosAposBloqueio;
           }
 
           if (tipoFuncao === 'semanaFimSemana'
             && militaresAdiantadosRotacao[chaveRotacao]
             && militaresAdiantadosRotacao[chaveRotacao].size > 0) {
-            candidatos = filtrarMilitaresAdiantados(candidatos);
+            const candidatosAposAdiantamento = filtrarMilitaresAdiantados(candidatos);
+            registrarPreferenciaAplicada(candidatos, candidatosAposAdiantamento, motivoCompensacao);
+            candidatos = candidatosAposAdiantamento;
           }
 
           if (candidatos.length === 0 && aplicarRegraVermelha) {
@@ -7929,7 +8387,11 @@ try {
                 const mediaPendencia = grupoPendencia.reduce((soma, m) => soma + valorPendencia(m), 0) / Math.max(1, grupoPendencia.length);
                 if (valorPendencia(militarPendente) > mediaPendencia) forcarPendente = false;
               }
-              if (forcarPendente) candidatos = [militarPendente];
+              if (forcarPendente) {
+                registrarPreferenciaAplicada(candidatos, [militarPendente],
+                  () => `estava apto, mas um militar pendente tinha prioridade nesta rotação`);
+                candidatos = [militarPendente];
+              }
             }
           }
 
@@ -8039,12 +8501,9 @@ try {
               if (dadosA.contagemJustica !== dadosB.contagemJustica) {
                 return dadosA.contagemJustica - dadosB.contagemJustica;
               }
-              if (regrasJusticaFuncao.justica?.usarRotacaoDesempate !== false && dadosA.distancia !== dadosB.distancia) {
-                return dadosA.distancia - dadosB.distancia;
-              }
-              const scoreA = (dadosA.folga * 10) - (dadosA.contagemJustica * 15) - (dadosA.repeticoesDiaSemana * 20);
-              const scoreB = (dadosB.folga * 10) - (dadosB.contagemJustica * 15) - (dadosB.repeticoesDiaSemana * 20);
-              return scoreB - scoreA;
+              // Empate no total da cor: sempre o mais moderno.
+              // A rotação e a pontuação de folgas não substituem este desempate.
+              return compararModernidadeJustica(a, b);
             });
 
             ordemTrocaManual[dia][col.chave] = [
@@ -8052,17 +8511,65 @@ try {
               ...ordemTrocaManual[dia][col.chave]
             ].filter((id, indice, lista) => id && lista.indexOf(id) === indice);
 
+            // Apenas os motivos dos militares efetivamente excluídos desta seleção.
+            candidatos.forEach(m => motivosPreferenciaNestaVaga.delete(m.id));
+            // Fotografia dos valores ANTES de contabilizar o serviço escolhido.
+            // A auditoria deve explicar a decisão com os mesmos números usados na ordenação.
+            const contextoJustificativa = {
+              idsCandidatos: new Set(candidatos.map(m => m.id)),
+              valoresAntes: new Map(obterMilitaresParaEscala(col.funcao).map(m => [m.id, obterDadosCandidato(m).contagemJustica])),
+              contagensAntes: new Map(obterMilitaresParaEscala(col.funcao).map(m => {
+                const contagem = contagemSeparadaGeracao[m.id]?.[col.funcao] || criarContagemQuadrinhoLastro();
+                const totais = obterTotaisQuadrinhoLastro(contagem);
+                return [m.id, totais.porCor?.[tipoContagemJustica] || {quadrinhos: 0, lastros: 0, total: 0}];
+              })),
+              considerarTotal: regrasJusticaFuncao.justica?.considerarTotal !== false,
+              priorizarCor: priorizarMenorQuantidadeCor,
+              usarRotacaoDesempate: regrasJusticaFuncao.justica?.usarRotacaoDesempate !== false,
+              nomeCor: rotuloCorJustificativa,
+              nomeRotacao: rotuloRotacaoJustificativa
+            };
             const escolhido = candidatos[0];
             novaEscala[dia][col.chave] = escolhido.id;
             if (contagemSeparadaGeracao[escolhido.id]?.[col.funcao]) {
               garantirCorNaContagem(contagemSeparadaGeracao[escolhido.id][col.funcao], tipoContagemJustica).quadrinhos++;
             }
+            // Uma escolha por quadrinhos é uma correção de equilíbrio, não
+            // antecipação, quando o acumulado do escolhido é estritamente menor
+            // que o de pelo menos outro candidato APTO à mesma vaga.
+            // A posição desse outro candidato na rotação não interfere: a
+            // ordenação por quadrinhos precede a rotação no motor.
+            // Se todos os aptos estiverem empatados, a escolha decorre do
+            // desempate/rotação e não é classificada como déficit.
+            const quadrinhosEscolhidoAntes = contextoJustificativa.valoresAntes.get(escolhido.id);
+            const escolhaPorDeficitDeQuadrinhos = usarJusticaConfiguravel
+              && priorizarMenorQuantidadeCor
+              && candidatos.some(outro => outro.id !== escolhido.id
+                && contextoJustificativa.valoresAntes.get(outro.id) > quadrinhosEscolhidoAntes);
             const militarEraPendente = pendenciasRotacao[chaveRotacao] === escolhido.id;
             const militarEraProximo = proximoMilitarDaRotacao?.id === escolhido.id;
             const militarJaEstavaAdiantado = militaresAdiantadosRotacao[chaveRotacao]?.has(escolhido.id);
             const motivosProximo = proximoMilitarDaRotacao && !militarEraProximo
               ? obterMotivosImpedimento(proximoMilitarDaRotacao)
               : [];
+            // Um pulo na rotação NÃO prova antecipação: a justiça por cor
+            // considera quadrinhos + lastros antes do desempate por rotação.
+            const prioritarioReal = tipoFuncao === 'semanaFimSemana'
+              ? identificarPrioritarioImpedidoNaVaga(escolhido, contextoJustificativa)
+              : null;
+            const prioritariosLista = tipoFuncao === 'semanaFimSemana'
+              ? identificarPrioritariosNaVaga(escolhido, contextoJustificativa)
+              : [];
+            const idsPrioritariosListados = new Set(prioritariosLista.map(p => p.id));
+            const houveSubstituicaoPorImpedimentoDaVez = Boolean(prioritarioReal);
+            const escolhaPorEquilibrioSemAntecipacao = escolhaPorDeficitDeQuadrinhos
+              && !houveSubstituicaoPorImpedimentoDaVez;
+            const antecipacaoAutomaticaNestaVaga = tipoFuncao === 'semanaFimSemana'
+              && !militarEraPendente
+              && !militarJaEstavaAdiantado
+              && (houveSubstituicaoPorImpedimentoDaVez
+                || (!escolhaPorEquilibrioSemAntecipacao && !militarEraProximo
+                    && !priorizarMenorQuantidadeCor));
             const houvePulosAutomaticos = militaresPuladosPorAdiantamento.length > 0 || militaresPuladosPorIndisponibilidade.length > 0;
             // Justificativa operacional enxuta: registra apenas o que efetivamente
             // explica a escolha, evitando repetir a mesma decisão em várias frases.
@@ -8076,62 +8583,54 @@ try {
               explicacao.push(`Exceção de geração: efetivo apto reduzido a ${efetivoDisponivelFuncao}; nesta data foram aplicados temporariamente os critérios da escala por quadrinhos.`);
             }
 
-            // Uma única frase descreve o critério principal da escolha.
+            // Resumo verificável: números efetivos ANTES da escolha, sem expor
+            // toda a lógica interna de desempate ou de rotação.
+            if (usarJusticaConfiguravel && priorizarMenorQuantidadeCor) {
+              const totalEscolhido = contextoJustificativa.valoresAntes.get(escolhido.id);
+              // O número exibido respeita a regra de justiça da geração:
+              // com lastro, mostra Q + L; sem lastro, mostra apenas Q.
+              explicacao.push(`Quadrinhos antes deste serviço: ${Number.isFinite(totalEscolhido) ? totalEscolhido : 'não informado'}.`);
+            }
             if (militarEraPendente) {
-              explicacao.push('Escolha: prioridade por pendência de uma rodada anterior.');
-            } else if (militarEraProximo) {
-              if (!usarJusticaConfiguravel) {
-                explicacao.push('Escolha: era o próximo militar apto da rotação geral.');
-              } else if (priorizarMenorQuantidadeCor) {
-                explicacao.push(`Escolha: estava entre os menores acumulados de serviço ${rotuloCorJustificativa} e era o próximo no desempate pela rotação ${rotuloRotacaoJustificativa}.`);
-              } else {
-                explicacao.push(`Escolha: era o próximo militar apto da rotação ${rotuloRotacaoJustificativa}; o acumulado de quadrinhos não participou da prioridade.`);
-              }
-            } else if (proximoMilitarDaRotacao) {
-              if (motivosProximo.length) {
-                // V19 — o próximo da rotação já é detalhado na seção
-                // "Candidatos não utilizados", evitando informação duplicada.
-                if (!usarJusticaConfiguravel) {
-                  explicacao.push('Escolha: a rotação geral avançou até o primeiro candidato válido.');
-                } else if (priorizarMenorQuantidadeCor) {
-                  explicacao.push(`Escolha: entre os candidatos válidos, prevaleceu o menor acumulado ${rotuloCorJustificativa}; a rotação ${rotuloRotacaoJustificativa} foi usada no desempate.`);
-                } else {
-                  explicacao.push(`Escolha: a rotação ${rotuloRotacaoJustificativa} avançou até o primeiro candidato válido.`);
-                }
-              } else if (usarJusticaConfiguravel && priorizarMenorQuantidadeCor) {
-                explicacao.push(`Escolha: possuía menor acumulado de quadrinhos ${rotuloCorJustificativa}; a rotação ${rotuloRotacaoJustificativa} atua apenas como desempate.`);
-              } else {
-                explicacao.push(`Escolha: seguiu a rotação ${usarJusticaConfiguravel ? rotuloRotacaoJustificativa : 'geral'} efetiva.`);
-              }
-            } else {
-              explicacao.push(!usarJusticaConfiguravel
-                ? 'Escolha: primeiro candidato válido da rotação geral.'
-                : priorizarMenorQuantidadeCor
-                  ? `Escolha: menor acumulado de serviço ${rotuloCorJustificativa}, com rotação ${rotuloRotacaoJustificativa} como desempate.`
-                  : `Escolha: primeiro candidato válido da rotação ${rotuloRotacaoJustificativa}.`);
+              explicacao.push('Pendência de escala anterior atendida.');
+            }
+            if (escolhaPorEquilibrioSemAntecipacao && !militarEraPendente && !militarEraProximo) {
+              explicacao.push('Escolhido por ter menos quadrinhos nesta data.');
             }
 
-            // V17 — auditoria completa dos candidatos relevantes da rotação.
-            // Percorre, a partir do próximo da rotação, todos os militares até o escolhido
-            // e registra individualmente por que cada um não ocupou a vaga. Isso inclui
-            // impedimentos concretos (folga, na 24, dobraria, indisponibilidade, vermelho
-            // consecutivo, adiantamento etc.) e também candidatos válidos preteridos pelo
-            // critério de justiça/equilíbrio.
-            const analiseCandidatosNaoUtilizados = obterAnaliseRotacaoAteEscolhido(escolhido)
-              .filter(item => !item.endsWith(': escolhido para a vaga.'));
-            if (analiseCandidatosNaoUtilizados.length > 0) {
-              // V18 — melhora apenas a apresentação da auditoria: cada candidato e
-              // seus respectivos motivos ficam em uma linha própria no modal.
-              explicacao.push('Candidatos não utilizados:');
-              analiseCandidatosNaoUtilizados.forEach(item => explicacao.push(item));
+            // Prioritário já identificado pelo motor, com o mesmo total de justiça.
+            if (antecipacaoAutomaticaNestaVaga && houveSubstituicaoPorImpedimentoDaVez) {
+              if (prioritarioReal) {
+                explicacao.push('Antecipação automática por impedimento do militar da vez; gera compensação.');
+              } else {
+                explicacao.push('Antecipação automática por impedimento do militar da vez; gera compensação (prioritário não identificado).');
+              }
+            } else if (antecipacaoAutomaticaNestaVaga) {
+              explicacao.push('Antecipação automática fora da ordem; gera compensação.');
+            }
+            if (prioritariosLista.length > 0) {
+              explicacao.push('Militares da vez não escalados:');
+              prioritariosLista.forEach(p => {
+                // "Q" identifica o total efetivamente usado pela regra da geração:
+                // quadrinhos + lastro quando habilitado, só quadrinhos caso contrário.
+                const detalheAcumulado = contextoJustificativa.priorizarCor
+                  ? ` (Q: ${p.valor}; escalado: ${contextoJustificativa.valoresAntes.get(escolhido.id) ?? 'não informado'})`
+                  : '';
+                explicacao.push(`${obterNomeMilitar(p.id)}: ${p.motivo}${detalheAcumulado}.`);
+              });
             }
 
             // Pulos são consolidados em linhas curtas e só aparecem quando ocorrerem.
-            if (militaresPuladosPorAdiantamento.length > 0) {
-              explicacao.push(`Pulados por adiantamento anterior: ${militaresPuladosPorAdiantamento.map(obterNomeMilitar).join(', ')}.`);
+            const minimoDiasIndispLongaTexto = Math.max(1, Number(obterRegrasEfetivasFuncao(col.funcao, tipoFuncao).lastro?.minimoDiasIndisponibilidade || 30));
+            const puladosAdiantamentoSemLista = militaresPuladosPorAdiantamento.filter(id => !idsPrioritariosListados.has(id));
+            const puladosIndisponibilidadeSemLista = militaresPuladosPorIndisponibilidade
+              .filter(id => !idsPrioritariosListados.has(id))
+              .filter(id => !obterIndisponibilidadeLongaNaData(id, dataStr, minimoDiasIndispLongaTexto));
+            if (puladosAdiantamentoSemLista.length > 0) {
+              explicacao.push(`Adiantamento anterior: ${puladosAdiantamentoSemLista.map(obterNomeMilitar).join(', ')}.`);
             }
-            if (militaresPuladosPorIndisponibilidade.length > 0) {
-              explicacao.push(`Pulados por indisponibilidade/restrição: ${militaresPuladosPorIndisponibilidade.map(obterNomeMilitar).join(', ')}.`);
+            if (puladosIndisponibilidadeSemLista.length > 0) {
+              explicacao.push(`Indisponíveis: ${puladosIndisponibilidadeSemLista.map(obterNomeMilitar).join(', ')}.`);
             }
             if (militaresComLastroPorIndisponibilidade.length > 0) {
               const minimoLastroJustificativa = Math.max(1, Number(obterRegrasEfetivasFuncao(col.funcao, tipoFuncao).lastro?.minimoDiasIndisponibilidade || 30));
@@ -8143,20 +8642,27 @@ try {
               explicacao.push('Exceção: serviço vermelho consecutivo, pois não havia outro candidato capaz de cumprir todas as regras.');
             }
             if (militarJaEstavaAdiantado) {
-              explicacao.push('Exceção: militar já estava adiantado na rotação e foi utilizado por falta de outro candidato válido.');
+              const dataAntecipacaoConfirmada = localizarDataAntecipacaoJustificativa(escolhido);
+              explicacao.push(dataAntecipacaoConfirmada
+                ? `Exceção: militar tinha antecipação registrada em ${dataAntecipacaoConfirmada} e foi utilizado por falta de outro candidato válido.`
+                : 'Exceção: militar constava com prioridade reduzida na rotação, sem antecipação automática confirmada no histórico.');
             }
 
             // Apenas um registro histórico do escolhido, sem repetir toda a análise da rotação.
             if (historicoServicos[escolhido.id].length > 0) {
               const ultimoDia = historicoServicos[escolhido.id][historicoServicos[escolhido.id].length - 1];
-              explicacao.push(`Último serviço do militar: dia ${ultimoDia} deste mês.`);
+              explicacao.push(`Último serviço: ${String(ultimoDia).padStart(2, '0')}/${String(dataObj.getMonth() + 1).padStart(2, '0')}/${dataObj.getFullYear()}.`);
             } else if (ultimaDataServicoPorMilitar[escolhido.id] !== undefined) {
-              explicacao.push(`Último serviço do militar: ${formatarDataBR(new Date(ultimaDataServicoPorMilitar[escolhido.id]))}.`);
+              explicacao.push(`Último serviço: ${formatarDataBR(new Date(ultimaDataServicoPorMilitar[escolhido.id]))}.`);
             } else {
-              explicacao.push('Histórico: sem serviço anterior registrado no período considerado.');
+              explicacao.push('Último serviço: não registrado.');
             }
 
             justificativas[dia][col.chave] = explicacao.join('\n');
+            // Guarda a decisão tomada agora para explicar uma repetição futura
+            // desta mesma rotação, sem recalcular retrospectivamente os critérios.
+            ultimoMotivoEventoRotacaoPorMilitar[`${escolhido.id}:${chaveRotacao}`] =
+              extrairMotivoEscolhaHistorica(justificativas[dia][col.chave]);
             if (!militarEraPendente
               && (
                 (proximoMilitarDaRotacao && !militarEraProximo)
@@ -8170,10 +8676,7 @@ try {
             if (tipoFuncao === 'semanaFimSemana' && militarEraPendente) {
               delete pendenciasRotacao[chaveRotacao];
             }
-            if (tipoFuncao === 'semanaFimSemana'
-              && !militarEraProximo
-              && !militarEraPendente
-              && !militarJaEstavaAdiantado) {
+            if (antecipacaoAutomaticaNestaVaga) {
               militaresAdiantadosRotacao[chaveRotacao].add(escolhido.id);
               // V14 — registra o fato no exato momento em que o motor cria a dívida.
               // Este registro é a fonte de verdade para futuros recálculos.
@@ -8181,7 +8684,10 @@ try {
               adiantamentosAutomaticos[dia][col.chave] = {
                 militarId: escolhido.id,
                 chaveRotacao,
-                origem: 'gerador'
+                origem: 'gerador',
+                prioritarioImpedidoId: prioritarioReal?.id || null,
+                motivoPrioritarioImpedido: prioritarioReal?.motivo || null,
+                origemImpedimento: prioritarioReal?.origem || null
               };
             } else if (tipoFuncao === 'semanaFimSemana' && militarEraProximo) {
               militaresAdiantadosRotacao[chaveRotacao].delete(escolhido.id);
@@ -8194,10 +8700,7 @@ try {
                 delete bloqueiosRotacao[chaveRotacao][escolhido.id];
               }
             }
-            if (tipoFuncao === 'semanaFimSemana'
-              && !militarEraProximo
-              && !militarEraPendente
-              && !militarJaEstavaAdiantado) {
+            if (antecipacaoAutomaticaNestaVaga) {
               const proximoPeriodo = new Date(dataObj);
               const diasAteProximaRodada = servicoVermelho
                 ? (diaSemana === 6 ? 7 : 6)
@@ -8212,6 +8715,7 @@ try {
               ultimoMilitarPorRotacao[`${col.funcao}:todos`] = escolhido.id;
             }
             ultimoEventoPorMilitar[`${escolhido.id}:${chaveRotacao}`] = eventoRotacao;
+            ultimaDataEventoRotacaoPorMilitar[`${escolhido.id}:${chaveRotacao}`] = dataObj.getTime();
             ultimaDataServicoPorMilitar[escolhido.id] = dataObj.getTime();
             ultimoServicoFoiVermelhoPorMilitar[escolhido.id] = servicoVermelho;
             ultimoMilitarPorFuncaoECor[`${col.funcao}:${corServico}`] = escolhido.id;
@@ -8726,7 +9230,7 @@ if (salvou) {
       };
 
       const militarEstaIndisponivelNaData = (militarId, dataStr) =>
-        estado.indisponibilidades.some(i => i.militarId === militarId && dataStr >= i.inicio && dataStr <= i.fim);
+        labIndisponivel(militarId,dataStr);
 
       const militarTemIndisponibilidadeSemanalNaData = (militarId, diaSemana) =>
         estado.indisponibilidadesSemana.some(i => i.militarId === militarId && Number(i.diaSemana) === diaSemana);
@@ -8735,7 +9239,7 @@ if (salvou) {
         const dataSeguinte = new Date(dataObj);
         dataSeguinte.setDate(dataSeguinte.getDate() + 1);
         const dataSeguinteStr = `${dataSeguinte.getFullYear()}-${String(dataSeguinte.getMonth() + 1).padStart(2, '0')}-${String(dataSeguinte.getDate()).padStart(2, '0')}`;
-        return estado.indisponibilidades.some(i => i.militarId === militarId && i.inicio === dataSeguinteStr);
+        const dataStr = `${dataObj.getFullYear()}-${String(dataObj.getMonth() + 1).padStart(2, '0')}-${String(dataObj.getDate()).padStart(2, '0')}`; /* CORREÇÃO: dataStr não existia neste escopo e quebrava o recálculo após troca manual */ return labInicioAmanha(militarId,dataStr);
       };
 
       estruturaEscala.funcoes.forEach(funcao => {
@@ -8994,7 +9498,7 @@ if (salvou) {
             const semAdiantados = candidatosEsperados.filter(m =>
               !militaresAdiantadosRotacaoReferencia[chaveRotacao]?.has(m.id)
             );
-            if (semAdiantados.length > 0) candidatosEsperados = semAdiantados;
+            if (semAdiantados.length > 0 && !justicaPorCorSobrepoeCompensacao(col.funcao, tipoFuncao)) candidatosEsperados = semAdiantados;
 
             // A pendência da REFERÊNCIA nasce somente da própria trajetória automática.
             if (proximoMilitarDaRotacaoReferencia && !pendenciasRotacaoReferencia[chaveRotacao]
@@ -9031,7 +9535,7 @@ if (salvou) {
             }
           }
 
-          const regrasJusticaRecalculo = obterRegrasEfetivasFuncao(col.funcao, tipoFuncao);
+          const regrasJusticaRecalculo = obterRegrasEfetivasEdicaoManual(col.funcao, tipoFuncao);
           const priorizarMenorCorRecalculo = tipoFuncao === 'semanaFimSemana'
             && regrasJusticaRecalculo.justica?.separarPretoVermelho !== false;
           // A escolha automática esperada usa a rotação de REFERÊNCIA, não a rotação real
@@ -9056,11 +9560,8 @@ if (salvou) {
               regrasJusticaRecalculo, corServico
             );
             if (ca !== cb) return ca - cb;
-            if (regrasJusticaRecalculo.justica?.usarRotacaoDesempate !== false) {
-              const da = distanciaRecalculo(a), db = distanciaRecalculo(b);
-              if (da !== db) return da - db;
-            }
-            return distanciaRecalculo(a) - distanciaRecalculo(b);
+            // Mesmo desempate da geração: maior ordem = mais moderno.
+            return (Number(b.ordem ?? 0) - Number(a.ordem ?? 0)) || String(a.id).localeCompare(String(b.id));
           });
           // A escolha esperada é a do próprio MOTOR, gravada na geração. Só quando a escala
           // não tem essa referência (geradas antes desta versão ou elaboradas à mão)
@@ -9312,13 +9813,49 @@ if (salvou) {
           cores[dia][chave] = { cor, legenda: alteracao.tipo === 'troca' ? 'Troca de serviço' : 'Militar puxado' };
         });
       });
+      // Publica somente os registros destinados à consulta pública:
+      // alterações manuais (puxado/troca) e observações do escalante.
+      // Justificativas automáticas da geração não são expostas.
+      const detalhes = {};
+      const incluirDetalhe = (dia, chave, campo, valor) => {
+        detalhes[dia] ||= {};
+        detalhes[dia][chave] ||= {};
+        detalhes[dia][chave][campo] = valor;
+      };
+      Object.entries(escala.alteracoesManuais || {}).forEach(([dia, vagas]) => {
+        Object.entries(vagas || {}).forEach(([chave, alteracao]) => {
+          if (!['puxado', 'troca'].includes(alteracao?.tipo)) return;
+          const justificativa = String(escala.justificativas?.[dia]?.[chave] || '');
+          // A última alteração manual é a que corresponde ao militar atual.
+          const marcadores = [...justificativa.matchAll(/(?:^|\n)ALTERAÇÃO MANUAL:/g)];
+          const trecho = marcadores.length
+            ? justificativa.slice(marcadores[marcadores.length - 1].index).split(/\n\n(?=OBSERVAÇÃO:|ALTERAÇÃO MANUAL:)/)[0].trim()
+            : '';
+          incluirDetalhe(dia, chave, 'alteracao', {
+            tipo: alteracao.tipo,
+            texto: trecho || (alteracao.tipo === 'puxado' ? 'Militar puxado para este serviço.' : 'Troca de serviço registrada.'),
+            dataHora: alteracao.dataHora || ''
+          });
+        });
+      });
+      Object.entries(escala.observacoes || {}).forEach(([dia, vagas]) => {
+        Object.entries(vagas || {}).forEach(([chave, observacao]) => {
+          if (!String(observacao?.texto || '').trim()) return;
+          incluirDetalhe(dia, chave, 'observacao', {
+            texto: String(observacao.texto),
+            legenda: String(observacao.legenda || ''),
+            dataHora: observacao.dataHora || ''
+          });
+        });
+      });
       return {
         mesAno,
         titulo: 'Escala de Serviço - Célula Contraincêndio',
         estrutura: structuredClone(estrutura),
         diasVermelhos: Array.isArray(escala.diasVermelhos) ? [...escala.diasVermelhos] : [],
         dados: dadosPublicos,
-        cores
+        cores,
+        detalhes
       };
     }
 
@@ -9500,7 +10037,12 @@ cabecalho.innerHTML = `
 
         colunasVagas.forEach(col => {
           const militarIdEscalado = estado.escala.dados[dia]?.[col.chave] || '';
-          const ehSubstituicao = Boolean(estado.escala.substituicoes?.[dia]?.[col.chave]);
+          // Amarelo é exclusivo de antecipação automática real, não de toda
+          // escolha fora da posição da rotação (ex.: equilíbrio por quadrinhos).
+          const registroAdiantamento = estado.escala.adiantamentosAutomaticos?.[dia]?.[col.chave];
+          const ehSubstituicao = Boolean(
+            registroAdiantamento && registroAdiantamento.militarId === militarIdEscalado
+          );
           const tipoAlteracaoManual = estado.escala.alteracoesManuais?.[dia]?.[col.chave]?.tipo || '';
           const observacaoCelula = estado.escala.observacoes?.[dia]?.[col.chave];
           const corAlteracaoManual = tipoAlteracaoManual === 'troca'
@@ -9581,11 +10123,7 @@ const tempoSeguinteTroca = new Date(
 ).getTime();
 
 const militarIndisponivelNaDataTroca = militarId =>
-  estado.indisponibilidades.some(i =>
-    i.militarId === militarId &&
-    dataTrocaStr >= i.inicio &&
-    dataTrocaStr <= i.fim
-  ) ||
+  labIndisponivel(militarId,dataTrocaStr) ||
   estado.indisponibilidadesSemana.some(i =>
     i.militarId === militarId &&
     Number(i.diaSemana) === dataTroca.getDay()
@@ -9596,10 +10134,7 @@ const dataSeguinteTrocaStr = `${dataSeguinteTroca.getFullYear()}-${String(dataSe
 // Apenas indisponibilidade POR PERÍODO iniciando amanhã protege hoje.
 // A indisponibilidade semanal de amanhã não tem esse efeito.
 const militarTemInicioIndisponibilidadePeriodoAmanhaTroca = militarId =>
-  estado.indisponibilidades.some(i =>
-    i.militarId === militarId &&
-    i.inicio === dataSeguinteTrocaStr
-  );
+  labInicioAmanha(militarId,dataTrocaStr);
 
 const exibirTodosCandidatosEscala = document.getElementById('exibirTodosCandidatosEscala')?.checked === true;
 const exibirIndisponiveisCandidatosEscala = document.getElementById('exibirIndisponiveisCandidatosEscala')?.checked === true;
@@ -9927,7 +10462,7 @@ const opcoes = militaresOrdenadosTroca
       const diaSemana = data.getDay();
 
       if (!ignorarIndisponibilidade) {
-        if (estado.indisponibilidades.some(i => i.militarId === militar.id && dataStr >= i.inicio && dataStr <= i.fim)) {
+        if (labIndisponivel(militar.id,dataStr)) {
           impedimentos.push('militar indisponível nesta data');
         }
         if (estado.indisponibilidadesSemana.some(i => i.militarId === militar.id && Number(i.diaSemana) === diaSemana)) {
@@ -9940,7 +10475,7 @@ const opcoes = militaresOrdenadosTroca
           const dataSeguinte = new Date(data);
           dataSeguinte.setDate(dataSeguinte.getDate() + 1);
           const seguinteStr = `${dataSeguinte.getFullYear()}-${String(dataSeguinte.getMonth() + 1).padStart(2, '0')}-${String(dataSeguinte.getDate()).padStart(2, '0')}`;
-          if (estado.indisponibilidades.some(i => i.militarId === militar.id && i.inicio === seguinteStr)) {
+          if (labInicioAmanha(militar.id,dataStr)) {
             impedimentos.push('militar inicia indisponibilidade no dia seguinte');
           }
         }
@@ -10157,7 +10692,7 @@ const opcoes = militaresOrdenadosTroca
       } else {
         partes.push('descanso reduzido desativado');
       }
-      partes.push(`vermelhos consecutivos: ${r.vermelho?.permitirConsecutivos ? 'permitidos' : 'exigem ciência para edição manual'}`);
+      partes.push(`vermelhos consecutivos: ${r.vermelho?.permitirConsecutivos ? 'permitidos' : 'apenas com autorização do escalante'}`);
       return partes.join('; ');
     }
 
@@ -10247,10 +10782,10 @@ const opcoes = militaresOrdenadosTroca
       const dataSeguinteStr = `${dataSeguinte.getFullYear()}-${String(dataSeguinte.getMonth() + 1).padStart(2, '0')}-${String(dataSeguinte.getDate()).padStart(2, '0')}`;
       const efetivoDisponivelFuncao = militaresAtivosDaFuncao
         .filter(m =>
-          !estado.indisponibilidades.some(i => i.militarId === m.id && dataStr >= i.inicio && dataStr <= i.fim)
+          !labIndisponivel(m.id,dataStr)
           && !estado.indisponibilidadesSemana.some(i => i.militarId === m.id && Number(i.diaSemana) === dataAtual.getDay())
           && !(Number(obterRegrasEfetivasEdicaoManual(funcao, tipoUsadoNoDia).descanso?.folgasDepois || 0) > 0
-            && estado.indisponibilidades.some(i => i.militarId === m.id && i.inicio === dataSeguinteStr))
+            && labInicioAmanha(m.id,dataStr))
         )
         .length;
       const usarDiferenciadaTemporaria = tiposEscala[funcao] === 'corrida'
@@ -10270,14 +10805,14 @@ const opcoes = militaresOrdenadosTroca
         violacoes.push('militar pertence a outra função');
       }
 
-      if (estado.indisponibilidades.some(i => i.militarId === militarId && dataStr >= i.inicio && dataStr <= i.fim)) {
+      if (labIndisponivel(militarId,dataStr)) {
         violacoes.push('militar indisponível nesta data');
       }
       if (estado.indisponibilidadesSemana.some(i => i.militarId === militarId && Number(i.diaSemana) === dataAtual.getDay())) {
         violacoes.push('militar possui indisponibilidade cadastrada para este dia da semana');
       }
       if (Number(regrasFuncaoManual.descanso?.folgasDepois || 0) > 0
-        && estado.indisponibilidades.some(i => i.militarId === militarId && i.inicio === dataSeguinteStr)) {
+        && labInicioAmanha(militarId,dataStr)) {
         violacoes.push('militar inicia indisponibilidade no dia seguinte');
       }
 
@@ -10705,10 +11240,10 @@ const opcoes = militaresOrdenadosTroca
           `Justificativa informada: ${dadosJustificativaManual.motivo}.`,
           `Responsável pela alteração: ${dadosJustificativaManual.responsavelNome} (SARAM: ${dadosJustificativaManual.responsavelSaram}).`,
           classificacaoTroca.violacaoFolga
-            ? `Alteração realizada mediante confirmação excepcional por descumprimento de regra efetiva da escala: ${violacoes.join('; ')}.`
+            ? `Alteração realizada mediante confirmação pelo escalante da quebra da seguinte regra: ${violacoes.join('; ')}.`
             : 'Militar considerado apto pelas regras configuradas no momento da alteração.',
           `Regras de descanso aplicadas: ${descreverRegrasDescansoFuncao(obterFuncaoDaChave(chaveColuna), estado.escala.tiposUsadosPorDia?.[dia]?.[obterFuncaoDaChave(chaveColuna)] || obterTiposEscalaDaEscala(estado.escala)[obterFuncaoDaChave(chaveColuna)] || '')}.`,
-          'As compensações da rotação foram recalculadas a partir da escala atual após esta edição manual.',
+          '---',
           mesesDependentesFuturos.length > 0
             ? `Escalas/memórias futuras removidas por dependerem desta rotação: ${mesesDependentesFuturos.map(formatarMesAno).join(', ')}.`
             : 'Não havia escala nem memória histórica futura dependente para remover.'
