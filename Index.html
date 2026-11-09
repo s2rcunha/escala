@@ -936,6 +936,12 @@ body.cci-menu-recolhido #bannerConflitoServidor{
 </div>
 <div class="bg-white p-4 rounded shadow-sm cci-subpage-panel cci-subpage-oculta" data-cci-subpagina="registros">
 <h3 class="font-bold text-lg mb-3">Registros de Indisponibilidade</h3>
+<div class="somente-administrador mb-3 flex flex-wrap items-center gap-2">
+  <button type="button" onclick="labAtualizarTiposIndisponibilidadesExistentes()" class="rounded bg-indigo-700 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-800">
+    Atualizar tipos pelo motivo cadastrado
+  </button>
+  <span class="text-xs text-gray-500">Aplica aos registros existentes, inclusive fora dos filtros atuais.</span>
+</div>
 <div class="mb-3 flex flex-wrap items-end gap-3 rounded border border-gray-200 bg-gray-50 p-3">
   <label class="block text-xs font-semibold text-gray-700">Mês de referência
     <select id="filtroMesIndisponibilidades" class="mt-1 block min-w-[190px] rounded border bg-white p-2 text-sm" onchange="renderizarIndisponibilidades()">
@@ -6259,7 +6265,9 @@ async function confirmarImportacaoIndisponibilidades() {
             registro.fim,
 
           motivo:
-            registro.motivo
+            registro.motivo,
+          labTipoId:
+            registro.labTipoId || 'outros'
         })
       );
 
@@ -6584,6 +6592,8 @@ if (
         fim,
         motivo,
         escala,
+        labTipoId: labTipoPorMotivoCSV(motivo)?.id || 'outros',
+        tipoIdentificado: labTipoPorMotivoCSV(motivo)?.nome || 'OUTROS',
         militarId:
           militar ? militar.id : null,
         militarNomeSistema:
@@ -6655,17 +6665,84 @@ if (
 
     // ===== LABORATÓRIO: regras de indisponibilidade isoladas =====
     const LAB_PADRAO = [
-      {id:'ferias',nome:'Férias',classe:'total',antes:1,unidadeAntes:'uteis',depois:2,unidadeDepois:'uteis'},
-      {id:'missao',nome:'Missão',classe:'total',antes:0,unidadeAntes:'corridos',depois:0,unidadeDepois:'corridos'},
-      {id:'curso',nome:'Curso',classe:'total',antes:0,unidadeAntes:'corridos',depois:0,unidadeDepois:'corridos'},
-      {id:'consulta',nome:'Consulta médica',classe:'parcial',antes:0,unidadeAntes:'corridos',depois:0,unidadeDepois:'corridos'},
-      {id:'outro',nome:'Outro',classe:'total',antes:0,unidadeAntes:'corridos',depois:0,unidadeDepois:'corridos'}
+      ...['CASAMENTO','COMISSÃO','CURSO','DISPENSA MÉDICA','DISPENSA COMO RECOMPENSA','FÉRIAS','LESP','LUTO','MATERNIDADE','MISSÃO','ORDEM SUPERIOR','PATERNIDADE','RECESSO','VOO','OUTROS']
+        .map((nome,indice)=>({
+          id:['casamento','comissao','curso','dispensa_medica','dispensa_recompensa','ferias','lesp','luto','maternidade','missao','ordem_superior','paternidade','recesso','voo','outros'][indice],
+          nome,classe:'total',antes:nome==='FÉRIAS'?1:0,
+          unidadeAntes:nome==='FÉRIAS'?'uteis':'corridos',
+          depois:nome==='FÉRIAS'?2:0,
+          unidadeDepois:nome==='FÉRIAS'?'uteis':'corridos',
+          horasAntes:0,horasDepois:0
+        }))
     ];
-    function labConfig(){
-      if(!estado.labRegrasIndisponibilidade)estado.labRegrasIndisponibilidade={tipos:structuredClone(LAB_PADRAO),rendicao:'09:00'};
-      return estado.labRegrasIndisponibilidade;
+    function labNormalizarNomeTipo(valor){
+      return String(valor||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+        .trim().replace(/\s+/g,' ').toUpperCase();
     }
-    function labTipo(id){return labConfig().tipos.find(t=>t.id===id)||labConfig().tipos.find(t=>t.id==='outro')||LAB_PADRAO[4]}
+    function labUnificarTiposPadrao(tipos){
+      const saida=Array.isArray(tipos)?structuredClone(tipos):[];
+      for(const padrao of LAB_PADRAO){
+        const candidatos=saida.filter(t=>t.id===padrao.id||
+          labNormalizarNomeTipo(t.nome)===labNormalizarNomeTipo(padrao.nome));
+        if(candidatos.length){
+          // Preserva a configuração existente e padroniza a grafia (Férias -> FÉRIAS).
+          const principal=candidatos.find(t=>t.id===padrao.id)||candidatos[0];
+          principal.nome=padrao.nome;
+          // IDs existentes continuam válidos para não quebrar vínculos de registros.
+          for(const duplicado of candidatos){
+            if(duplicado!==principal)duplicado.nome=padrao.nome;
+          }
+        }else saida.push(structuredClone(padrao));
+      }
+      return saida;
+    }
+    function labConfig(){
+      if(!estado.labRegrasIndisponibilidade)
+        estado.labRegrasIndisponibilidade={tipos:[],rendicao:'09:00'};
+      const cfg=estado.labRegrasIndisponibilidade;
+      if(!Array.isArray(cfg.tipos))cfg.tipos=[];
+      // Não modifica os tipos persistidos durante a leitura.
+      return cfg;
+    }
+    async function labAtualizarTiposIndisponibilidadesExistentes(){
+      if(obterPerfilAtual() !== 'administrador'){alert('Esta operação é exclusiva do administrador.');return;}
+      const itens=estado.indisponibilidades||[];
+      const alteracoes=[];
+      let semCorrespondencia=0, jaCorretos=0;
+      for(const item of itens){
+        const tipo=labTipoPorMotivoCSV(item.motivo);
+        if(!tipo){semCorrespondencia++;continue;}
+        if(item.labTipoId===tipo.id){jaCorretos++;continue;}
+        alteracoes.push({item,anterior:item.labTipoId,novo:tipo.id,motivo:item.motivo});
+      }
+      if(!alteracoes.length){
+        alert(`Nenhum tipo precisa ser atualizado.\\nJá corretos: ${jaCorretos}.\\nSem tipo correspondente: ${semCorrespondencia}.`);
+        return;
+      }
+      const mensagem=`Atualizar ${alteracoes.length} indisponibilidade(s) com base no motivo já cadastrado?\\n\\n`+
+        `Já corretos: ${jaCorretos}.\\nSem correspondência: ${semCorrespondencia} (serão preservados).\\n\\n`+
+        `A operação considera todos os registros, mesmo os não exibidos pelos filtros.`;
+      if(!confirm(mensagem))return;
+      for(const {item,novo} of alteracoes)item.labTipoId=novo;
+      try{
+        const ok=await salvarEstado({tipo:'atualizacao_tipos_indisponibilidade_por_motivo',quantidade:alteracoes.length});
+        if(ok===false)throw new Error('Salvamento não confirmado.');
+        renderizarIndisponibilidades();
+        alert(`${alteracoes.length} indisponibilidade(s) atualizada(s) e salvas no servidor.`);
+      }catch(erro){
+        for(const {item,anterior} of alteracoes){
+          if(anterior===undefined)delete item.labTipoId;
+          else item.labTipoId=anterior;
+        }
+        renderizarIndisponibilidades();
+        alert('Não foi possível salvar as alterações. Os tipos anteriores foram restaurados.\\n'+(erro.message||erro));
+      }
+    }
+    function labTipoPorMotivoCSV(motivo){
+      const chave=labNormalizarNomeTipo(motivo);
+      return labConfig().tipos.find(t=>labNormalizarNomeTipo(t.nome)===chave) || LAB_PADRAO.find(t=>labNormalizarNomeTipo(t.nome)===chave) || null;
+    }
+    function labTipo(id){const tipos=labConfig().tipos;return tipos.find(t=>t.id===id)||LAB_PADRAO.find(t=>t.id===id)||tipos.find(t=>t.id==='outro')||tipos.find(t=>t.id==='outros')||LAB_PADRAO[LAB_PADRAO.length-1]}
     function labDate(iso){const [y,m,d]=String(iso).split('-').map(Number);return new Date(y,m-1,d)}
     function labISO(date){return [date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-')}
     function labUteis(date){
@@ -6722,8 +6799,8 @@ if (
       const sel=document.getElementById('labTipoIndisp');
       if(!sel)return;
       const anterior=sel.value;
-      sel.innerHTML=labConfig().tipos.map(t=>'<option value="'+escaparHTML(t.id)+'">'+escaparHTML(t.nome)+' ('+(t.classe==='parcial'?'parcial':'total')+')</option>').join('');
-      if(labConfig().tipos.some(t=>t.id===anterior))sel.value=anterior;
+      sel.innerHTML=labUnificarTiposPadrao(labConfig().tipos).map(t=>'<option value="'+escaparHTML(t.id)+'">'+escaparHTML(t.nome)+' ('+(t.classe==='parcial'?'parcial':'total')+')</option>').join('');
+      if(labUnificarTiposPadrao(labConfig().tipos).some(t=>t.id===anterior))sel.value=anterior;
       const parcial=labTipo(sel.value).classe==='parcial';
       document.getElementById('labCamposParciais').style.display=parcial?'grid':'none';
     }
@@ -6740,7 +6817,7 @@ if (
           <button id="labFecharConfig" type="button" style="font-size:20px;padding:6px" aria-label="Fechar">✕</button>
         </div>
         <p style="margin:10px 0;color:#475569">Selecione um tipo para editar apenas suas regras. As configurações serão salvas no SESCI.</p>
-        <label style="display:block;font-weight:bold;margin-bottom:5px">Tipo cadastrado</label>
+        <label style="display:block;font-weight:bold;margin-bottom:5px">Tipo de indisponibilidade</label>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px">
           <select id="labSeletorTipo" style="flex:1;min-width:180px;border:1px solid #94a3b8;border-radius:6px;padding:10px"></select>
           <button id="labNovoTipo" type="button" style="background:#581c87;color:white;padding:9px 12px;border-radius:6px">+ Novo tipo</button>
@@ -6784,12 +6861,16 @@ if (
         </div>`;
       overlay.appendChild(panel);document.body.appendChild(overlay);
       const el=id=>panel.querySelector('#'+id);
+      // A lista do formulário combina os tipos padrão com os tipos já cadastrados.
+      // Tipos novos só são persistidos quando o escalante clica em Salvar regras.
       const draft=structuredClone(cfg);
+      draft.tipos=labUnificarTiposPadrao(draft.tipos);
       let atual='';
       const num=(id,max)=>Math.min(max,Math.max(0,Number(el(id).value)||0));
       function salvarCampos(){
         const t=draft.tipos.find(x=>x.id===atual);if(!t)return;
-        t.nome=el('labNomeTipo').value.trim()||t.nome;
+        const padrao=LAB_PADRAO.find(p=>p.id===t.id||labNormalizarNomeTipo(p.nome)===labNormalizarNomeTipo(t.nome));
+        t.nome=padrao?.nome||el('labNomeTipo').value.trim()||t.nome;
         t.classe=el('labClasseTipo').value;
         t.antes=num('labAntes',365);t.depois=num('labDepois',365);
         t.unidadeAntes=el('labUnidadeAntes').value;t.unidadeDepois=el('labUnidadeDepois').value;
@@ -6816,6 +6897,9 @@ if (
         salvarCampos();
         const nome=prompt('Nome do novo tipo de indisponibilidade:');
         if(!nome?.trim())return;
+        if(draft.tipos.some(t=>labNormalizarNomeTipo(t.nome)===labNormalizarNomeTipo(nome))){
+          alert('Já existe um tipo com esse nome.');return;
+        }
         const id='tipo_'+Date.now()+'_'+Math.floor(Math.random()*1000);
         draft.tipos.push({id,nome:nome.trim().slice(0,80),classe:'total',antes:0,depois:0,unidadeAntes:'corridos',unidadeDepois:'corridos',horasAntes:0,horasDepois:0});
         atual=id;listar();exibir();
@@ -6823,19 +6907,23 @@ if (
       el('labExcluirTipo').onclick=()=>{
         if(draft.tipos.length<=1)return;
         const t=draft.tipos.find(x=>x.id===atual);
+        if(LAB_PADRAO.some(p=>p.id===t.id||labNormalizarNomeTipo(p.nome)===labNormalizarNomeTipo(t.nome))){
+          alert('Este é um tipo padrão. Para corrigir sua grafia, basta clicar em Salvar regras.');return;
+        }
         if((estado.indisponibilidades||[]).some(i=>i.labTipoId===atual)){alert('Este tipo já está vinculado a indisponibilidades cadastradas. Exclua ou altere esses registros antes.');return;}
         if(!confirm('Excluir o tipo '+t.nome+'?'))return;
         draft.tipos=draft.tipos.filter(x=>x.id!==atual);atual=draft.tipos[0].id;listar();exibir();
       };
       const fechar=()=>overlay.remove();
       el('labFecharConfig').onclick=fechar;el('labCancelarConfig').onclick=fechar;
+      listar();exibir();
       el('labRend').value=draft.rendicao||'09:00';
       el('labSalvarConfig').onclick=async()=>{
         salvarCampos();draft.rendicao=el('labRend').value||'09:00';
         const botao=el('labSalvarConfig');
         botao.disabled=true;botao.textContent='Salvando no servidor...';
-        const anterior=structuredClone(cfg);
-        cfg.tipos=structuredClone(draft.tipos);cfg.rendicao=draft.rendicao;
+        const anterior=estado.labRegrasIndisponibilidade ? structuredClone(estado.labRegrasIndisponibilidade) : null;
+        estado.labRegrasIndisponibilidade={...cfg,tipos:labUnificarTiposPadrao(draft.tipos),rendicao:draft.rendicao};
         let confirmado=false;
         try {
           confirmado=(await salvarEstado('regras_indisponibilidade'))===true;
@@ -6845,7 +6933,8 @@ if (
           botao.disabled=false;botao.textContent='Salvar regras';
         }
         if(!confirmado){
-          cfg.tipos=anterior.tipos;cfg.rendicao=anterior.rendicao;
+          if(anterior)estado.labRegrasIndisponibilidade=anterior;
+          else delete estado.labRegrasIndisponibilidade;
           alert('As regras NÃO foram confirmadas pelo servidor. Verifique sua conexão ou um possível conflito de versão e tente novamente.');
           return;
         }
@@ -7076,7 +7165,7 @@ if (
       overlay.appendChild(painel);document.body.appendChild(overlay);
       const el=id=>painel.querySelector('#'+id);
       el('labEditTipo').innerHTML=labConfig().tipos.map(t=>`<option value="${escaparHTML(t.id)}">${escaparHTML(t.nome)} (${t.classe})</option>`).join('');
-      el('labEditTipo').value=labConfig().tipos.some(t=>t.id===item.labTipoId)?item.labTipoId:'outro';
+      el('labEditTipo').value=labUnificarTiposPadrao(labConfig().tipos).some(t=>t.id===item.labTipoId)?item.labTipoId:'outro';
       el('labEditMotivo').value=item.motivo||'';
       el('labEditInicio').value=item.inicio||'';
       el('labEditFim').value=item.fim||'';
@@ -8266,9 +8355,6 @@ try {
 
           let excecaoVermelhaConsecutiva = false;
           let excecaoCorConsecutiva = false;
-          let excecaoCorConfirmadaPeloEscalante = false;
-          let excecaoVermelhaConfirmadaPeloEscalante = false;
-          let descansoReduzidoConfirmadoPeloEscalante = false;
           const regraCorAtual = garantirRegrasCorServico(corServico);
           if (tipoFuncao === 'semanaFimSemana' && corServico !== 'vermelho' && regraCorAtual.evitarConsecutivos) {
             const candidatosSemRepetirCor = candidatos.filter(m => !obterUltimoMilitarDaCorAntes(m.id, col.funcao, corServico, dataObj, novaEscala, mesAno));
@@ -8277,12 +8363,9 @@ try {
                 () => `foi preterido para evitar repetição consecutiva de serviço da cor ${obterCorServicoPorId(corServico).nome}`);
               candidatos = candidatosSemRepetirCor;
             } else if (candidatos.length > 0) {
-              const exigeConfirmacaoCor = regraCorAtual.confirmarExcecao !== false;
-              const autorizar = !exigeConfirmacaoCor || confirm(`Não há candidato para ${dia}/${String(mes).padStart(2,'0')} sem repetir consecutivamente a cor ${obterCorServicoPorId(corServico).nome} na função ${col.funcao}. Deseja abrir uma exceção somente para esta vaga?`);
-              if (autorizar) {
-                excecaoCorConsecutiva = true;
-                excecaoCorConfirmadaPeloEscalante = exigeConfirmacaoCor;
-              } else candidatos = [];
+              const autorizar = regraCorAtual.confirmarExcecao === false || confirm(`Não há candidato para ${dia}/${String(mes).padStart(2,'0')} sem repetir consecutivamente a cor ${obterCorServicoPorId(corServico).nome} na função ${col.funcao}. Deseja abrir uma exceção somente para esta vaga?`);
+              if (autorizar) excecaoCorConsecutiva = true;
+              else candidatos = [];
             }
           }
 
@@ -8372,7 +8455,6 @@ try {
               const autorizarVermelho = confirm(`Não há candidato para ${dia}/${String(mes).padStart(2,'0')} sem quebrar a regra de vermelhos consecutivos na função ${col.funcao}. Deseja abrir uma exceção somente para esta vaga?`);
               candidatos = autorizarVermelho ? candidatosComVermelhaConsecutiva : [];
               excecaoVermelhaConsecutiva = autorizarVermelho;
-              excecaoVermelhaConfirmadaPeloEscalante = autorizarVermelho;
             }
           }
 
@@ -8445,7 +8527,6 @@ try {
               )
             );
             if (autorizarDescansoReduzido) {
-              descansoReduzidoConfirmadoPeloEscalante = exigeConfirmacaoDescanso;
               candidatos = candidatosComIntervaloReduzido;
               excecaoVermelhaConsecutiva = aplicarRegraVermelha
                 && candidatos.some(m => ultimoServicoFoiVermelhoPorMilitar[m.id]);
@@ -8645,20 +8726,8 @@ try {
               explicacao.push(`Lastro: ${militaresComLastroPorIndisponibilidade.map(obterNomeMilitar).join(', ')} recebeu 1 lastro ${nomeCorServico.toLowerCase()} por indisponibilidade de ${minimoLastroJustificativa} dias ou mais.`);
             }
 
-            // Registra as exceções confirmadas manualmente para esta vaga.
-            if (excecaoCorConsecutiva && excecaoCorConfirmadaPeloEscalante
-              && obterUltimoMilitarDaCorAntes(escolhido.id, col.funcao, corServico, dataObj, novaEscala, mesAno)) {
-              explicacao.push(`Exceção confirmada pelo escalante: repetição consecutiva de serviço da cor ${nomeCorServico}.`);
-            }
-            if (excecaoVermelhaConsecutiva && excecaoVermelhaConfirmadaPeloEscalante) {
-              explicacao.push('Exceção confirmada pelo escalante: serviço vermelho consecutivo por falta de candidato que atendesse à regra.');
-            }
-            if (descansoReduzidoConfirmadoPeloEscalante) {
-              explicacao.push('Exceção confirmada pelo escalante: utilização do descanso reduzido configurado por falta de candidato com descanso normal.');
-            }
-
             // Situações excepcionais permanecem explícitas.
-            if (excecaoVermelhaConsecutiva && !excecaoVermelhaConfirmadaPeloEscalante && ultimoServicoFoiVermelhoPorMilitar[escolhido.id]) {
+            if (excecaoVermelhaConsecutiva && ultimoServicoFoiVermelhoPorMilitar[escolhido.id]) {
               explicacao.push('Exceção: serviço vermelho consecutivo, pois não havia outro candidato capaz de cumprir todas as regras.');
             }
             if (militarJaEstavaAdiantado) {
