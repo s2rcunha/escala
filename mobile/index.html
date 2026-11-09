@@ -8266,6 +8266,9 @@ try {
 
           let excecaoVermelhaConsecutiva = false;
           let excecaoCorConsecutiva = false;
+          let excecaoCorConfirmadaPeloEscalante = false;
+          let excecaoVermelhaConfirmadaPeloEscalante = false;
+          let descansoReduzidoConfirmadoPeloEscalante = false;
           const regraCorAtual = garantirRegrasCorServico(corServico);
           if (tipoFuncao === 'semanaFimSemana' && corServico !== 'vermelho' && regraCorAtual.evitarConsecutivos) {
             const candidatosSemRepetirCor = candidatos.filter(m => !obterUltimoMilitarDaCorAntes(m.id, col.funcao, corServico, dataObj, novaEscala, mesAno));
@@ -8274,9 +8277,12 @@ try {
                 () => `foi preterido para evitar repetição consecutiva de serviço da cor ${obterCorServicoPorId(corServico).nome}`);
               candidatos = candidatosSemRepetirCor;
             } else if (candidatos.length > 0) {
-              const autorizar = regraCorAtual.confirmarExcecao === false || confirm(`Não há candidato para ${dia}/${String(mes).padStart(2,'0')} sem repetir consecutivamente a cor ${obterCorServicoPorId(corServico).nome} na função ${col.funcao}. Deseja abrir uma exceção somente para esta vaga?`);
-              if (autorizar) excecaoCorConsecutiva = true;
-              else candidatos = [];
+              const exigeConfirmacaoCor = regraCorAtual.confirmarExcecao !== false;
+              const autorizar = !exigeConfirmacaoCor || confirm(`Não há candidato para ${dia}/${String(mes).padStart(2,'0')} sem repetir consecutivamente a cor ${obterCorServicoPorId(corServico).nome} na função ${col.funcao}. Deseja abrir uma exceção somente para esta vaga?`);
+              if (autorizar) {
+                excecaoCorConsecutiva = true;
+                excecaoCorConfirmadaPeloEscalante = exigeConfirmacaoCor;
+              } else candidatos = [];
             }
           }
 
@@ -8366,6 +8372,7 @@ try {
               const autorizarVermelho = confirm(`Não há candidato para ${dia}/${String(mes).padStart(2,'0')} sem quebrar a regra de vermelhos consecutivos na função ${col.funcao}. Deseja abrir uma exceção somente para esta vaga?`);
               candidatos = autorizarVermelho ? candidatosComVermelhaConsecutiva : [];
               excecaoVermelhaConsecutiva = autorizarVermelho;
+              excecaoVermelhaConfirmadaPeloEscalante = autorizarVermelho;
             }
           }
 
@@ -8438,6 +8445,7 @@ try {
               )
             );
             if (autorizarDescansoReduzido) {
+              descansoReduzidoConfirmadoPeloEscalante = exigeConfirmacaoDescanso;
               candidatos = candidatosComIntervaloReduzido;
               excecaoVermelhaConsecutiva = aplicarRegraVermelha
                 && candidatos.some(m => ultimoServicoFoiVermelhoPorMilitar[m.id]);
@@ -8637,8 +8645,20 @@ try {
               explicacao.push(`Lastro: ${militaresComLastroPorIndisponibilidade.map(obterNomeMilitar).join(', ')} recebeu 1 lastro ${nomeCorServico.toLowerCase()} por indisponibilidade de ${minimoLastroJustificativa} dias ou mais.`);
             }
 
+            // Registra as exceções confirmadas manualmente para esta vaga.
+            if (excecaoCorConsecutiva && excecaoCorConfirmadaPeloEscalante
+              && obterUltimoMilitarDaCorAntes(escolhido.id, col.funcao, corServico, dataObj, novaEscala, mesAno)) {
+              explicacao.push(`Exceção confirmada pelo escalante: repetição consecutiva de serviço da cor ${nomeCorServico}.`);
+            }
+            if (excecaoVermelhaConsecutiva && excecaoVermelhaConfirmadaPeloEscalante) {
+              explicacao.push('Exceção confirmada pelo escalante: serviço vermelho consecutivo por falta de candidato que atendesse à regra.');
+            }
+            if (descansoReduzidoConfirmadoPeloEscalante) {
+              explicacao.push('Exceção confirmada pelo escalante: utilização do descanso reduzido configurado por falta de candidato com descanso normal.');
+            }
+
             // Situações excepcionais permanecem explícitas.
-            if (excecaoVermelhaConsecutiva && ultimoServicoFoiVermelhoPorMilitar[escolhido.id]) {
+            if (excecaoVermelhaConsecutiva && !excecaoVermelhaConfirmadaPeloEscalante && ultimoServicoFoiVermelhoPorMilitar[escolhido.id]) {
               explicacao.push('Exceção: serviço vermelho consecutivo, pois não havia outro candidato capaz de cumprir todas as regras.');
             }
             if (militarJaEstavaAdiantado) {
