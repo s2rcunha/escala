@@ -325,6 +325,22 @@ body.cci-menu-recolhido .cci-nav-arrow{display:none}
 #areaEscalaPDF .cci-escala-scrollbar-sticky{position:sticky;bottom:0;z-index:20;width:100%;height:18px;overflow-x:auto;overflow-y:hidden;background:#f3f4f6;border:1px solid #d1d5db;border-top:0}
 #areaEscalaPDF .cci-escala-scrollbar-sticky>div{height:1px;min-width:100%}
 @media(max-width:767px){#areaEscalaPDF #tabelaEscalaPrincipal th:nth-child(1),#areaEscalaPDF #tabelaEscalaPrincipal td:nth-child(1){min-width:54px;width:54px;max-width:54px}#areaEscalaPDF #tabelaEscalaPrincipal th:nth-child(2),#areaEscalaPDF #tabelaEscalaPrincipal td:nth-child(2){left:54px;min-width:68px;width:68px;max-width:68px}}
+
+/* Visualização da escala otimizada para telas pequenas. */
+.sesci-mobile-filtro{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px;margin:10px 0;border:1px solid #cbd5e1;border-radius:12px;background:#f8fafc}
+.sesci-mobile-filtro label{font-size:13px;font-weight:700;color:#334155}
+.sesci-mobile-filtro select{min-width:180px;max-width:100%;flex:1;border:1px solid #94a3b8;border-radius:9px;padding:11px 12px;font-size:16px;background:#fff;color:#0f172a}
+@media(max-width:640px){
+ #areaEscalaPDF{padding:12px!important;max-width:100%;overflow:hidden}
+ #areaEscalaPDF .sesci-mobile-filtro{display:flex;flex-direction:column;align-items:stretch;gap:6px}
+ #areaEscalaPDF .sesci-mobile-filtro select{width:100%;min-width:0;flex:auto}
+ #areaEscalaPDF .cci-nao-exportar-pdf.flex.gap-2{flex-wrap:wrap;gap:8px}
+ #areaEscalaPDF .cci-nao-exportar-pdf.flex.gap-2 button{flex:1 1 145px;min-height:44px;margin:0}
+ #areaEscalaPDF #mesEscalaVisualizacao,#areaEscalaPDF #anoEscalaVisualizacao{min-height:44px;font-size:16px}
+ #areaEscalaPDF .cci-escala-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+ #areaEscalaPDF #tabelaEscalaPrincipal{width:max-content;min-width:100%;font-size:12px}
+ #areaEscalaPDF #tabelaEscalaPrincipal th,#areaEscalaPDF #tabelaEscalaPrincipal td{padding:7px 5px}
+}
 </style>
 <style>
 /* ETAPA 21 — descrições contextuais do menu lateral */
@@ -483,6 +499,10 @@ body.cci-menu-recolhido #bannerConflitoServidor{
 <span class="font-semibold text-blue-600">Azul:</span> escala gerada ·
 <span class="font-semibold text-green-600">Verde:</span> publicada
 </div>
+</div>
+<div class="sesci-mobile-filtro cci-nao-exportar-pdf" aria-label="Filtro de funções da escala mensal">
+  <label for="filtroFuncaoEscalaMobile">Função exibida na escala</label>
+  <select id="filtroFuncaoEscalaMobile" aria-label="Escolher todas as funções ou uma função específica" onchange="renderizarTabelaEscala()"><option value="">Todas as funções</option></select>
 </div>
 <div class="w-full text-xs text-gray-500 cci-nao-exportar-pdf" id="statusPublicacaoEscala"></div>
 <div class="flex gap-2 cci-nao-exportar-pdf">
@@ -10026,6 +10046,23 @@ if (salvou) {
           colunasVagas.push({ funcao: f, chave: `${f} #${i + 1}` });
         }
       });
+
+      // Filtro exclusivo da visualização: não altera dados, vagas nem geração.
+      const seletorFuncaoMobile = document.getElementById('filtroFuncaoEscalaMobile');
+      if (seletorFuncaoMobile) {
+        const selecionada = seletorFuncaoMobile.value;
+        const disponiveis = [...new Set(colunasVagas.map(col => col.funcao))];
+        const assinatura = JSON.stringify(disponiveis);
+        if (seletorFuncaoMobile.dataset.funcoes !== assinatura) {
+          seletorFuncaoMobile.innerHTML = '<option value="">Todas as funções</option>' +
+            disponiveis.map(f => `<option value="${escaparHTML(f)}">${escaparHTML(f)}</option>`).join('');
+          seletorFuncaoMobile.dataset.funcoes = assinatura;
+          if (disponiveis.includes(selecionada)) seletorFuncaoMobile.value = selecionada;
+        }
+        if (seletorFuncaoMobile.value) {
+          colunasVagas = colunasVagas.filter(col => col.funcao === seletorFuncaoMobile.value);
+        }
+      }
 
       // Cabeçalho Dinâmico
 cabecalho.innerHTML = `
