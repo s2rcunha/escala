@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sesci-pwa-v5-sincronizado-20261103';
+const CACHE_NAME = 'sesci-pwa-v9-filtro-funcao-mobile-20261109';
 const APP_SHELL = [
   './',
   './index.html',
