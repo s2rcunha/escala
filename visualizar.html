@@ -98,7 +98,7 @@
 
     </section>
 
-    <footer class="py-5 text-center text-xs text-gray-500">Consulta da escala publicada pelo CCI</footer>
+    <footer class="py-5 text-center text-xs text-gray-500">🧪 LABORATÓRIO — PUBLICAÇÃO SIMULADA, NÃO DISPONÍVEL AO PÚBLICO</footer>
   </main>
 
 
@@ -425,9 +425,12 @@ async function exportarPDF() {
   }
 }
 
+
+
 async function chamarApiPublica(funcao, params = {}) {
   const resposta = await fetch(SCRIPT_URL, {
     method: 'POST',
+    cache: 'no-store',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify({ funcao, params })
   });
@@ -442,26 +445,53 @@ function obterMesAtual() {
   return `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`;
 }
 
-async function carregarListaEscalasPublicadas(mesPreferido = '') {
+let assinaturaPublicacoesAtual = '';
+let verificacaoPublicacoesEmAndamento = false;
+
+function assinaturaDaListaPublicacoes(escalas) {
+  return JSON.stringify((Array.isArray(escalas) ? escalas : [])
+    .map(item => [String(item?.mesAno || ''), String(item?.publicadoEm || '')])
+    .sort((a, b) => a[0].localeCompare(b[0])));
+}
+
+function limparVisualizacaoSemPublicacao(texto = 'Nenhuma escala foi publicada até o momento.') {
+  publicacaoAtual = null;
+  const mensagem = document.getElementById('mensagem');
+  if (mensagem) {
+    mensagem.classList.remove('hidden');
+    mensagem.textContent = texto;
+  }
+  const seletorEscala = document.getElementById('seletorEscala');
+  if (seletorEscala) {
+    seletorEscala.innerHTML = '<option value="">Nenhuma escala publicada</option>';
+    seletorEscala.value = '';
+    seletorEscala.disabled = true;
+  }
+  atualizarSeletorFuncoes(null);
+  atualizarSeletorDias(null);
+  atualizarSeletorMilitares(null);
+  document.getElementById('mesPublicacao').textContent = 'Escala ainda não publicada';
+  document.getElementById('ultimaAtualizacao').textContent = '';
+  document.getElementById('areaTabela')?.classList.add('hidden');
+  const cabecalho = document.getElementById('cabecalho');
+  if (cabecalho) cabecalho.innerHTML = '';
+  const corpo = document.getElementById('corpo');
+  if (corpo) corpo.innerHTML = '';
+  const legenda = document.getElementById('legendaCores');
+  if (legenda) legenda.innerHTML = '';
+}
+
+async function carregarListaEscalasPublicadas(mesPreferido = '', resultadoPronto = null) {
   const seletor = document.getElementById('seletorEscala');
-  const resultado = await chamarApiPublica('listarEscalasPublicadas');
+  const resultado = resultadoPronto || await chamarApiPublica('listarEscalasPublicadas');
+  assinaturaPublicacoesAtual = assinaturaDaListaPublicacoes(resultado?.escalas || []);
   // Organiza os meses em ordem cronológica (do mais antigo ao mais recente).
   const escalas = (Array.isArray(resultado?.escalas) ? resultado.escalas : [])
     .filter(item => /^\d{4}-\d{2}$/.test(String(item?.mesAno || '')))
     .sort((a, b) => a.mesAno.localeCompare(b.mesAno));
 
   if (!escalas.length) {
-    seletor.innerHTML = '<option value="">Nenhuma escala publicada</option>';
-    seletor.disabled = true;
-    publicacaoAtual = null;
-    atualizarSeletorFuncoes(null);
-    atualizarSeletorDias(null);
-    atualizarSeletorMilitares(null);
-    document.getElementById('areaTabela')?.classList.add('hidden');
-    const corpo = document.getElementById('corpo');
-    if (corpo) corpo.innerHTML = '';
-    const legenda = document.getElementById('legendaCores');
-    if (legenda) legenda.innerHTML = '';
+    limparVisualizacaoSemPublicacao();
     return '';
   }
 
@@ -498,13 +528,7 @@ async function carregarEscalaPublicada(mesAno = '') {
     );
 
     if (!publicacao?.publicada) {
-      mensagem.textContent = 'Nenhuma escala foi publicada até o momento.';
-      publicacaoAtual = null;
-      atualizarSeletorFuncoes(null);
-    atualizarSeletorDias(null);
-    atualizarSeletorMilitares(null);
-      document.getElementById('mesPublicacao').textContent = 'Escala ainda não publicada';
-      document.getElementById('ultimaAtualizacao').textContent = '';
+      limparVisualizacaoSemPublicacao();
       return;
     }
 
@@ -534,28 +558,19 @@ async function atualizarPaginaEscalas() {
   const botao = document.getElementById('btnAtualizar');
   const spinner = document.getElementById('spinnerAtualizar');
   const texto = document.getElementById('textoBtnAtualizar');
-
   if (botao?.disabled) return;
-
   if (botao) botao.disabled = true;
   if (spinner) spinner.classList.remove('hidden');
   if (texto) texto.textContent = 'Carregando';
-
   try {
     const mesSelecionado = document.getElementById('seletorEscala')?.value || '';
     const escolhido = await carregarListaEscalasPublicadas(mesSelecionado);
-    if (escolhido) {
-      await carregarEscalaPublicada(escolhido);
-    } else {
-      document.getElementById('mensagem').classList.remove('hidden');
-      document.getElementById('mensagem').textContent = 'Nenhuma escala foi publicada até o momento.';
-      document.getElementById('mesPublicacao').textContent = 'Escala ainda não publicada';
-      document.getElementById('ultimaAtualizacao').textContent = '';
-    }
+    if (escolhido) await carregarEscalaPublicada(escolhido);
+    else limparVisualizacaoSemPublicacao();
   } catch (erro) {
     console.error(erro);
-    document.getElementById('mensagem').textContent =
-      'Não foi possível atualizar a lista de escalas publicadas.';
+    document.getElementById('mensagem').classList.remove('hidden');
+    document.getElementById('mensagem').textContent = 'Não foi possível atualizar a lista de escalas publicadas.';
   } finally {
     if (spinner) spinner.classList.add('hidden');
     if (texto) texto.textContent = 'Atualizar';
@@ -563,23 +578,61 @@ async function atualizarPaginaEscalas() {
   }
 }
 
+async function verificarMudancasPublicacoes() {
+  if (document.hidden || verificacaoPublicacoesEmAndamento) return;
+  verificacaoPublicacoesEmAndamento = true;
+  try {
+    const resultado = await chamarApiPublica('listarEscalasPublicadas');
+    const escalas = (Array.isArray(resultado?.escalas) ? resultado.escalas : [])
+      .filter(item => /^\d{4}-\d{2}$/.test(String(item?.mesAno || '')))
+      .sort((a, b) => a.mesAno.localeCompare(b.mesAno));
+    const assinaturaNova = assinaturaDaListaPublicacoes(escalas);
+    if (assinaturaNova === assinaturaPublicacoesAtual) return;
+    const mesPreferido = document.getElementById('seletorEscala')?.value || '';
+    const escolhido = await carregarListaEscalasPublicadas(mesPreferido, { escalas });
+    if (escolhido) await carregarEscalaPublicada(escolhido);
+    else limparVisualizacaoSemPublicacao();
+  } catch (erro) {
+    console.warn('Não foi possível verificar alterações nas publicações neste ciclo.', erro);
+  } finally {
+    verificacaoPublicacoesEmAndamento = false;
+  }
+}
+
+function iniciarSincronizacaoPublicacoes() {
+  try {
+    const canal = new BroadcastChannel('sesci-publicacoes-cci');
+    canal.addEventListener('message', () => atualizarPaginaEscalas());
+  } catch (erro) {
+    console.debug('BroadcastChannel indisponível; atualização periódica ativa.', erro);
+  }
+  window.addEventListener('storage', evento => {
+    if (evento.key === 'sesci_publicacoes_cci_evento') atualizarPaginaEscalas();
+  });
+  window.addEventListener('message', evento => {
+    if (evento.data?.tipo === 'sesci-publicacoes-atualizadas') atualizarPaginaEscalas();
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) verificarMudancasPublicacoes();
+  });
+  window.addEventListener('focus', verificarMudancasPublicacoes);
+  // Detecta exclusões/publicações feitas em outros dispositivos sem exigir F5.
+  window.setInterval(verificarMudancasPublicacoes, 20000);
+}
+
 async function iniciarVisualizacao() {
   const mensagem = document.getElementById('mensagem');
   try {
     const escolhido = await carregarListaEscalasPublicadas();
-    if (escolhido) {
-      await carregarEscalaPublicada(escolhido);
-    } else {
-      mensagem.textContent = 'Nenhuma escala foi publicada até o momento.';
-      document.getElementById('mesPublicacao').textContent = 'Escala ainda não publicada';
-    }
+    if (escolhido) await carregarEscalaPublicada(escolhido);
+    else limparVisualizacaoSemPublicacao();
   } catch (erro) {
     console.error(erro);
     mensagem.textContent = 'Não foi possível carregar as escalas publicadas.';
   }
 }
 
-window.addEventListener('load', iniciarVisualizacao);
+window.addEventListener('load', () => { iniciarVisualizacao(); iniciarSincronizacaoPublicacoes(); });
 </script>
 </body>
 </html>
